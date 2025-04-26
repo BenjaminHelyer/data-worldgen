@@ -2,6 +2,7 @@ from pathlib import Path
 
 from world_builder import load_config, create_character
 
+
 def test_micro_config():
     """
     Smoke test for the world_builder module.
@@ -23,4 +24,3 @@ def test_micro_config():
     population = [create_character(config) for _ in range(POPULATION_SIZE)]
 
     assert len(population) == POPULATION_SIZE
-
