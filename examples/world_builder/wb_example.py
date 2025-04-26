@@ -19,7 +19,7 @@ for char in population[:5]:
     print(char)
 
 # Visualize the population distributions
-create_population_dashboard(population, 'population.jpg')
+create_population_dashboard(population, "population.jpg")
 
 # Convert each character to a dictionary.
 # If your character objects are not dict-like, you can customize this conversion.
@@ -30,6 +30,6 @@ df = pd.DataFrame(population_data)
 
 print(df.head())
 
-# Write the DataFrame to a Parquet file. 
+# Write the DataFrame to a Parquet file.
 # Make sure you have pyarrow or fastparquet installed (e.g., pip install pyarrow).
 df.to_parquet("population.parquet", index=False)

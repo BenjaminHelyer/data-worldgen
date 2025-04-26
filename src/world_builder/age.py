@@ -2,6 +2,7 @@
 import random
 import math
 
+
 def sample_from_distribution(dist):
     """
     Samples a value from a given distribution definition.
@@ -32,9 +33,9 @@ def sample_from_distribution(dist):
             sample = random.gauss(mean, std)
             trial_num += 1
             if trial_num == trial_cutoff:
-                # in a nicely defined distribution, 
+                # in a nicely defined distribution,
                 # this shouldn't happen often, but it prevents the loop from running too long
-                # in the case it does, we shove it to the min value, meaning realistically there will be slightly more younger folks 
+                # in the case it does, we shove it to the min value, meaning realistically there will be slightly more younger folks
                 # than folks at the max age
                 sample = min_val
         return int(sample)
@@ -47,9 +48,9 @@ def sample_from_distribution(dist):
             sample = abs(int(random.lognormvariate(log_mu, log_std)))
             trial_num += 1
             if trial_num == trial_cutoff:
-                # in a nicely defined distribution, 
+                # in a nicely defined distribution,
                 # this shouldn't happen often, but it prevents the loop from running too long
-                # in the case it does, we shove it to the min value, meaning realistically there will be slightly more younger folks 
+                # in the case it does, we shove it to the min value, meaning realistically there will be slightly more younger folks
                 # than folks at the max age
                 sample = min_val
         return int(sample)
@@ -114,7 +115,6 @@ def sample_age_factor(species, city, profession, config):
     final_mean += prof_factor.get("mean_shift", 0)
     final_std *= prof_factor.get("std_mult", 1.0)
 
-
     # Apply species_age factor (keys are lower-case)
     sp_factor = factors.get("species_age", {}).get(species.lower(), {})
     final_mean += sp_factor.get("mean_shift", 0)
@@ -137,9 +137,9 @@ def sample_age(species, city, profession, config):
     """
     age_val = sample_age_override(species, city, profession, config)
 
-    if age_val == -1: # no override present, sample as usual
+    if age_val == -1:  # no override present, sample as usual
         age_val = sample_age_factor(species, city, profession, config)
-    
+
     # check for ensuring ages aren't less than 0
     if age_val < 0:
         return 0
