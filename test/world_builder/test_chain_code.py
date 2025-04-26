@@ -6,7 +6,9 @@ from world_builder.chain_code import generate_chain_code, generate_uuidv7
 
 
 def test_generate_uuidv7_smoke():
-    """Test the generate_uuidv7 function to see if it even runs."""
+    """
+    Test the generate_uuidv7 function to see if it even runs.
+    """
     uuidv7 = generate_uuidv7()
 
 
