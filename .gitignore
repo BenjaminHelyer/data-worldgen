@@ -173,3 +173,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# project specific results files
+*.jpg
+*.png
+*.jpeg
+*.parquet
