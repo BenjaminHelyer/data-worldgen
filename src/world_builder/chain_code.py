@@ -3,10 +3,10 @@ This is a module for generating a 'chain code', which is essentially a UUID.
 """
 import os
 import time
-import uuid
+from uuid import UUID
 
 
-def generate_uuidv7():
+def generate_uuidv7() -> UUID:
     timestamp_ms = int(time.time() * 1000)
 
     if timestamp_ms >= (1 << 48):
@@ -20,10 +20,19 @@ def generate_uuidv7():
     uuid_int |= 0x2 << 62
     uuid_int |= rand_int & ((1 << 62) - 1)
 
-    return uuid.UUID(int=uuid_int)
+    return UUID(int=uuid_int)
 
 
-def generate_chain_code(species="unknown", is_female=False):
+def generate_chain_code(species: str = "unknown", 
+                        is_female:bool =False) -> str:
+    """
+    Generates the chain code for a character.
+    Args:
+        species (str): The species of the character.
+        is_female (bool): Whether the character is female.
+    Returns:
+        str: The chain code for the character.
+    """
     species_code = species.upper()[:3]
     gender_code = "F" if is_female else "M"
 
