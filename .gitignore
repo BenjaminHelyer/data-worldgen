@@ -135,6 +135,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.venv-data-worldgen
 
 # Spyder project settings
 .spyderproject
