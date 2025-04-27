@@ -58,7 +58,9 @@ class PopulationConfig(BaseModel):
         ]:
             weights = getattr(self, category)
             total_weight = sum(weights.values())
-            if abs(total_weight - 1.0) > 1e-6: # add a small tolerance for floating point errors
+            if (
+                abs(total_weight - 1.0) > 1e-6
+            ):  # add a small tolerance for floating point errors
                 raise ValueError(f"Total weight for {category} must be 1.0.")
 
         # per pydantic convention, return self after validation
@@ -73,6 +75,8 @@ def load_config(config_filepath: Path) -> PopulationConfig:
         try:
             config_json = json.load(f)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Tried to load {config_filepath} into JSON object and failed. Check to ensure it the file provided is valid JSON.") from e
+            raise ValueError(
+                f"Tried to load {config_filepath} into JSON object and failed. Check to ensure it the file provided is valid JSON."
+            ) from e
     population_config = PopulationConfig(**config_json)
     return population_config
