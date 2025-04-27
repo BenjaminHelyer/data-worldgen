@@ -42,3 +42,18 @@ def test_load_config_bad_weights(filename):
 
     with pytest.raises(ValidationError):
         _ = load_config(config_path)
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "wb_config_bad_factors.json"
+    ],  # intentionally broken config -- factors are negative
+)
+def test_load_config_bad_factors(filename):
+    """
+    Test that loading a config with invalid factors fails validation.
+    """
+    config_path = CONFIG_DIR / filename
+    with pytest.raises(ValidationError):
+        _ = load_config(config_path)
