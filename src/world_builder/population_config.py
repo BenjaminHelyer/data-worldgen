@@ -27,28 +27,34 @@ class PopulationConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     planet: str = Field(description="The planet name.")
-    city_weights: Dict[str, float] = Field(description="The weights for each city.")
-    species_weights: Dict[str, float] = Field(
-        description="The weights for each species."
+    city_base_probability: Dict[str, float] = Field(
+        description="The base probability for each city."
     )
-    profession_weights: Dict[str, float] = Field(
-        description="The weights for each profession."
+    species_base_probability: Dict[str, float] = Field(
+        description="The base probability for each species."
     )
-    allegiance_weights: Dict[str, float] = Field(
-        description="The weights for each allegiance."
+    profession_base_probability: Dict[str, float] = Field(
+        description="The base probability for each profession."
     )
-    gender_weights: Dict[str, float] = Field(description="The weights for each gender.")
+    allegiance_base_probability: Dict[str, float] = Field(
+        description="The base probability for each allegiance."
+    )
+    gender_base_probability: Dict[str, float] = Field(
+        description="The base probability for each gender."
+    )
 
     @model_validator(mode="after")
-    def validate_weights(self) -> Self:
+    def validate_base_probabilities(self) -> Self:
         """
-        Validates the weights for each category.
+        Validates the base probabilities for each category.
+        Each base probability must sum to unity, otherwise an error will be raised.
         """
         for category in [
-            "city_weights",
-            "species_weights",
-            "profession_weights",
-            "allegiance_weights",
+            "city_base_probability",
+            "species_base_probability",
+            "profession_base_probability",
+            "allegiance_base_probability",
+            "gender_base_probability",
         ]:
             weights = getattr(self, category)
             total_weight = sum(weights.values())

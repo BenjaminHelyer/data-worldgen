@@ -22,7 +22,7 @@ def test_load_config_smoke(filename):
     config = load_config(config_path)
     assert config is not None
     assert config.planet is not None
-    assert isinstance(config.city_weights, dict)
+    assert isinstance(config.city_base_probability, dict)
 
 
 @pytest.mark.parametrize(

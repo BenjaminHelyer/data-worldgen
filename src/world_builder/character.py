@@ -42,38 +42,38 @@ def create_character(config):
     Creates a random character using a factor-graph approach.
     The factors are applied in stages:
       1. City is sampled first.
-      2. Species weights are adjusted using the city's city_species factors.
-      3. Allegiance is sampled using base allegiance weights adjusted by city_allegiance and species_allegiance.
-      4. Gender is sampled using base gender weights adjusted by city_gender and species_gender.
-      5. Profession is sampled using base profession weights adjusted by city_profession and species_profession.
+      2. Species base_probability are adjusted using the city's city_species factors.
+      3. Allegiance is sampled using base allegiance base_probability adjusted by city_allegiance and species_allegiance.
+      4. Gender is sampled using base gender base_probability adjusted by city_gender and species_gender.
+      5. Profession is sampled using base profession base_probability adjusted by city_profession and species_profession.
     """
     city = random.choices(
-        population=list(config.city_weights.keys()),
-        weights=list(config.city_weights.values()),
+        population=list(config.city_base_probability.keys()),
+        weights=list(config.city_base_probability.values()),
         k=1,
     )[0]
 
     species = random.choices(
-        population=list(config.species_weights.keys()),
-        weights=list(config.species_weights.values()),
+        population=list(config.species_base_probability.keys()),
+        weights=list(config.species_base_probability.values()),
         k=1,
     )[0]
 
     profession = random.choices(
-        population=list(config.profession_weights.keys()),
-        weights=list(config.profession_weights.values()),
+        population=list(config.profession_base_probability.keys()),
+        weights=list(config.profession_base_probability.values()),
         k=1,
     )[0]
 
     allegiance = random.choices(
-        population=list(config.allegiance_weights.keys()),
-        weights=list(config.allegiance_weights.values()),
+        population=list(config.allegiance_base_probability.keys()),
+        weights=list(config.allegiance_base_probability.values()),
         k=1,
     )[0]
 
     gender = random.choices(
-        population=list(config.gender_weights.keys()),
-        weights=list(config.gender_weights.values()),
+        population=list(config.gender_base_probability.keys()),
+        weights=list(config.gender_base_probability.values()),
         k=1,
     )[0]
 
