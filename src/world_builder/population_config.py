@@ -49,6 +49,16 @@ class PopulationConfig(BaseModel):
     gender_base_probability: Dict[str, float] = Field(
         description="The base probability for each gender."
     )
+    # this is probably the most gnarly part of the config
+    # we use a factor-graph approach which means we need a nested dict of factors
+    # an example is probably useful here...the expected JSON is of the form:
+    # {..."factors": {
+    #           "city": {
+    #               "allegiance": {
+    #                   "Mos Eisley": {
+    #                       "Imperial": 5.0 ...}
+    # the above JSON would multiply the chances of a character in Mos Eisley being an Imperial by a factor of 5
+    # i.e., it's a statement of the form, "If a character is in Mos Eisley, then they are 5x more likely to be an Imperial"
     factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = Field(
         default_factory=dict,
         description=(
