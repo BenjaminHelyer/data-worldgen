@@ -65,11 +65,14 @@ class PopulationConfig(BaseModel):
         return self
 
 
-def load_config(config_filepath: Path):
+def load_config(config_filepath: Path) -> PopulationConfig:
     """
     Loads the JSON configuration file and validates each distribution.
     """
     with open(config_filepath, "r") as f:
-        config_json = json.load(f)
+        try:
+            config_json = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Tried to load {config_filepath} into JSON object and failed. Check to ensure it the file provided is valid JSON.") from e
     population_config = PopulationConfig(**config_json)
     return population_config
