@@ -58,7 +58,7 @@ class PopulationConfig(BaseModel):
         ]:
             weights = getattr(self, category)
             total_weight = sum(weights.values())
-            if not total_weight == 1.0:
+            if abs(total_weight - 1.0) > 1e-6: # add a small tolerance for floating point errors
                 raise ValueError(f"Total weight for {category} must be 1.0.")
 
         # per pydantic convention, return self after validation
