@@ -49,6 +49,13 @@ class PopulationConfig(BaseModel):
     gender_base_probability: Dict[str, float] = Field(
         description="The base probability for each gender."
     )
+    factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = Field(
+        default_factory=dict,
+        description=(
+            "Optional nested factors: factor_name -> dimension_name -> key -> subkey -> multiplier."
+            "All multipliers must be non-negative."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_base_probabilities(self) -> Self:
@@ -71,6 +78,34 @@ class PopulationConfig(BaseModel):
                 raise ValueError(f"Total weight for {category} must be 1.0.")
 
         # per pydantic convention, return self after validation
+        return self
+
+    @model_validator(mode="after")
+    def validate_factors(self) -> Self:
+        """
+        Validates nested factor multipliers are structured and non-negative.
+        """
+        for factor_name, dims in self.factors.items():
+            if not isinstance(dims, dict):
+                raise ValueError(
+                    f"Factor '{factor_name}' must map to a dict of dimensions."
+                )
+            for dimension, mapping in dims.items():
+                if not isinstance(mapping, dict):
+                    raise ValueError(
+                        f"Factor '{factor_name}' dimension '{dimension}' must be a dict of key→subkey mappings."
+                    )
+                for key, submap in mapping.items():
+                    if not isinstance(submap, dict):
+                        raise ValueError(
+                            f"Factor '{factor_name}'[{dimension}]['{key}'] must be a dict of subkey→multiplier."
+                        )
+                    for subkey, multiplier in submap.items():
+                        if not isinstance(multiplier, (int, float)) or multiplier < 0:
+                            raise ValueError(
+                                f"Multiplier for factor '{factor_name}'[{dimension}]['{key}']['{subkey}'] "
+                                f"must be non-negative number (got {multiplier})."
+                            )
         return self
 
 
