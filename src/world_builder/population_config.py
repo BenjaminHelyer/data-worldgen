@@ -37,6 +37,9 @@ class PopulationConfig(BaseModel):
     allegiance_weights: Dict[str, float] = Field(
         description="The weights for each allegiance."
     )
+    gender_weights: Dict[str, float] = Field(
+        description="The weights for each gender."
+    )
 
     @model_validator(mode="after")
     def validate_weights(self) -> Self:
