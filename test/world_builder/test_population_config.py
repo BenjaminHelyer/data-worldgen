@@ -9,6 +9,7 @@ parent_dir = Path(__file__).resolve().parent
 CONFIG_DIR = parent_dir / "config"
 CONFIG_FILE = CONFIG_DIR / "wb_config_micro.json"
 
+
 @pytest.mark.parametrize(
     "filename",
     ["wb_config_micro.json"],  # known good config -- should pass
@@ -23,9 +24,12 @@ def test_load_config_smoke(filename):
     assert config.planet is not None
     assert isinstance(config.city_weights, dict)
 
+
 @pytest.mark.parametrize(
     "filename",
-    ["wb_config_bad_weights_profession.json"],  # intentionally broken config -- profession weights don't sum to 1.0
+    [
+        "wb_config_bad_weights_profession.json"
+    ],  # intentionally broken config -- profession weights don't sum to 1.0
 )
 def test_load_config_bad_weights(filename):
     """

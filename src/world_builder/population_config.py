@@ -37,9 +37,7 @@ class PopulationConfig(BaseModel):
     allegiance_weights: Dict[str, float] = Field(
         description="The weights for each allegiance."
     )
-    gender_weights: Dict[str, float] = Field(
-        description="The weights for each gender."
-    )
+    gender_weights: Dict[str, float] = Field(description="The weights for each gender.")
 
     @model_validator(mode="after")
     def validate_weights(self) -> Self:
@@ -56,9 +54,10 @@ class PopulationConfig(BaseModel):
             total_weight = sum(weights.values())
             if not total_weight == 1.0:
                 raise ValueError(f"Total weight for {category} must be 1.0.")
-        
+
         # per pydantic convention, return self after validation
         return self
+
 
 def load_config(config_filepath: Path):
     """
