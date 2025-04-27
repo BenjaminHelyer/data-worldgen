@@ -8,7 +8,7 @@ def test_micro_config():
     Smoke test for the world_builder module.
     Tests the world_builder module with a micro configuration file.
     """
-    current_dir = Path(__file__).resolve().parent
+    current_dir = Path(__file__).resolve().parent.parent
     config_dir = current_dir / "config"
 
     CONFIG_FILE = config_dir / "wb_config_micro.json"
