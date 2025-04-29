@@ -15,10 +15,8 @@ class NormalDist(BaseModel):
     std: float
 
 
-# Extend here with more distributions as needed
 Distribution = Union[NormalDist]
 
-# Registry mapping the distribution type to its Pydantic model
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
 }
@@ -35,7 +33,9 @@ def _parse(config: Any) -> Distribution:
     if not isinstance(config, dict):
         raise TypeError(f"Config must be a dict or BaseModel, got {type(config)}")
 
-    dist_type = config.type
+    dist_type = (
+        config.type
+    )  # note that the key in config of 'type' is a distribution type, e.g., 'normal' or 'binomial', not a Python language type
     if dist_type not in DISTRIBUTION_REGISTRY:
         raise ValueError(f"Unsupported distribution type: {dist_type}")
 
