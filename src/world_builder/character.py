@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from .chain_code import generate_chain_code
 from world_builder.population_config import PopulationConfig
-from world_builder.distributions_config import Distribution
+from world_builder.distributions_config import Distribution, sample_from_config
 
 
 class Character:
@@ -64,7 +64,7 @@ def create_character(config: PopulationConfig) -> Character:
         if not isinstance(dist, Distribution):
             raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
         # TODO: add sampling later
-        sampled[category] = -100000
+        sampled[category] = sample_from_config(dist)
 
     # 3) planet is assumed to be a top-level field on the model
     for field_name, field_value in config.metadata.items():

@@ -26,11 +26,6 @@
             "std": 20
         }
     },
-    "age_distribution": {
-      "type": "normal",
-      "mean": 35,
-      "std": 20
-    },
     "metadata": {
         "planet": "Tatooine"
     }
