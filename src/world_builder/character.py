@@ -64,26 +64,26 @@ def create_character(config: PopulationConfig) -> Character:
     """
     sampled: Dict[str, Any] = {}
 
-    # 1) sample every discrete category in the config
+    # sample every discrete category in the config
     for category, base_map in config.base_probabilities_finite.items():
         # apply any relevant factors
         weights = _apply_factors(base_map, category, sampled, config.factors)
         choices, wts = zip(*weights.items())
         sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
 
-    # 2) sample every distribution category
+    # sample every distribution category
     for category, dist in config.base_probabilities_distributions.items():
         if not isinstance(dist, Distribution):
             raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
         # TODO: add sampling later
         sampled[category] = sample_from_config(dist)
 
-    # 3) planet is assumed to be a top-level field on the model
+    # sample metadata fields
     for field_name, field_value in config.metadata.items():
         sampled[field_name] = field_value
 
-    # 4) generate chain code (requires a 'species' and 'gender' entry)
-    species = sampled.get("species")
+    # generate chain code (requires a 'species' and 'gender' entry)
+    species = sampled.get("species", "")
     is_female = str(sampled.get("gender", "")).lower() == "female"
     sampled["chain_code"] = generate_chain_code(species, is_female)
 
