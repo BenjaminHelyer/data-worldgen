@@ -35,12 +35,14 @@ class PopulationConfig(BaseModel):
     #           "Mos Eisley": 0.5,
     #           "Mos Espa": 0.5 } ...}
     base_probabilities_finite: Dict[str, Dict[str, float]] = Field(
-        description="Required base probabilities for discrete fields. All probabilities within a specific base probability must sum to unity."
+        description="Required base probabilities for fields with a finite set of options specified by the user. All probabilities within a specific base probability must sum to unity."
     )
 
     # distribution base probabilities allow the user to draw a field from some distribution with a specified parameter list
     # for example, they could specify 'age' to be drawn from a normal distribution with mean=30 and std=15
-    base_probabilities_distributions: Dict[str, Distribution]
+    base_probabilities_distributions: Dict[str, Distribution] = Field(
+        description="Required base probabilities for fields which have values drawn from a specified distribution."
+    )
 
     # this is probably the most gnarly part of the config
     # we use a factor-graph approach which means we need a nested dict of factors
@@ -58,6 +60,12 @@ class PopulationConfig(BaseModel):
             "Optional nested factors: factor_name -> dimension_name -> key -> subkey -> multiplier."
             "All multipliers must be non-negative."
         ),
+    )
+
+    # catch-all dict for any miscellaneous, constant metadata fields
+    metadata: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Optional metadata fields. Can be used to store any string-like constants or metadata.",
     )
 
     @model_validator(mode="after")

@@ -31,7 +31,7 @@
       "mean": 35,
       "std": 20
     },
-    "universal_fields": {
+    "metadata": {
         "planet": "Tatooine"
     }
 }

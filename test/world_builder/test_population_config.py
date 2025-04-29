@@ -75,6 +75,7 @@ good_configs = [
         "base_probabilities_distributions": {
             "age": {"type": "normal", "mean": 35, "std": 20}
         },
+        "metadata": {"planet": "Tatooine"},
     },
     # test for data with factors
     {
@@ -89,6 +90,7 @@ good_configs = [
             "age": {"type": "normal", "mean": 35, "std": 20}
         },
         "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": 2.0}}}},
+        "metadata": {"planet": "Tatooine"},
     },
 ]
 
@@ -106,6 +108,7 @@ bad_configs = [
         "base_probabilities_distributions": {
             "age": {"type": "normal", "mean": 35, "std": 20}
         },
+        "metadata": {"planet": "Tatooine"},
     },
     # negative factor multiplier
     {
@@ -120,6 +123,7 @@ bad_configs = [
             "age": {"type": "normal", "mean": 35, "std": 20}
         },
         "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": -1.0}}}},
+        "metadata": {"planet": "Tatooine"},
     },
     # factors wrong shape (non-dict dimension)
     {
@@ -134,6 +138,7 @@ bad_configs = [
             "age": {"type": "normal", "mean": 35, "std": 20}
         },
         "factors": {"city": "invalid"},
+        "metadata": {"planet": "Tatooine"},
     },
 ]
 
@@ -153,6 +158,7 @@ def test_populationconfig_valid(config_data):
     )
     for key, dist in config.base_probabilities_distributions.items():
         assert isinstance(dist, Distribution)
+    assert config.metadata["planet"] == "Tatooine"
 
 
 @pytest.mark.parametrize("config_data", bad_configs)
