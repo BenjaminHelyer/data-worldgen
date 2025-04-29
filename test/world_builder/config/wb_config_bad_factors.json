@@ -1,22 +1,23 @@
 {
-    "planet": "Tatooine",
-    "species_base_probability": {
-        "human": 1.0
-    },
-    "gender_base_probability": {
-        "female": 0.50,
-        "male": 0.50
-    },
-    "allegiance_base_probability": {
-        "Imperial": 0.25,
-        "Rebel": 0.25,
-        "Neutral": 0.5
-    },
-    "profession_base_probability": {
-        "Jedi": 1.0
-    },
-    "city_base_probability": {
-        "Mos Eisley": 1.0
+    "base_probabilities_finite": {
+        "species": {
+            "human": 1.0
+        },
+        "gender": {
+            "female": 0.50,
+            "male": 0.50
+        },
+        "allegiance": {
+            "Imperial": 0.25,
+            "Rebel": 0.25,
+            "Neutral": 0.5
+        },
+        "profession": {
+            "Jedi": 1.0
+        },
+        "city": {
+            "Mos Eisley": 1.0
+        }
     },
     "age_distribution": {
       "type": "normal",
@@ -27,10 +28,13 @@
         "city": {
             "allegiance": {
                 "Mos Eisley": {
-                    "Imperial": -2,
-                    "Rebel": 0.25
+                    "Imperial": -2.0,
+                    "Rebel": -5
                 }
             }
         }
+    },
+    "universal_fields": {
+        "planet": "Tatooine"
     }
 }

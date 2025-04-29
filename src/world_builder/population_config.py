@@ -33,22 +33,14 @@ class PopulationConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    planet: str = Field(description="The planet name.")
-    city_base_probability: Dict[str, float] = Field(
-        description="The base probability for each city."
-    )
-    species_base_probability: Dict[str, float] = Field(
-        description="The base probability for each species."
-    )
-    profession_base_probability: Dict[str, float] = Field(
-        description="The base probability for each profession."
-    )
-    allegiance_base_probability: Dict[str, float] = Field(
-        description="The base probability for each allegiance."
-    )
-    gender_base_probability: Dict[str, float] = Field(
-        description="The base probability for each gender."
-    )
+    # discrete base probabilities allow the user to specify the probability for fields where one of several values may be chosen
+    # so, for example, nested in the "base_probabilities_discrete" key in the config, we might have:
+    #   {"base_probabilities_discrete":
+    #       "city": {
+    #           "Mos Eisley": 0.5,
+    #           "Mos Espa": 0.5 } ...}
+    base_probabilities_finite: Dict[str, Dict[str, float]] = Field(description="Required base probabilities for discrete fields. All probabilities within a specific base probability must sum to unity.")
+
     # this is probably the most gnarly part of the config
     # we use a factor-graph approach which means we need a nested dict of factors
     # an example is probably useful here...the expected JSON is of the form:
@@ -73,19 +65,12 @@ class PopulationConfig(BaseModel):
         Validates the base probabilities for each category.
         Each base probability must sum to unity, otherwise an error will be raised.
         """
-        for category in [
-            "city_base_probability",
-            "species_base_probability",
-            "profession_base_probability",
-            "allegiance_base_probability",
-            "gender_base_probability",
-        ]:
-            weights = getattr(self, category)
-            total_weight = sum(weights.values())
+        for category in self.base_probabilities_finite.keys():
+            total_weight = sum([prob for prob in self.base_probabilities_finite[category].values()])
             if (
                 abs(total_weight - 1.0) > 1e-6
             ):  # add a small tolerance for floating point errors
-                raise ValueError(f"Total weight for {category} must be 1.0.")
+                raise ValueError(f"Base probabilities for {category} must be 1.0. Received {total_weight} != 1.0")
 
         # per pydantic convention, return self after validation
         return self
