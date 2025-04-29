@@ -67,8 +67,8 @@ def create_character(config: PopulationConfig) -> Character:
         sampled[category] = -100000
 
     # 3) planet is assumed to be a top-level field on the model
-    # TODO: add universal fields later
-    # sampled["planet"] = config.planet
+    for field_name, field_value in config.metadata.items():
+        sampled[field_name] = field_value
 
     # 4) generate chain code (requires a 'species' and 'gender' entry)
     species = sampled.get("species")
