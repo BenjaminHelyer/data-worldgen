@@ -34,20 +34,16 @@ def _apply_factors(
     factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
 ) -> Dict[str, float]:
     """
-    Apply any factor multipliers for `category` based on previously sampled values.
-    - factors structure: factor_name -> dimension_name -> key -> subkey -> multiplier
+    Apply factor multipliers for `category` based on previously sampled values.
     """
     adjusted = base_probs.copy()
-    # look up only the entries that affect this category
     for dimension, key_map in factors.get(category, {}).items():
         value = sampled.get(dimension)
         if value is None:
             continue
-        # multipliers for this specific dimension=value
         for subkey, mult in key_map.get(value, {}).items():
             if subkey in adjusted:
                 adjusted[subkey] *= mult
-    # re-normalize to sum to 1 (if there's any weight left)
     total = sum(adjusted.values())
     if total > 0:
         adjusted = {k: v / total for k, v in adjusted.items()}
@@ -56,37 +52,41 @@ def _apply_factors(
 
 def create_character(config: PopulationConfig) -> Character:
     """
-    Factory function for the Character class.
-
-    Samples *all* finite categories, then *all* distribution categories,
-    then adds planet, generates a chain_code, and stubs names.
-    Factors in config.factors will be applied automatically to each finite category.
+    Factory for Character. Samples discrete categories in the order specified
+    by the 'factors' keys (respecting dependencies), then distributions,
+    metadata, chain_code, and stub names.
     """
     sampled: Dict[str, Any] = {}
 
-    # sample every discrete category in the config
-    for category, base_map in config.base_probabilities_finite.items():
-        # apply any relevant factors
+    # we sample first in the order of config.factors keys, then any remaining categories
+    finite_categories = list(config.base_probabilities_finite.keys())
+    order = []
+    for cat in config.factors.keys():
+        if cat in finite_categories:
+            order.append(cat)
+    for cat in finite_categories:
+        if cat not in order:
+            order.append(cat)
+
+    for category in order:
+        base_map = config.base_probabilities_finite[category]
         weights = _apply_factors(base_map, category, sampled, config.factors)
         choices, wts = zip(*weights.items())
         sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
 
-    # sample every distribution category
     for category, dist in config.base_probabilities_distributions.items():
         if not isinstance(dist, Distribution):
             raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
         sampled[category] = sample_from_config(dist)
 
-    # sample metadata fields
     for field_name, field_value in config.metadata.items():
         sampled[field_name] = field_value
 
-    # generate chain code (requires a 'species' and 'gender' entry)
     species = sampled.get("species", "")
     is_female = str(sampled.get("gender", "")).lower() == "female"
     sampled["chain_code"] = generate_chain_code(species, is_female)
 
-    # 5) stubbed name logic (swap in your real generator here)
+    # TODO: replace stubs with real names after making a name generator
     sampled["first_name"] = "Test"
     sampled["surname"] = "Test"
 
