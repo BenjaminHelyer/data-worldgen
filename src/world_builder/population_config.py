@@ -156,6 +156,9 @@ class PopulationConfig(BaseModel):
         """
         Validates that the factor graph is acyclic and respects the order defined in the factors mapping.
         Categories listed earlier in the factors mapping cannot be influenced by later categories.
+
+        In order to leverage ancestral sampling, the factor graph must be a DAG.
+        Thus, it is important to verify that the factor graph is acyclic before proceeding.
         """
         # preserve insertion order of factor keys
         factor_keys = list(self.factors.keys())
