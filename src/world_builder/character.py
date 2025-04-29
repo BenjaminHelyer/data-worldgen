@@ -75,7 +75,6 @@ def create_character(config: PopulationConfig) -> Character:
     for category, dist in config.base_probabilities_distributions.items():
         if not isinstance(dist, Distribution):
             raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
-        # TODO: add sampling later
         sampled[category] = sample_from_config(dist)
 
     # sample metadata fields
