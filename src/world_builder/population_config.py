@@ -18,6 +18,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from world_builder.distributions_config import Distribution
+
 
 class PopulationConfig(BaseModel):
     """
@@ -33,13 +35,19 @@ class PopulationConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    # discrete base probabilities allow the user to specify the probability for fields where one of several values may be chosen
+    # finite base probabilities allow the user to specify the probability for fields where one of several values may be chosen
     # so, for example, nested in the "base_probabilities_discrete" key in the config, we might have:
     #   {"base_probabilities_discrete":
     #       "city": {
     #           "Mos Eisley": 0.5,
     #           "Mos Espa": 0.5 } ...}
-    base_probabilities_finite: Dict[str, Dict[str, float]] = Field(description="Required base probabilities for discrete fields. All probabilities within a specific base probability must sum to unity.")
+    base_probabilities_finite: Dict[str, Dict[str, float]] = Field(
+        description="Required base probabilities for discrete fields. All probabilities within a specific base probability must sum to unity."
+    )
+
+    # distribution base probabilities allow the user to draw a field from some distribution with a specified parameter list
+    # for example, they could specify 'age' to be drawn from a normal distribution with mean=30 and std=15
+    base_probabilities_distributions: Dict[str, Distribution]
 
     # this is probably the most gnarly part of the config
     # we use a factor-graph approach which means we need a nested dict of factors
@@ -66,11 +74,15 @@ class PopulationConfig(BaseModel):
         Each base probability must sum to unity, otherwise an error will be raised.
         """
         for category in self.base_probabilities_finite.keys():
-            total_weight = sum([prob for prob in self.base_probabilities_finite[category].values()])
+            total_weight = sum(
+                [prob for prob in self.base_probabilities_finite[category].values()]
+            )
             if (
                 abs(total_weight - 1.0) > 1e-6
             ):  # add a small tolerance for floating point errors
-                raise ValueError(f"Base probabilities for {category} must be 1.0. Received {total_weight} != 1.0")
+                raise ValueError(
+                    f"Base probabilities for {category} must be 1.0. Received {total_weight} != 1.0"
+                )
 
         # per pydantic convention, return self after validation
         return self

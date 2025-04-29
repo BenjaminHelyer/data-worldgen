@@ -19,6 +19,13 @@
             "Mos Eisley": 1.0
         }
     },
+    "base_probabilities_distributions": {
+        "age": {
+            "type": "normal",
+            "mean": 30,
+            "std": 20
+        }
+    },
     "age_distribution": {
       "type": "normal",
       "mean": 35,
