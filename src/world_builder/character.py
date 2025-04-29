@@ -8,11 +8,21 @@ from world_builder.distributions_config import Distribution, sample_from_config
 
 class Character:
     def __init__(self, **attributes: Any):
-        # assign everything dynamically
+        """
+        Constructor for the character class, in which attributes are assigned dynamically
+        via the passed-in dictionary.
+        """
+        # assign attributes dynamically by passing in a dict of attributes
         for name, value in attributes.items():
             setattr(self, name, value)
 
     def __repr__(self) -> str:
+        """
+        Returns the string representation of the Character.
+
+        Example representation:
+            Character(species='human', age=42).
+        """
         props = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
         return f"Character({props})"
 
