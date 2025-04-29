@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from world_builder.population_config import load_config, PopulationConfig
+from world_builder.distributions_config import Distribution
 
 parent_dir = Path(__file__).resolve().parent
 CONFIG_DIR = parent_dir / "config"
@@ -60,80 +61,104 @@ def test_load_config_bad_factors(filename):
 # the below tests are for PopulationConfig directly, without loading a file
 # this enables us to more granually tweak options without burdening the codebase with a multiplicity of config files
 
-# good_configs = [
-#     # test for data without factors
-#     {
-#         "planet": "Tatooine",
-#         "city_base_probability": {"Mos Eisley": 1.0},
-#         "species_base_probability": {"human": 1.0},
-#         "profession_base_probability": {"Jedi": 1.0},
-#         "allegiance_base_probability": {"Rebel": 0.5, "Neutral": 0.5},
-#         "gender_base_probability": {"male": 0.5, "female": 0.5},
-#         "age_distribution": {"type": "normal", "mean": 35, "std": 20},
-#     },
-#     # test for data with factors
-#     {
-#         "planet": "Tatooine",
-#         "city_base_probability": {"Mos Eisley": 1.0},
-#         "species_base_probability": {"human": 1.0},
-#         "profession_base_probability": {"Jedi": 1.0},
-#         "allegiance_base_probability": {"Rebel": 0.5, "Neutral": 0.5},
-#         "gender_base_probability": {"male": 0.5, "female": 0.5},
-#         "age_distribution": {"type": "normal", "mean": 35, "std": 20},
-#         "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": 2.0}}}},
-#     },
-# ]
+# Valid configurations should use the new schema keys:
+good_configs = [
+    # test for data without factors
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+    },
+    # test for data with factors
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": 2.0}}}},
+    },
+]
 
-# bad_configs = [
-#     # base probabilities sum != 1.0
-#     {
-#         "planet": "Tatooine",
-#         "city_base_probability": {"Mos Eisley": 0.8, "Anchorhead": 0.3},
-#         "species_base_probability": {"human": 1.0},
-#         "profession_base_probability": {"Jedi": 1.0},
-#         "allegiance_base_probability": {"Rebel": 0.5, "Neutral": 0.5},
-#         "gender_base_probability": {"male": 0.5, "female": 0.5},
-#         "age_distribution": {"type": "normal", "mean": 35, "std": 20},
-#     },
-#     # negative factor multiplier
-#     {
-#         "planet": "Tatooine",
-#         "city_base_probability": {"Mos Eisley": 1.0},
-#         "species_base_probability": {"human": 1.0},
-#         "profession_base_probability": {"Jedi": 1.0},
-#         "allegiance_base_probability": {"Rebel": 0.5, "Neutral": 0.5},
-#         "gender_base_probability": {"male": 0.5, "female": 0.5},
-#         "age_distribution": {"type": "normal", "mean": 35, "std": 20},
-#         "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": -1.0}}}},
-#     },
-#     # factors wrong shape (non-dict dimension)
-#     {
-#         "planet": "Tatooine",
-#         "city_base_probability": {"Mos Eisley": 1.0},
-#         "species_base_probability": {"human": 1.0},
-#         "profession_base_probability": {"Jedi": 1.0},
-#         "allegiance_base_probability": {"Rebel": 0.5, "Neutral": 0.5},
-#         "gender_base_probability": {"male": 0.5, "female": 0.5},
-#         "age_distribution": {"type": "normal", "mean": 35, "std": 20},
-#         "factors": {"city": "invalid"},
-#     },
-# ]
+# Invalid configurations should trigger validation errors:
+bad_configs = [
+    # base probabilities sum != 1.0
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 0.8, "Anchorhead": 0.3},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+    },
+    # negative factor multiplier
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {"city": {"allegiance": {"Mos Eisley": {"Rebel": -1.0}}}},
+    },
+    # factors wrong shape (non-dict dimension)
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {"city": "invalid"},
+    },
+]
 
 
-# @pytest.mark.parametrize("config_data", good_configs)
-# def test_populationconfig_valid(config_data):
-#     """
-#     Valid PopulationConfig data should instantiate without errors.
-#     """
-#     config = PopulationConfig(**config_data)
-#     assert config.planet == config_data["planet"]
-#     assert isinstance(config.city_base_probability, dict)
+@pytest.mark.parametrize("config_data", good_configs)
+def test_populationconfig_valid(config_data):
+    """
+    Valid PopulationConfig data should instantiate without errors,
+    and retain the correct structure.
+    """
+    config = PopulationConfig(**config_data)
+    # finite probabilities
+    assert config.base_probabilities_finite == config_data["base_probabilities_finite"]
+    # distributions loaded as Distribution instances
+    assert set(config.base_probabilities_distributions.keys()) == set(
+        config_data["base_probabilities_distributions"].keys()
+    )
+    for key, dist in config.base_probabilities_distributions.items():
+        assert isinstance(dist, Distribution)
 
 
-# @pytest.mark.parametrize("config_data", bad_configs)
-# def test_populationconfig_invalid(config_data):
-#     """
-#     Invalid PopulationConfig data should raise ValidationError.
-#     """
-#     with pytest.raises(ValidationError):
-#         PopulationConfig(**config_data)
+@pytest.mark.parametrize("config_data", bad_configs)
+def test_populationconfig_invalid(config_data):
+    """
+    Invalid PopulationConfig data should raise a ValidationError.
+    """
+    with pytest.raises(ValidationError):
+        PopulationConfig(**config_data)
