@@ -116,6 +116,41 @@ class PopulationConfig(BaseModel):
                             )
         return self
 
+    @model_validator(mode="after")
+    def validate_factor_consistency(self) -> "PopulationConfig":
+        """
+        Checks if the factors are consistent with previous elements named in the config.
+
+        For example, a factor for the field element 'town' would fail validation if only a field for 'city' were specified.
+        Likewise, if 'Mos Taike' is mentioned in the factors as a possible field value,
+        but 'Mos Taike' never appears in the base distribution, then validation would fail.
+        """
+        # get the list of possible factors as the list of field element names
+        possible_factors = list(self.base_probabilities_finite.keys()) + list(
+            self.base_probabilities_distributions.keys()
+        )
+        # validate that both (1) factor field names, and (2) factor field values are defined previously in the 'base' sections of the config
+        for factor_var, influences in self.factors.items():
+            if factor_var not in possible_factors:
+                raise ValueError(
+                    f"Factor variable '{factor_var}' not defined in possible factors: {possible_factors}"
+                )
+            for inf_var, key_map in influences.items():
+                # check sub-factors, i.e., under each field, ensure that the values mentioned by the factors are specified earlier in the config
+                domain_keys = self.base_probabilities_finite.get(factor_var, {})
+                influenced_keys = self.base_probabilities_finite.get(inf_var, {})
+                for key, submap in key_map.items():
+                    if key not in domain_keys:
+                        raise ValueError(
+                            f"Key '{key}' not in base_probabilities_finite['{factor_var}']."
+                        )
+                    for subkey in submap:
+                        if subkey not in influenced_keys:
+                            raise ValueError(
+                                f"Subkey '{subkey}' not in base_probabilities_finite['{inf_var}']."
+                            )
+        return self
+
 
 def load_config(config_filepath: Path) -> PopulationConfig:
     """
