@@ -56,6 +56,8 @@ def _apply_factors(
 
 def create_character(config: PopulationConfig) -> Character:
     """
+    Factory function for the Character class.
+
     Samples *all* finite categories, then *all* distribution categories,
     then adds planet, generates a chain_code, and stubs names.
     Factors in config.factors will be applied automatically to each finite category.
