@@ -1,102 +1,82 @@
 import random
+from typing import Any, Dict
 
-# from namegen.generate_name import generate_name
-from .age import sample_age
 from .chain_code import generate_chain_code
+from world_builder.population_config import PopulationConfig
+from world_builder.distributions_config import Distribution
 
 
 class Character:
-    def __init__(
-        self,
-        chain_code,
-        first_name,
-        surname,
-        species,
-        age,
-        gender,
-        profession,
-        planet,
-        city,
-        allegiance,
-    ):
-        self.chain_code = chain_code
-        self.first_name = first_name
-        self.surname = surname
-        self.species = species
-        self.age = age
-        self.gender = gender
-        self.profession = profession
-        self.planet = planet
-        self.city = city
-        self.allegiance = allegiance
+    def __init__(self, **attributes: Any):
+        # assign everything dynamically
+        for name, value in attributes.items():
+            setattr(self, name, value)
 
-    def __repr__(self):
-        return (
-            f"{self.first_name} {self.surname}, {self.species}, {self.gender}, "
-            f"{self.profession} from {self.city}, {self.planet} (Age: {self.age}). Allegiance: {self.allegiance}"
-        )
+    def __repr__(self) -> str:
+        props = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
+        return f"Character({props})"
 
 
-def create_character(config):
+def _apply_factors(
+    base_probs: Dict[str, float],
+    category: str,
+    sampled: Dict[str, Any],
+    factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
+) -> Dict[str, float]:
     """
-    Creates a random character using a factor-graph approach.
-    The factors are applied in stages:
-      1. City is sampled first.
-      2. Species base_probability are adjusted using the city's city_species factors.
-      3. Allegiance is sampled using base allegiance base_probability adjusted by city_allegiance and species_allegiance.
-      4. Gender is sampled using base gender base_probability adjusted by city_gender and species_gender.
-      5. Profession is sampled using base profession base_probability adjusted by city_profession and species_profession.
+    Apply any factor multipliers for `category` based on previously sampled values.
+    - factors structure: factor_name -> dimension_name -> key -> subkey -> multiplier
     """
-    city = random.choices(
-        population=list(config.city_base_probability.keys()),
-        weights=list(config.city_base_probability.values()),
-        k=1,
-    )[0]
+    adjusted = base_probs.copy()
+    # look up only the entries that affect this category
+    for dimension, key_map in factors.get(category, {}).items():
+        value = sampled.get(dimension)
+        if value is None:
+            continue
+        # multipliers for this specific dimension=value
+        for subkey, mult in key_map.get(value, {}).items():
+            if subkey in adjusted:
+                adjusted[subkey] *= mult
+    # re-normalize to sum to 1 (if there's any weight left)
+    total = sum(adjusted.values())
+    if total > 0:
+        adjusted = {k: v / total for k, v in adjusted.items()}
+    return adjusted
 
-    species = random.choices(
-        population=list(config.species_base_probability.keys()),
-        weights=list(config.species_base_probability.values()),
-        k=1,
-    )[0]
 
-    profession = random.choices(
-        population=list(config.profession_base_probability.keys()),
-        weights=list(config.profession_base_probability.values()),
-        k=1,
-    )[0]
+def create_character(config: PopulationConfig) -> Character:
+    """
+    Samples *all* finite categories, then *all* distribution categories,
+    then adds planet, generates a chain_code, and stubs names.
+    Factors in config.factors will be applied automatically to each finite category.
+    """
+    sampled: Dict[str, Any] = {}
 
-    allegiance = random.choices(
-        population=list(config.allegiance_base_probability.keys()),
-        weights=list(config.allegiance_base_probability.values()),
-        k=1,
-    )[0]
+    # 1) sample every discrete category in the config
+    for category, base_map in config.base_probabilities_finite.items():
+        # apply any relevant factors
+        weights = _apply_factors(base_map, category, sampled, config.factors)
+        choices, wts = zip(*weights.items())
+        sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
 
-    gender = random.choices(
-        population=list(config.gender_base_probability.keys()),
-        weights=list(config.gender_base_probability.values()),
-        k=1,
-    )[0]
+    # 2) sample every distribution category
+    for category, dist in config.base_probabilities_distributions.items():
+        if not isinstance(dist, Distribution):
+            raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
+        # TODO: add sampling later
+        sampled[category] = -100000
 
-    # --- Other attributes remain based on defaults.
-    planet = config.planet
-    is_female = gender.lower() == "female"
-    # first_name = generate_name(species, is_female)
-    # surname = generate_name(species, False)
-    first_name = "Test"
-    surname = "Test"
+    # 3) planet is assumed to be a top-level field on the model
+    # TODO: add universal fields later
+    # sampled["planet"] = config.planet
 
-    age = 30
-    chain_code = generate_chain_code(species, is_female)
+    # 4) generate chain code (requires a 'species' and 'gender' entry)
+    species = sampled.get("species")
+    is_female = str(sampled.get("gender", "")).lower() == "female"
+    sampled["chain_code"] = generate_chain_code(species, is_female)
 
-    return Character(
-        chain_code,
-        first_name,
-        surname,
-        species,
-        age,
-        gender,
-        profession,
-        planet,
-        city,
-        allegiance,
-    )
+    # 5) stubbed name logic (swap in your real generator here)
+    sampled["first_name"] = "Test"
+    sampled["surname"] = "Test"
+
+    return Character(**sampled)

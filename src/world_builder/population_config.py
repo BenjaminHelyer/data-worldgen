@@ -24,13 +24,6 @@ from world_builder.distributions_config import Distribution
 class PopulationConfig(BaseModel):
     """
     Loads the population config for the world into a Pydantic model.
-
-    This model is strict on the base probabilities for each category.
-    This is because we expect there will be a minimum amount of categories that will
-    be useful for our world generation example, i.e., this is a strict contract on the
-    data that could be generated.
-
-    The model is more flexible on the model factors.
     """
 
     model_config = ConfigDict(frozen=True)
