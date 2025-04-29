@@ -140,6 +140,54 @@ bad_configs = [
         "factors": {"city": "invalid"},
         "metadata": {"planet": "Tatooine"},
     },
+    # factors list unknown fields -- in this case, field names
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {"town": {"allegiance": {"Mos Eisley": {"Rebel": 5.0}}}},
+        "metadata": {"planet": "Tatooine"},
+    },
+    # factors list unknown fields -- in this case, field values
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {"city": {"allegiance": {"Mos Taike": {"Rebel": 5.0}}}},
+        "metadata": {"planet": "Tatooine"},
+    },
+    # factor graph has a cycle -- which will break ancestral sampling
+    {
+        "base_probabilities_finite": {
+            "city": {"Mos Eisley": 1.0},
+            "species": {"human": 1.0},
+            "profession": {"Jedi": 1.0},
+            "allegiance": {"Rebel": 0.5, "Neutral": 0.5},
+            "gender": {"male": 0.5, "female": 0.5},
+        },
+        "base_probabilities_distributions": {
+            "age": {"type": "normal", "mean": 35, "std": 20}
+        },
+        "factors": {
+            "city": {"allegiance": {"Mos Eisley": {"Rebel": 5.0}}},
+            "allegiance": {"city": {"Rebel": {"Mos Eisley": 2.0}}},
+        },
+        "metadata": {"planet": "Tatooine"},
+    },
 ]
 
 

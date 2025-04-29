@@ -151,6 +151,54 @@ class PopulationConfig(BaseModel):
                             )
         return self
 
+    @model_validator(mode="after")
+    def validate_acyclic_factor_graph(self) -> "PopulationConfig":
+        """
+        Validates that the factor graph is acyclic and respects the order defined in the factors mapping.
+        Categories listed earlier in the factors mapping cannot be influenced by later categories.
+        """
+        # preserve insertion order of factor keys
+        factor_keys = list(self.factors.keys())
+        idx_map = {key: idx for idx, key in enumerate(factor_keys)}
+
+        # build adjacency for dimensions -> factor_var edges when both are in factor_keys
+        graph = {key: [] for key in factor_keys}
+        for factor_var, influences in self.factors.items():
+            for dimension in influences:
+                if dimension in graph:
+                    graph[dimension].append(factor_var)
+
+        # cycle detection via DFS
+        visited: Dict[str, int] = {}  # 0=unvisited, 1=visiting, 2=visited
+
+        def dfs(node: str):
+            visited[node] = 1
+            for neigh in graph.get(node, []):
+                if visited.get(neigh, 0) == 1:
+                    raise ValueError(
+                        f"Cycle detected in factor graph: '{neigh}' <-> '{node}'"
+                    )
+                if visited.get(neigh, 0) == 0:
+                    dfs(neigh)
+            visited[node] = 2
+
+        for node in factor_keys:
+            if visited.get(node, 0) == 0:
+                dfs(node)
+
+        # enforce top-down ordering: dimensions must come before factor_var
+        for factor_var, influences in self.factors.items():
+            pos_f = idx_map[factor_var]
+            for dimension in influences:
+                if dimension in idx_map:
+                    pos_d = idx_map[dimension]
+                    if pos_d >= pos_f:
+                        raise ValueError(
+                            f"Invalid factor ordering: '{dimension}' influences '{factor_var}', "
+                            f"but '{dimension}' appears at position {pos_d} after '{factor_var}' ({pos_f}) in factors."
+                        )
+        return self
+
 
 def load_config(config_filepath: Path) -> PopulationConfig:
     """

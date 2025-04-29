@@ -1,7 +1,8 @@
 {
     "base_probabilities_finite": {
         "species": {
-            "human": 1.0
+            "human": 0.9,
+            "bothan": 0.1
         },
         "gender": {
             "female": 0.50,
@@ -32,6 +33,14 @@
                 "Mos Eisley": {
                     "Imperial": 5.0,
                     "Rebel": 0.25
+                }
+            }
+        },
+        "species": {
+            "allegiance": {
+                "bothan": {
+                    "Imperial": 2.5,
+                    "Rebel": 0.1
                 }
             }
         }
