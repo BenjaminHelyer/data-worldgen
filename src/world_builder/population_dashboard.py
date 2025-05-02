@@ -104,7 +104,10 @@ def render_dashboard(
         plot_distributions(filtered_df, col)
 
 
-def main():
+def run_dashboard_main():
+    """
+    Main function that runs the dashboard end-to-end.
+    """
     df = load_data()
     filter_columns = get_filter_columns(df)
     filtered_df = apply_filters(df, filter_columns)
@@ -112,4 +115,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_dashboard_main()
