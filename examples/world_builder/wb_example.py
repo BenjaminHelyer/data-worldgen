@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from world_builder import load_config, create_character, create_population_dashboard
+from world_builder import load_config, create_character
 
 current_dir = Path(__file__).resolve().parent
 
@@ -18,9 +18,6 @@ population = [create_character(config) for _ in range(100)]
 for char in population[:5]:
     print(char)
 
-# Visualize the population distributions
-create_population_dashboard(population, "population.jpg")
-
 # Convert each character to a dictionary.
 # If your character objects are not dict-like, you can customize this conversion.
 population_data = [char.__dict__ for char in population]
@@ -32,4 +29,4 @@ print(df.head())
 
 # Write the DataFrame to a Parquet file.
 # Make sure you have pyarrow or fastparquet installed (e.g., pip install pyarrow).
-df.to_parquet("population.parquet", index=False)
+df.to_parquet(current_dir / "population.parquet", index=False)
