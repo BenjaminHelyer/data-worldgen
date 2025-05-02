@@ -52,7 +52,7 @@ def apply_filters(df: pd.DataFrame, filter_columns: List[str]) -> pd.DataFrame:
 
 
 def plot_distributions(df: pd.DataFrame, col: str):
-    """Display bar and pie charts for categorical and numeric data."""
+    """Display bar and pie charts for categorical and numeric data side-by-side if applicable."""
     st.subheader(f"Distribution of {col}")
 
     if df[col].dtype == "object":
@@ -63,7 +63,7 @@ def plot_distributions(df: pd.DataFrame, col: str):
             alt.Chart(counts)
             .mark_bar()
             .encode(x=alt.X(f"{col}:N", sort="-y"), y="count:Q")
-            .properties(width=600)
+            .properties(width=300, height=300)
         )
 
         pie_chart = (
@@ -77,15 +77,19 @@ def plot_distributions(df: pd.DataFrame, col: str):
             .properties(width=300, height=300)
         )
 
-        st.altair_chart(bar_chart, use_container_width=True)
-        st.altair_chart(pie_chart, use_container_width=False)
+        # Show charts side-by-side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.altair_chart(bar_chart, use_container_width=True)
+        with col2:
+            st.altair_chart(pie_chart, use_container_width=True)
 
     else:
         bar_chart = (
             alt.Chart(df)
             .mark_bar()
             .encode(x=alt.X(f"{col}:Q", bin=alt.Bin(maxbins=30)), y="count()")
-            .properties(width=600)
+            .properties(width=600, height=300)
         )
         st.altair_chart(bar_chart, use_container_width=True)
 
