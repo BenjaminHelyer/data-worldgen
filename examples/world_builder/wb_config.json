@@ -62,7 +62,7 @@
             "child": 0.1,
             "adult dependent": 0.0025
         },
-        "city_weights": {
+        "city": {
             "Anchorhead": 0.0882,
             "Bestine": 0.2255,
             "Mos Eisley": 0.2069,
@@ -76,6 +76,68 @@
             "type": "normal",
             "mean": 30,
             "std": 20
+        }
+    },
+    "factors": {
+        "city": {
+            "species": {
+                "Mos Eisley": {
+                    "bothan": 2,
+                    "human": 3
+                }
+            },
+            "profession": {
+                "Mos Eisley": {
+                    "entertainer": 2
+                }
+            },
+            "allegiance": {
+                "Mos Eisley": {
+                    "Neutral": 1.2
+                }
+            },
+            "gender": {
+                "Mos Eisley": {
+                    "male": 1.02
+                }
+            }
+        },
+        "species": {
+            "profession": {
+                "human": {
+                    "wealthy": 1.01
+                }
+            },
+            "allegiance": {
+                "wookiee": {
+                    "Rebel": 5,
+                    "Imperial": 0.1
+                } 
+            },
+            "gender": {
+                "bothan": {
+                    "male": 1.01
+                }
+            }
+        },
+        "profession": {
+            "allegiance": {
+                "soldier": {
+                    "Imperial": 1.1
+                }
+            },
+            "gender": {
+                "moisture farmer": {
+                    "female": 1.01
+                }
+            }
+        },
+        "allegiance": {
+            "gender": {
+                "Imperial": {
+                    "male": 1.01
+                }
+            }
         }
     },
     "metadata": {
