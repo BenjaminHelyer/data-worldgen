@@ -7,6 +7,13 @@ Based on a random prefix of a planet and a random suffix.
 import random
 
 from .planets_list import PLANETS_LIST
+from .surname_suffix_list import HUMAN_SUFFIXES, TWILEK_SUFFIXES, TRANDOSHAN_SUFFIXES
+
+suffix_lookup = {
+    "human": HUMAN_SUFFIXES,
+    "twilek": TWILEK_SUFFIXES,
+    "trandoshan": TRANDOSHAN_SUFFIXES,
+}
 
 
 def extract_planet_root(name):
@@ -21,63 +28,18 @@ def random_segment(word, min_len=2, max_len=5):
     return word[start:end]
 
 
-def generate_surname(suffixes=None):
+def generate_surname(species=None):
     """
     Generates a surname.
 
     Currently generates based on a list of planets, using that as the prefix.
     Then it takes the suffix based on a list of known species suffixes.
     """
-    if suffixes is None:
-        human_suffixes = [
-            "son",
-            "er",
-            "ar",
-            "an",
-            "en",
-            "ell",
-            "in",
-            "ix",
-            "or",
-            "ius",
-            "man",
-            "ley",
-            "win",
-            "eth",
-            "dan",
-            "vek",
-        ]
-        twilek_suffixes = [
-            "eth",
-            "ira",
-            "urra",
-            "ven",
-            "asha",
-            "il",
-            "ren",
-            "ae",
-            "nek",
-            "eesh",
-            "ali",
-            "ohl",
-            "ami",
-        ]
-        trandoshan_suffixes = [
-            "ssk",
-            "arsh",
-            "okk",
-            "rak",
-            "nak",
-            "zor",
-            "gash",
-            "azz",
-            "och",
-            "thok",
-            "kren",
-            "usk",
-            "drass",
-        ]
-        suffixes = human_suffixes + twilek_suffixes + trandoshan_suffixes
+    suffixes = []
+    if not species or species not in suffix_lookup:
+        suffixes = HUMAN_SUFFIXES
+    else:
+        suffixes = suffix_lookup[species]
 
     root_word = extract_planet_root(random.choice(PLANETS_LIST))
     segment = random_segment(root_word)
