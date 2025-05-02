@@ -16,6 +16,7 @@ CONFIG_FILE = CONFIG_DIR / "wb_config_micro.json"
     [
         "wb_config_micro.json",
         "wb_config_small.json",
+        "wb_config_medium.json",
     ],  # known good configs -- should pass
 )
 def test_load_config_smoke(filename):

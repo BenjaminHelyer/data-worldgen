@@ -1,0 +1,146 @@
+{
+    "base_probabilities_finite": {
+        "species": {
+            "bothan": 0.05,
+            "human": 0.35,
+            "ithorian": 0.10,
+            "moncal": 0.05,
+            "rodian": 0.10,
+            "sullustan": 0.10,
+            "trandoshan": 0.10,
+            "twilek": 0.07,
+            "wookiee": 0.01,
+            "zabrak": 0.07
+        },
+        "gender": {
+            "female": 0.50,
+            "male": 0.50
+        },
+        "allegiance": {
+            "Imperial": 0.25,
+            "Rebel": 0.25,
+            "Neutral": 0.5
+        },
+        "profession": {
+            "bounty hunter": 0.0005,
+            "commando": 0.01,
+            "Jedi": 0.0000001,
+            "medic": 0.0099999,
+            "officer": 0.01,
+            "smuggler": 0.005,
+            "spy": 0.001,
+            "trader": 0.1,
+            "entertainer": 0.03,
+            "politician": 0.01,
+            "beast master": 0.02,
+            "chronicler": 0.005,
+            "pilot": 0.075,
+            "farmer": 0.05,
+            "moisture farmer": 0.12,
+            "bantha herder": 0.05,
+            "unemployed": 0.02,
+            "homeless": 0.005,
+            "security guard": 0.0835,
+            "construction worker": 0.04,
+            "diner employee": 0.02,
+            "bartender": 0.01,
+            "guildmaster": 0.025,
+            "wealthy": 0.0045,
+            "crime lord": 0.00005,
+            "majordomo": 0.00015,
+            "skug boss": 0.0003,
+            "enforcer": 0.005,
+            "technician": 0.035,
+            "engineer": 0.01,
+            "soldier": 0.04,
+            "factory worker": 0.04,
+            "salvager": 0.03,
+            "rancher -- dewbacks/eopies": 0.01,
+            "city administrator": 0.01,
+            "musician": 0.0025,
+            "depot worker": 0.01,
+            "child": 0.1,
+            "adult dependent": 0.0025
+        },
+        "city": {
+            "Anchorhead": 0.0882,
+            "Bestine": 0.2255,
+            "Mos Eisley": 0.2069,
+            "Mos Espa": 0.3024,
+            "Mos Taike": 0.1256,
+            "Wayfar": 0.0514
+        }
+    },
+    "base_probabilities_distributions": {
+        "age": {
+            "type": "normal",
+            "mean": 30,
+            "std": 20
+        }
+    },
+    "factors": {
+        "city": {
+            "species": {
+                "Mos Eisley": {
+                    "bothan": 2,
+                    "human": 3
+                }
+            },
+            "profession": {
+                "Mos Eisley": {
+                    "entertainer": 2
+                }
+            },
+            "allegiance": {
+                "Mos Eisley": {
+                    "Neutral": 1.2
+                }
+            },
+            "gender": {
+                "Mos Eisley": {
+                    "male": 1.02
+                }
+            }
+        },
+        "species": {
+            "profession": {
+                "human": {
+                    "wealthy": 1.01
+                }
+            },
+            "allegiance": {
+                "wookiee": {
+                    "Rebel": 5,
+                    "Imperial": 0.1
+                } 
+            },
+            "gender": {
+                "bothan": {
+                    "male": 1.01
+                }
+            }
+        },
+        "profession": {
+            "allegiance": {
+                "soldier": {
+                    "Imperial": 1.1
+                }
+            },
+            "gender": {
+                "moisture farmer": {
+                    "female": 1.01
+                }
+            }
+        },
+        "allegiance": {
+            "gender": {
+                "Imperial": {
+                    "male": 1.01
+                }
+            }
+        }
+    },
+    "metadata": {
+        "planet": "Tatooine"
+    }
+}
