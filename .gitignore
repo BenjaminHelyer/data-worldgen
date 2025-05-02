@@ -179,3 +179,8 @@ cython_debug/
 *.png
 *.jpeg
 *.parquet
+*.csv
+names/
+*.txt
+*.pdf
+planets/
