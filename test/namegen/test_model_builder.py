@@ -2,7 +2,14 @@
 Testsfor the model builder of the namegen module.
 """
 
-from namegen import build_weighted_markov_chain, generate_name
+from namegen import (
+    build_weighted_markov_chain,
+    generate_name,
+    load_markov_model_from_json,
+    save_markov_model_to_json,
+)
+import tempfile
+import os
 
 import pytest
 import pandas as pd
@@ -22,6 +29,7 @@ def test_markov_chain_deterministic_single_name_can_generate(name):
         generated = generate_name(model, n=3)
         assert generated == name
 
+
 @pytest.mark.parametrize("name", ["Bob", "Sue", "Test"])
 def test_markov_chain_deterministic_single_name_model_probabilities(name):
     """
@@ -33,9 +41,45 @@ def test_markov_chain_deterministic_single_name_model_probabilities(name):
     df = pd.DataFrame({"Name": [name], "Count": [1]})
     model = build_weighted_markov_chain(df, n=3)
 
-    # Check all prefix → next_char transitions have probability 1.0
     for prefix, next_probs in model.items():
         assert len(next_probs) == 1  # only one possible next character
         for char, prob in next_probs.items():
             assert prob == pytest.approx(1.0)
 
+
+@pytest.mark.parametrize(
+    "model",
+    [
+        {"~~": {"a": 1.0}},
+        {"ab": {"c": 0.7, "d": 0.3}},
+        {"zz": {"$": 1.0}, "zy": {"x": 0.5, "y": 0.5}},
+        {
+            "th": {"e": 0.6, "a": 0.4},
+            "he": {"l": 1.0},
+            "el": {"l": 1.0},
+            "ll": {"o": 1.0},
+        },
+    ],
+)
+def test_save_and_load_markov_model(model):
+    """
+    Save a Markov model to a temp JSON file, then load it back and ensure
+    it's identical (structure + float values).
+    """
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=True) as tmp:
+        path = tmp.name
+
+        save_markov_model_to_json(model, path)
+        # flush it to disk to ensure it's there when we read from it
+        tmp.flush()
+        loaded = load_markov_model_from_json(path)
+
+        assert set(loaded.keys()) == set(model.keys())
+
+        for prefix in model:
+            assert prefix in loaded
+            for char in model[prefix]:
+                assert char in loaded[prefix]
+                assert float(loaded[prefix][char]) == pytest.approx(
+                    float(model[prefix][char]), rel=1e-9
+                )
