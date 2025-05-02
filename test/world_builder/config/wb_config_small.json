@@ -29,6 +29,11 @@
     },
     "factors": {
         "city": {
+            "species": {
+                "Mos Eisley": {
+                    "bothan": 1.1
+                }
+            },
             "allegiance": {
                 "Mos Eisley": {
                     "Imperial": 5.0,

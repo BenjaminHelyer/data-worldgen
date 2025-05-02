@@ -190,15 +190,15 @@ class PopulationConfig(BaseModel):
                 dfs(node)
 
         # enforce top-down ordering: dimensions must come before factor_var
-        for factor_var, influences in self.factors.items():
+        for factor_var, influenced_vars in self.factors.items():
             pos_f = idx_map[factor_var]
-            for dimension in influences:
-                if dimension in idx_map:
-                    pos_d = idx_map[dimension]
-                    if pos_d >= pos_f:
+            for influenced_var in influenced_vars:
+                if influenced_var in idx_map:
+                    pos_i = idx_map[influenced_var]
+                    if pos_i <= pos_f:
                         raise ValueError(
-                            f"Invalid factor ordering: '{dimension}' influences '{factor_var}', "
-                            f"but '{dimension}' appears at position {pos_d} after '{factor_var}' ({pos_f}) in factors."
+                            f"Invalid factor ordering: '{factor_var}' influences '{influenced_var}', "
+                            f"but '{influenced_var}' appears at position {pos_i} before '{factor_var}' ({pos_f}) in factors."
                         )
         return self
 
