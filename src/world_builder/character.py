@@ -1,9 +1,11 @@
 import random
 from typing import Any, Dict
 
-from .chain_code import generate_chain_code
+from world_builder import generate_chain_code
 from world_builder.population_config import PopulationConfig
 from world_builder.distributions_config import Distribution, sample_from_config
+
+from namegen import generate_female_first_name, generate_male_first_name
 
 
 class Character:
@@ -86,8 +88,11 @@ def create_character(config: PopulationConfig) -> Character:
     is_female = str(sampled.get("gender", "")).lower() == "female"
     sampled["chain_code"] = generate_chain_code(species, is_female)
 
+    if is_female:
+        sampled["first_name"] = generate_female_first_name()
+    else:
+        sampled["first_name"] = generate_male_first_name()
     # TODO: replace stubs with real names after making a name generator
-    sampled["first_name"] = "Test"
     sampled["surname"] = "Test"
 
     return Character(**sampled)
