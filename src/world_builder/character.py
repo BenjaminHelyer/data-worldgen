@@ -5,7 +5,11 @@ from world_builder import generate_chain_code
 from world_builder.population_config import PopulationConfig
 from world_builder.distributions_config import Distribution, sample_from_config
 
-from namegen import generate_female_first_name, generate_male_first_name
+from namegen import (
+    generate_female_first_name,
+    generate_male_first_name,
+    generate_surname,
+)
 
 
 class Character:
@@ -92,7 +96,6 @@ def create_character(config: PopulationConfig) -> Character:
         sampled["first_name"] = generate_female_first_name()
     else:
         sampled["first_name"] = generate_male_first_name()
-    # TODO: replace stubs with real names after making a name generator
-    sampled["surname"] = "Test"
+    sampled["surname"] = generate_surname()
 
     return Character(**sampled)

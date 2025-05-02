@@ -6,3 +6,5 @@ from .model_builder import (
 )
 
 from .first_name_generator import generate_female_first_name, generate_male_first_name
+
+from .surname_generator import generate_surname
