@@ -96,6 +96,6 @@ def create_character(config: PopulationConfig) -> Character:
         sampled["first_name"] = generate_female_first_name()
     else:
         sampled["first_name"] = generate_male_first_name()
-    sampled["surname"] = generate_surname()
+    sampled["surname"] = generate_surname(species=species)
 
     return Character(**sampled)
