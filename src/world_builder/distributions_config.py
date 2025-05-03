@@ -3,10 +3,21 @@ Holds the Pydantic BaseModels and distribution objects for various probaility di
 """
 
 import random
-from typing import Literal, Union, Dict, Any
+from typing import Literal, Union, Dict, Any, Protocol
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 from scipy.stats import truncnorm
+
+
+class DistributionTransformOperation(BaseModel):
+    mean_shift: float | None = None
+    std_mult: float | None = None
+
+
+class TransformableDistribution(Protocol):
+    def with_transform(
+        self, transform: DistributionTransformOperation
+    ) -> "TransformableDistribution": ...
 
 
 class NormalDist(BaseModel):
@@ -14,11 +25,29 @@ class NormalDist(BaseModel):
     mean: float
     std: float
 
+    def with_transform(self, transform: DistributionTransformOperation) -> "NormalDist":
+        return self.model_copy(
+            update={
+                "mean": self.mean + (transform.mean_shift or 0.0),
+                "std": self.std * (transform.std_mult or 1.0),
+            }
+        )
+
 
 class LogNormalDist(BaseModel):
     type: Literal["lognormal"]
     mean: float
     std: float
+
+    def with_transform(
+        self, transform: DistributionTransformOperation
+    ) -> "LogNormalDist":
+        return self.model_copy(
+            update={
+                "mean": self.mean + (transform.mean_shift or 0.0),
+                "std": self.std * (transform.std_mult or 1.0),
+            }
+        )
 
 
 class TruncatedNormalDist(BaseModel):
@@ -28,10 +57,15 @@ class TruncatedNormalDist(BaseModel):
     lower: float = Field(description="Lower bound (inclusive)")
     upper: float = Field(float("inf"), description="Upper bound (inclusive)")
 
-
-class DistributionTransformOperation(BaseModel):
-    mean_shift: float | None = None
-    std_mult: float | None = None
+    def with_transform(
+        self, transform: DistributionTransformOperation
+    ) -> "TruncatedNormalDist":
+        return self.model_copy(
+            update={
+                "mean": self.mean + (transform.mean_shift or 0.0),
+                "std": self.std * (transform.std_mult or 1.0),
+            }
+        )
 
 
 # Maps values like "Mos Eisley" or "Wookiee" to transforms

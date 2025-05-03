@@ -168,28 +168,18 @@ def _sample_distribution_fields_with_overrides(
     config: PopulationConfig, sampled: Dict[str, Any]
 ) -> None:
     """
-    Samples all fields defined in `base_probabilities_distributions`, applying conditional
-    overrides if applicable.
+    Samples all fields defined in `base_probabilities_distributions`, applying:
+    - The first matching override (from config.override_distributions), if any.
+    - Then, applies any matching transformations from config.transform_distributions.
 
-    Behavior:
-    - For each distributional field (e.g., "age"), use the base distribution by default.
-    - If any overrides are defined in `config.override_distributions`, evaluate them **in order**.
-    - The **first matching override** (based on sampled field values) is used to replace the base distribution.
-    - If no override matches, fall back to the original base distribution.
-
-    A match occurs when:
-    - The override's `field` matches the current category, AND
-    - All key-value pairs in the override's `condition` match what's already sampled.
-
-    Example:
-        If category = "age" and sampled = {"profession": "soldier"},
-        and override.condition = {"profession": "soldier"},
-        then override.distribution replaces base_distributions["age"].
-
-    This function modifies the `sampled` dict in-place.
+    Sampling logic:
+    1. Start with the base distribution.
+    2. If any overrides match the already-sampled fields, apply the first one.
+    3. Apply any applicable distribution transformations using sampled fields.
+    4. Sample from the resulting distribution and store in the `sampled` dict.
     """
     for category, base_dist in config.base_probabilities_distributions.items():
-        final_dist = base_dist  # default to base distribution
+        final_dist = base_dist  # start with base distribution
 
         if config.override_distributions:
             for override in config.override_distributions:
@@ -198,6 +188,15 @@ def _sample_distribution_fields_with_overrides(
                 if all(sampled.get(k) == v for k, v in override.condition.items()):
                     final_dist = override.distribution
                     break  # first match wins
+
+        if category in config.transform_distributions:
+            trait_map = config.transform_distributions[category]
+            for trait_field, value_map in trait_map.items():
+                trait_value = sampled.get(trait_field)
+                if trait_value is None or trait_value not in value_map:
+                    continue
+                transform = value_map[trait_value]
+                final_dist = final_dist.with_transform(transform)
 
         if not isinstance(final_dist, Distribution):
             raise TypeError(

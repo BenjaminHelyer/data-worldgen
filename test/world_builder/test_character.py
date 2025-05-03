@@ -4,13 +4,20 @@ from typing_extensions import Dict, Any
 from collections import Counter
 
 import pytest
+import numpy as np
 
 from world_builder.character import (
     _assign_names,
     _assign_chain_code,
     _assign_metadata,
     _sample_finite_fields,
+    _sample_distribution_fields_with_overrides,
 )
+from world_builder.distributions_config import (
+    NormalDist,
+    DistributionTransformOperation,
+)
+from world_builder.population_config import PopulationConfig
 
 
 @pytest.mark.parametrize(
@@ -225,3 +232,40 @@ def test_sample_finite_fields_respects_factors(
             assert (
                 0.7 < ratio < 1.3
             ), f"Expected near-uniform distribution for '{k}', got ratio {ratio:.2f}"
+
+
+@pytest.mark.parametrize(
+    "base_dist, transform, sampled_fixed, expected_mean_threshold",
+    [
+        # mean_shift of +1000 should drastically raise mean
+        (
+            NormalDist(type="normal", mean=-25.0, std=0.01),
+            {"species": {"Giant": DistributionTransformOperation(mean_shift=1000)}},
+            {"species": "Giant"},
+            800.0,  # expect mean to be well above this
+        )
+    ],
+)
+def test_sample_distribution_transform_effects(
+    base_dist, transform, sampled_fixed, expected_mean_threshold
+):
+    NUM_SAMPLES = 500
+    config = PopulationConfig(
+        base_probabilities_finite={"species": {sampled_fixed["species"]: 1.0}},
+        base_probabilities_distributions={"age": base_dist},
+        factors={},
+        override_distributions=[],
+        transform_distributions={"age": transform},
+        metadata={},
+    )
+
+    samples = []
+    for _ in range(NUM_SAMPLES):
+        sampled = sampled_fixed.copy()
+        _sample_distribution_fields_with_overrides(config, sampled)
+        samples.append(sampled["age"])
+
+    mean_result = np.mean(samples)
+    assert (
+        mean_result > expected_mean_threshold
+    ), f"Expected mean > {expected_mean_threshold}, but got {mean_result:.2f}"
