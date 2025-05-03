@@ -35,24 +35,37 @@ class Character:
 
 def _apply_factors(
     base_probs: Dict[str, float],
-    category: str,
-    sampled: Dict[str, Any],
-    factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
+    target_field: str,
+    sampled_values: Dict[str, Any],
+    all_factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
 ) -> Dict[str, float]:
     """
-    Apply factor multipliers for `category` based on previously sampled values.
+    Adjusts the base probabilities for `target_field` using multipliers
+    defined in `all_factors`, based on already sampled fields.
+
+    This supports factor graphs of the form:
+      source_field -> target_field -> source_value -> {target_value: multiplier}
     """
     adjusted = base_probs.copy()
-    for dimension, key_map in factors.get(category, {}).items():
-        value = sampled.get(dimension)
-        if value is None:
+
+    for source_field, target_map in all_factors.items():
+        if target_field not in target_map:
             continue
-        for subkey, mult in key_map.get(value, {}).items():
-            if subkey in adjusted:
-                adjusted[subkey] *= mult
+
+        source_value = sampled_values.get(source_field)
+        if source_value is None:
+            continue
+
+        multipliers = target_map[target_field].get(source_value, {})
+        for target_value, multiplier in multipliers.items():
+            if target_value in adjusted:
+                adjusted[target_value] *= multiplier
+
+    # Normalize the adjusted probabilities
     total = sum(adjusted.values())
     if total > 0:
         adjusted = {k: v / total for k, v in adjusted.items()}
+
     return adjusted
 
 
@@ -124,35 +137,33 @@ def _assign_names(sampled: Dict[str, Any]) -> None:
 
 def _sample_finite_fields(config: PopulationConfig) -> Dict[str, Any]:
     """
-    Samples all finite categories from `base_probabilities_finite`,
-    respecting the dependency order implied by `factors`.
+    Samples values for all finite categorical fields using base probabilities and
+    modifying them based on conditional factors from previously sampled fields.
 
-    Fields listed as factor targets are sampled in the order they appear in the `factors` dict,
-    ensuring causal consistency. Any remaining unsampled finite fields are appended afterward.
-
-    For each field:
-      - If the field has associated factor weights (i.e. it is influenced by another field),
-        those weights are applied to the base probabilities.
-      - A single value is randomly chosen from the weighted options.
-
-    Returns:
-        A dictionary of sampled finite field values.
+    The sampling respects the topological order of `factors` to enable causal consistency.
     """
     sampled: Dict[str, Any] = {}
 
-    finite_categories = list(config.base_probabilities_finite.keys())
+    finite_fields = list(config.base_probabilities_finite.keys())
 
-    # respect factor order first
-    # this enables us to do ancestral sampling for the factor graph
-    order = [cat for cat in config.factors.keys() if cat in finite_categories]
-    # add categories that don't appear in the factors -- order shouldn't matter for these
-    order += [cat for cat in finite_categories if cat not in order]
+    # determine the sampling order: first factor targets, then independent fields
+    ordered_fields = [field for field in config.factors if field in finite_fields]
+    ordered_fields += [field for field in finite_fields if field not in ordered_fields]
 
-    for category in order:
-        base_map = config.base_probabilities_finite[category]
-        weights = _apply_factors(base_map, category, sampled, config.factors)
-        choices, wts = zip(*weights.items())
-        sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
+    for field in ordered_fields:
+        base_probs = config.base_probabilities_finite[field]
+
+        # adjust base_probs if the field is influenced by other sampled fields
+        adjusted_probs = _apply_factors(
+            base_probs=base_probs,
+            target_field=field,
+            sampled_values=sampled,
+            all_factors=config.factors
+        )
+
+        # sample one value based on adjusted probabilities
+        options, weights = zip(*adjusted_probs.items())
+        sampled[field] = random.choices(population=options, weights=weights, k=1)[0]
 
     return sampled
 
