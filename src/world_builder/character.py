@@ -59,12 +59,11 @@ def _apply_factors(
 def create_character(config: PopulationConfig) -> Character:
     """
     Factory for Character. Samples discrete categories in the order specified
-    by the 'factors' keys (respecting dependencies), then distributions,
-    metadata, chain_code, and stub names.
+    by the 'factors' keys (respecting dependencies), then applies distribution-based
+    sampling with optional conditional overrides, and fills metadata + names.
     """
     sampled: Dict[str, Any] = {}
 
-    # we sample first in the order of config.factors keys, then any remaining categories
     finite_categories = list(config.base_probabilities_finite.keys())
     order = []
     for cat in config.factors.keys():
@@ -81,9 +80,21 @@ def create_character(config: PopulationConfig) -> Character:
         sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
 
     for category, dist in config.base_probabilities_distributions.items():
-        if not isinstance(dist, Distribution):
-            raise TypeError(f"Expected Distribution for '{category}', got {type(dist)}")
-        sampled[category] = sample_from_config(dist)
+        final_dist = dist  # default to base distribution
+
+        if config.override_distributions:
+            # overrides are applied in order, in precedence for which they appear
+            for override in config.override_distributions:
+                if override.field != category:
+                    continue
+                if all(sampled.get(key) == val for key, val in override.condition.items()):
+                    final_dist = override.distribution
+                    break  # stop at first matching override
+
+        if not isinstance(final_dist, Distribution):
+            raise TypeError(f"Expected Distribution for '{category}', got {type(final_dist)}")
+
+        sampled[category] = sample_from_config(final_dist)
 
     for field_name, field_value in config.metadata.items():
         sampled[field_name] = field_value
@@ -92,10 +103,9 @@ def create_character(config: PopulationConfig) -> Character:
     is_female = str(sampled.get("gender", "")).lower() == "female"
     sampled["chain_code"] = generate_chain_code(species, is_female)
 
-    if is_female:
-        sampled["first_name"] = generate_female_first_name()
-    else:
-        sampled["first_name"] = generate_male_first_name()
+    sampled["first_name"] = (
+        generate_female_first_name() if is_female else generate_male_first_name()
+    )
     sampled["surname"] = generate_surname(species=species)
 
     return Character(**sampled)
