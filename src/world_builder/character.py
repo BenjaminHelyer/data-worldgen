@@ -122,6 +122,41 @@ def _assign_names(sampled: Dict[str, Any]) -> None:
     sampled["surname"] = generate_surname(species=species)
 
 
+def _sample_finite_fields(config: PopulationConfig) -> Dict[str, Any]:
+    """
+    Samples all finite categories from `base_probabilities_finite`,
+    respecting the dependency order implied by `factors`.
+
+    Fields listed as factor targets are sampled in the order they appear in the `factors` dict,
+    ensuring causal consistency. Any remaining unsampled finite fields are appended afterward.
+
+    For each field:
+      - If the field has associated factor weights (i.e. it is influenced by another field),
+        those weights are applied to the base probabilities.
+      - A single value is randomly chosen from the weighted options.
+
+    Returns:
+        A dictionary of sampled finite field values.
+    """
+    sampled: Dict[str, Any] = {}
+
+    finite_categories = list(config.base_probabilities_finite.keys())
+
+    # respect factor order first
+    # this enables us to do ancestral sampling for the factor graph
+    order = [cat for cat in config.factors.keys() if cat in finite_categories]
+    # add categories that don't appear in the factors -- order shouldn't matter for these
+    order += [cat for cat in finite_categories if cat not in order]
+
+    for category in order:
+        base_map = config.base_probabilities_finite[category]
+        weights = _apply_factors(base_map, category, sampled, config.factors)
+        choices, wts = zip(*weights.items())
+        sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
+
+    return sampled
+
+
 def create_character(config: PopulationConfig) -> Character:
     """
     Factory for Character. Samples discrete categories in the order specified
@@ -130,20 +165,7 @@ def create_character(config: PopulationConfig) -> Character:
     """
     sampled: Dict[str, Any] = {}
 
-    finite_categories = list(config.base_probabilities_finite.keys())
-    order = []
-    for cat in config.factors.keys():
-        if cat in finite_categories:
-            order.append(cat)
-    for cat in finite_categories:
-        if cat not in order:
-            order.append(cat)
-
-    for category in order:
-        base_map = config.base_probabilities_finite[category]
-        weights = _apply_factors(base_map, category, sampled, config.factors)
-        choices, wts = zip(*weights.items())
-        sampled[category] = random.choices(population=choices, weights=wts, k=1)[0]
+    sampled.update(_sample_finite_fields(config))
 
     for category, dist in config.base_probabilities_distributions.items():
         final_dist = dist  # default to base distribution

@@ -7,5 +7,6 @@ from .character import (
     _apply_factors,
     _assign_chain_code,
     _assign_names,
+    _sample_finite_fields,
 )
 from . import population_dashboard

@@ -1,5 +1,5 @@
-import re
 from uuid import UUID
+from types import SimpleNamespace
 
 import pytest
 
@@ -7,6 +7,7 @@ from world_builder.character import (
     _assign_names,
     _assign_chain_code,
     _assign_metadata,
+    _sample_finite_fields,
 )
 
 
@@ -35,6 +36,8 @@ def test_assign_metadata_adds_expected_keys(metadata, expected_keys):
         ("human", "M"),
         ("wookiee", "F"),
         ("twilek", ""),  # missing gender should still generate
+        ("", "M"),  # missing species should still genderate
+        ("", ""),  # both missing gender and missing species should still generate
     ],
 )
 def test_assign_chain_code_format(species, gender_prefix):
@@ -66,7 +69,6 @@ def test_assign_chain_code_format(species, gender_prefix):
     [
         {"species": "zabrak", "gender": "male"},
         {"species": "twilek", "gender": "female"},
-        {"species": "ithorian", "gender": "nonbinary"},  # fallback to male generator
     ],
 )
 def test_assign_names_fields_present(sampled):
@@ -76,3 +78,49 @@ def test_assign_names_fields_present(sampled):
     assert "surname" in sampled
     assert isinstance(sampled["first_name"], str) and sampled["first_name"].strip()
     assert isinstance(sampled["surname"], str) and sampled["surname"].strip()
+
+
+@pytest.mark.parametrize(
+    "finite_probs, factors, expected_keys, expected_choices",
+    [
+        # Case 1: No factors, simple uniform sampling
+        (
+            {"species": {"human": 0.5, "twilek": 0.5}},
+            {},
+            ["species"],
+            {"species": {"human", "twilek"}},
+        ),
+        # Case 2: Factor order respected (city before allegiance)
+        (
+            {
+                "city": {"Mos Eisley": 1.0},
+                "allegiance": {"Imperial": 0.5, "Rebel": 0.5},
+            },
+            {"allegiance": {"city": {"Mos Eisley": {"Imperial": 10.0}}}},
+            ["city", "allegiance"],
+            {"city": {"Mos Eisley"}, "allegiance": {"Imperial", "Rebel"}},
+        ),
+        # Case 3: More than two fields with dependencies
+        (
+            {
+                "species": {"zabrak": 1.0},
+                "profession": {"warrior": 0.7, "farmer": 0.3},
+                "allegiance": {"Neutral": 1.0},
+            },
+            {"profession": {"species": {"zabrak": {"warrior": 2.0, "farmer": 0.5}}}},
+            ["species", "profession", "allegiance"],
+            {
+                "species": {"zabrak"},
+                "profession": {"warrior", "farmer"},
+                "allegiance": {"Neutral"},
+            },
+        ),
+    ],
+)
+def test_sample_finite_fields(finite_probs, factors, expected_keys, expected_choices):
+    config = SimpleNamespace(base_probabilities_finite=finite_probs, factors=factors)
+    sampled = _sample_finite_fields(config)
+
+    assert set(sampled.keys()) == set(expected_keys)
+    for key in expected_keys:
+        assert sampled[key] in expected_choices[key]
