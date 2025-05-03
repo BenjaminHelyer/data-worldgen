@@ -6,7 +6,7 @@ import random
 
 from typing import Literal, Union, Dict, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class NormalDist(BaseModel):
@@ -58,3 +58,21 @@ def sample_from_config(config: dict) -> float:
     """
     dist = _parse(config)
     return _sample(dist)
+
+
+class DistributionOverride(BaseModel):
+    """
+    Represents a conditional override of a base distribution. 
+    
+    For example, we might draw 'age' from a different distribution if 'profession' is 'soldier'.
+    """
+
+    condition: Dict[str, str] = Field(
+        description="Condition dict, e.g., {'profession': 'soldier'}."
+    )
+    field: str = Field(
+        description="Field in base_probabilities_distributions to override, e.g., 'age'."
+    )
+    distribution: Distribution = Field(
+        description="Replacement distribution when condition is matched."
+    )

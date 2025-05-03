@@ -217,3 +217,128 @@ def test_populationconfig_invalid(config_data):
     """
     with pytest.raises(ValidationError):
         PopulationConfig(**config_data)
+
+@pytest.mark.parametrize(
+    "config_json",
+    [
+        # Case 1: Profession -> Age override
+        {
+            "base_probabilities_finite": {
+                "profession": {
+                    "soldier": 1.0
+                }
+            },
+            "base_probabilities_distributions": {
+                "age": {
+                    "type": "normal",
+                    "mean": 30,
+                    "std": 10
+                }
+            },
+            "override_distributions": [
+                {
+                    "condition": {"profession": "soldier"},
+                    "field": "age",
+                    "distribution": {
+                        "type": "normal",
+                        "mean": 3.0,
+                        "std": 0.5
+                    }
+                }
+            ]
+        },
+        # Case 2: Allegiance -> Age override
+        {
+            "base_probabilities_finite": {
+                "allegiance": {
+                    "Imperial": 0.6,
+                    "Rebel": 0.4
+                }
+            },
+            "base_probabilities_distributions": {
+                "age": {
+                    "type": "normal",
+                    "mean": 25,
+                    "std": 5
+                }
+            },
+            "override_distributions": [
+                {
+                    "condition": {"allegiance": "Imperial"},
+                    "field": "age",
+                    "distribution": {
+                        "type": "normal",
+                        "mean": 250,
+                        "std": 0.1
+                    }
+                }
+            ]
+        },
+    ]
+)
+def test_valid_override_distributions(config_json):
+    config = PopulationConfig(**config_json)
+    assert config.override_distributions is not None
+
+
+@pytest.mark.parametrize(
+    "config_json",
+    [
+        # Case 1: Invalid condition key 'species'
+        {
+            "base_probabilities_finite": {
+                "profession": {
+                    "soldier": 1.0
+                }
+            },
+            "base_probabilities_distributions": {
+                "age": {
+                    "type": "normal",
+                    "mean": 30,
+                    "std": 10
+                }
+            },
+            "override_distributions": [
+                {
+                    "condition": {"species": "wookiee"},
+                    "field": "age",
+                    "distribution": {
+                        "type": "lognormal",
+                        "mean": 3.0,
+                        "sigma": 0.5
+                    }
+                }
+            ]
+        },
+        # Case 2: Invalid override target field 'height' not in distributions
+        {
+            "base_probabilities_finite": {
+                "profession": {
+                    "pilot": 1.0
+                }
+            },
+            "base_probabilities_distributions": {
+                "age": {
+                    "type": "normal",
+                    "mean": 30,
+                    "std": 10
+                }
+            },
+            "override_distributions": [
+                {
+                    "condition": {"profession": "pilot"},
+                    "field": "height",  # <-- invalid field
+                    "distribution": {
+                        "type": "normal",
+                        "mean": 1.75,
+                        "std": 0.1
+                    }
+                }
+            ]
+        },
+    ]
+)
+def test_invalid_override_distributions(config_json):
+    with pytest.raises(ValidationError) as exc_info:
+        PopulationConfig(**config_json)
+    assert "override" in str(exc_info.value).lower()

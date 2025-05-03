@@ -140,6 +140,17 @@
             }
         }
     },
+    "override_distributions": [
+        {
+            "condition": {"profession": "soldier"},
+            "field": "age",
+            "distribution": {
+                "type": "normal",
+                "mean": 20,
+                "std": 0.3
+            }
+        }
+    ],
     "metadata": {
         "planet": "Tatooine"
     }

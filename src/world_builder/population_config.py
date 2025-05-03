@@ -11,14 +11,14 @@ The config is a JSON file that contains the following fields:
 - allegiance_weights: a dictionary of allegiance names and their weights
 """
 
-from typing import Dict
+from typing import Dict, List
 from typing_extensions import Self
 import json
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from world_builder.distributions_config import Distribution
+from world_builder.distributions_config import Distribution, DistributionOverride
 
 
 class PopulationConfig(BaseModel):
@@ -61,6 +61,17 @@ class PopulationConfig(BaseModel):
             "All multipliers must be non-negative."
         ),
     )
+
+    # n.b. -- overrides are performed in the order they are written in the config
+    # therefore, if multiple overrides match, we go for the *first* override mentioned in the config
+    override_distributions: List[DistributionOverride] = Field(
+        default=None,
+        description=(
+            "Optional overrides for base distributions based on specific field conditions. "
+            "Overrides are processed in order; the first match applies."
+        ),
+    )
+
 
     # catch-all dict for any miscellaneous, constant metadata fields
     metadata: Dict[str, str] = Field(
@@ -199,6 +210,33 @@ class PopulationConfig(BaseModel):
                         raise ValueError(
                             f"Invalid factor ordering: '{factor_var}' influences '{influenced_var}', "
                             f"but '{influenced_var}' appears at position {pos_i} before '{factor_var}' ({pos_f}) in factors."
+                        )
+        return self
+    
+    @model_validator(mode="after")
+    def validate_override_distributions(self) -> Self:
+        """
+        Validates override_distributions to ensure:
+        - The field to override exists in base_probabilities_distributions
+        - The condition keys exist in base_probabilities_finite
+        - The condition values are valid options in their corresponding finite distributions
+        """
+        if self.override_distributions:
+            for i, override in enumerate(self.override_distributions):
+                if override.field not in self.base_probabilities_distributions:
+                    raise ValueError(
+                        f"Override #{i} targets unknown field '{override.field}', which is not in base_probabilities_distributions."
+                    )
+                for cond_key, cond_val in override.condition.items():
+                    if cond_key not in self.base_probabilities_finite:
+                        raise ValueError(
+                            f"Override #{i} uses condition key '{cond_key}' not found in base_probabilities_finite."
+                        )
+                    allowed_values = self.base_probabilities_finite[cond_key]
+                    if cond_val not in allowed_values:
+                        raise ValueError(
+                            f"Override #{i} condition value '{cond_val}' is not valid for key '{cond_key}'. "
+                            f"Expected one of: {list(allowed_values.keys())}"
                         )
         return self
 
