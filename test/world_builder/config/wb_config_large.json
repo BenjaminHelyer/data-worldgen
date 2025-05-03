@@ -1,0 +1,523 @@
+{
+    "base_probabilities_finite": {
+        "species": {
+            "bothan": 0.05,
+            "human": 0.35,
+            "ithorian": 0.10,
+            "moncal": 0.05,
+            "rodian": 0.10,
+            "sullustan": 0.10,
+            "trandoshan": 0.10,
+            "twilek": 0.07,
+            "wookiee": 0.01,
+            "zabrak": 0.07
+        },
+        "gender": {
+            "female": 0.50,
+            "male": 0.50
+        },
+        "allegiance": {
+            "Imperial": 0.25,
+            "Rebel": 0.25,
+            "Neutral": 0.5
+        },
+        "profession": {
+            "bounty hunter": 0.0005,
+            "commando": 0.01,
+            "Jedi": 0.0000001,
+            "medic": 0.0099999,
+            "officer": 0.01,
+            "smuggler": 0.005,
+            "spy": 0.001,
+            "trader": 0.1,
+            "entertainer": 0.03,
+            "politician": 0.01,
+            "beast master": 0.02,
+            "chronicler": 0.005,
+            "pilot": 0.075,
+            "farmer": 0.05,
+            "moisture farmer": 0.17,
+            "bantha herder": 0.05,
+            "unemployed": 0.02,
+            "homeless": 0.005,
+            "security guard": 0.0335,
+            "construction worker": 0.04,
+            "diner employee": 0.02,
+            "bartender": 0.01,
+            "guildmaster": 0.025,
+            "wealthy": 0.0045,
+            "crime lord": 0.00005,
+            "majordomo": 0.00015,
+            "skug boss": 0.0003,
+            "enforcer": 0.005,
+            "technician": 0.035,
+            "engineer": 0.01,
+            "soldier": 0.04,
+            "factory worker": 0.04,
+            "salvager": 0.03,
+            "rancher": 0.11,
+            "city administrator": 0.01,
+            "musician": 0.0025,
+            "depot worker": 0.01,
+            "adult dependent": 0.0025
+        },
+        "city": {
+            "Anchorhead": 0.0882,
+            "Bestine": 0.2255,
+            "Mos Eisley": 0.2069,
+            "Mos Espa": 0.3024,
+            "Mos Taike": 0.1256,
+            "Wayfar": 0.0514
+        }
+    },
+    "base_probabilities_distributions": {
+        "age": {
+            "type": "truncated_normal",
+            "mean": 42,
+            "std": 19,
+            "lower": 18
+        }
+    },
+    "factors": {
+        "city": {
+            "species": {
+                "Mos Eisley": {
+                    "sullustan": 1.02,
+                    "ithorian": 1.08,
+                    "twilek": 1.22
+                },
+                "Bestine": {
+                    "human": 1.75,
+                    "wookiee": 0.02,
+                    "bothan": 1.32
+                },
+                "Anchorhead": {
+                    "moncal": 3.75,
+                    "wookiee": 2.58
+                },
+                "Mos Espa": {
+                    "sullustan": 1.51,
+                    "ithorian": 1.72
+                },
+                "Wayfar": {
+                    "trandoshan": 2.32,
+                    "twilek": 5.2,
+                    "human": 3.7,
+                    "rodian": 4.2,
+                    "ithorian": 0.08,
+                    "moncal": 0.03,
+                    "zabrak": 2.1
+                },
+                "Mos Taike": {
+                    "ithorian": 1.38,
+                    "human": 0.81,
+                    "twilek": 1.13
+                }
+            },
+            "profession": {
+                "Mos Eisley": {
+                    "entertainer": 2.81,
+                    "security guard": 0.84,
+                    "soldier": 0.126,
+                    "diner employee": 1.23,
+                    "pilot": 1.62,
+                    "musician": 1.82,
+                    "smuggler": 2.0,
+                    "trader": 1.25,
+                    "officer": 0.058,
+                    "city administrator": 0.2,
+                    "bartender": 1.27,
+                    "politician": 0.1,
+                    "homeless": 3.81,
+                    "unemployed": 3.24,
+                    "wealthy": 0.33,
+                    "crime lord": 1.13,
+                    "skug boss": 1.57,
+                    "majordomo": 1.61,
+                    "enforcer": 2.06,
+                    "beast master": 1.28,
+                    "salvager": 1.51,
+                    "technician": 1.28
+                },
+                "Bestine": {
+                    "politician": 2.23,
+                    "city administrator": 3.21,
+                    "officer": 1.53,
+                    "soldier": 2.87,
+                    "security guard": 2.31,
+                    "commando": 1.35,
+                    "wealthy": 1.46,
+                    "spy": 2.25,
+                    "crime lord": 0.01,
+                    "skug boss": 0.13,
+                    "majordomo": 0.24,
+                    "enforcer": 0.21,
+                    "medic": 1.32,
+                    "engineer": 1.21
+                },
+                "Anchorhead": {
+                    "moisture farmer": 3.71,
+                    "farmer": 3.11,
+                    "rancher": 2.81,
+                    "salvager": 1.21,
+                    "wealthy": 0.5,
+                    "officer": 1.56,
+                    "soldier": 1.52,
+                    "bantha herder": 3.02,
+                    "politician": 1.82,
+                    "city administrator": 1.75,
+                    "crime lord": 0.26,
+                    "skug boss": 0.48,
+                    "enforcer": 0.32,
+                    "majordomo": 0.42
+                },
+                "Mos Taike": {
+                    "moisture farmer": 2.71,
+                    "farmer": 2.23,
+                    "rancher": 5.82,
+                    "salvager": 1.43,
+                    "wealthy": 0.15,
+                    "officer": 0.12,
+                    "soldier": 0.51,
+                    "bantha herder": 6.72,
+                    "politician": 0.72,
+                    "city administrator": 0.51
+                },
+                "Wayfar": {
+                    "crime lord": 3.1,
+                    "skug boss": 4.75,
+                    "majordomo": 3.73,
+                    "enforcer": 5.8,
+                    "entertainer": 6.1,
+                    "officer": 0.021,
+                    "soldier": 0.032,
+                    "politician": 0.052,
+                    "city administrator": 0.12,
+                    "wealthy": 0.001,
+                    "security guard": 2.84,
+                    "bounty hunter": 3.63,
+                    "musician": 5.32
+                },
+                "Mos Espa": {
+                    "pilot": 1.51,
+                    "salvager": 1.21,
+                    "engineer": 1.85,
+                    "security guard": 1.12,
+                    "city administrator": 1.68,
+                    "politician": 1.14,
+                    "construction worker": 1.52,
+                    "factory worker": 1.83,
+                    "moisture farmer": 0.21,
+                    "bantha herder": 0.02,
+                    "farmer": 0.21,
+                    "rancher": 0.05
+                }
+            },
+            "allegiance": {
+                "Mos Eisley": {
+                    "Neutral": 3.5,
+                    "Imperial": 0.72
+                },
+                "Bestine": {
+                    "Imperial": 3.0,
+                    "Rebel": 0.5
+                },
+                "Anchorhead": {
+                    "Rebel": 7.5,
+                    "Imperial": 0.27
+                },
+                "Mos Espa": {
+                    "Neutral": 1.21,
+                    "Imperial": 1.11,
+                    "Rebel": 0.82
+                },
+                "Mos Taike": {
+                    "Neutral": 3.2
+                },
+                "Wayfar": {
+                    "Neutral": 5.2,
+                    "Imperial": 1.3,
+                    "Rebel": 0.05
+                }
+            },
+            "gender": {
+                "Mos Eisley": {
+                    "male": 1.02
+                }
+            }
+        },
+        "species": {
+            "profession": {
+                "human": {
+                    "wealthy": 1.12,
+                    "officer": 1.05,
+                    "soldier": 1.12
+                },
+                "twilek": {
+                    "entertainer": 4.3,
+                    "wealthy": 0.15,
+                    "crime lord": 0.05,
+                    "politician": 0.32,
+                    "city administrator": 0.65
+                },
+                "bothan": {
+                    "spy": 3.54,
+                    "officer": 2.21,
+                    "medic": 3.12
+                },
+                "sullustan": {
+                    "pilot": 1.89,
+                    "smuggler": 2.14
+                },
+                "trandoshan": {
+                    "enforcer": 2.1,
+                    "skug boss": 1.75,
+                    "crime lord": 2.1,
+                    "majordomo": 1.92,
+                    "security guard": 1.31,
+                    "soldier": 1.21,
+                    "officer": 1.13,
+                    "commando": 1.58,
+                    "entertainer": 0.19,
+                    "politician": 0.082,
+                    "city administrator": 0.56,
+                    "beast master": 1.12,
+                    "factory worker": 1.31,
+                    "salvager": 1.12,
+                    "construction worker": 1.28
+                }
+            },
+            "allegiance": {
+                "wookiee": {
+                    "Rebel": 5,
+                    "Imperial": 0.1
+                } 
+            },
+            "gender": {
+                "trandoshan": {
+                    "male": 1.52
+                },
+                "twilek": {
+                    "female": 4.43
+                }
+            }
+        },
+        "profession": {
+            "allegiance": {
+                "crime lord": {
+                    "Neutral": 1.52
+                },
+                "skug boss": {
+                    "Neutral": 1.48
+                },
+                "enforcer": {
+                    "Neutral": 1.21
+                }
+            },
+            "gender": {
+                "soldier": {
+                    "male": 2.52
+                },
+                "officer": {
+                    "male": 3.51
+                },
+                "commando": {
+                    "male": 5.81
+                },
+                "factory worker": {
+                    "male": 1.52
+                },
+                "construction worker": {
+                    "male": 1.32
+                },
+                "security guard": {
+                    "male": 1.21
+                },
+                "diner employee": {
+                    "female": 1.57
+                },
+                "entertainer": {
+                    "female": 3.78
+                },
+                "homeless": {
+                    "male": 4.38
+                },
+                "unemployed": {
+                    "male": 5.21
+                }
+            }
+        },
+        "allegiance": {
+            "gender": {
+                "Imperial": {
+                    "male": 1.21
+                },
+                "Rebel": {
+                    "female": 1.18
+                }
+            }
+        }
+    },
+    "override_distributions": [
+        {
+            "condition": {"profession": "soldier"},
+            "field": "age",
+            "distribution": {
+                "type": "truncated_normal",
+                "mean": 20,
+                "std": 5,
+                "lower": 18,
+                "upper": 40
+            }
+        }
+    ],
+    "transform_distributions": {
+        "age": {
+            "city": {
+                "Mos Eisley": {
+                    "mean shift": -5.1,
+                    "std mult": 0.94
+                },
+                "Bestine": {
+                    "mean shift": 5.2,
+                    "std mult": 1.05
+                },
+                "Anchorhead": {
+                    "mean shift": -8.1,
+                    "std mult": 1.05
+                },
+                "Mos Taike": {
+                    "mean shift": 10.5,
+                    "std mult": 0.32
+                },
+                "Mos Espa": {
+                    "mean shift": -2.1,
+                    "std mult": 1.13
+                },
+                "Wayfar": {
+                    "mean shift": -3.1,
+                    "std mult": 1.05
+                }
+            },
+            "species": {
+                "wookiee": {
+                    "mean shift": 150.0,
+                    "std mult": 5.0
+                },
+                "twilek": {
+                    "mean shift": -8.3,
+                    "std mult": 0.83
+                },
+                "ithorian": {
+                    "mean shift": 36.8,
+                    "std mult": 2.34
+                },
+                "sullustan": {
+                    "mean shift": -2.1,
+                    "std mult": 1.15
+                },
+                "trandoshan": {
+                    "mean shift": 4.7,
+                    "std mult": 0.72
+                },
+                "human": {
+                    "mean shift": -3.2,
+                    "std mult": 1.12
+                },
+                "bothan": {
+                    "mean shift": -2.1,
+                    "std mult": 1.21
+                },
+                "moncal": {
+                    "mean shift": 18.1,
+                    "std mult": 2.1
+                },
+                "rodian": {
+                    "mean shift": -4.7,
+                    "std mult": 0.81
+                },
+                "zabrak": {
+                    "mean shift": 1.2,
+                    "std mult": 0.91
+                }
+            },
+            "profession": {
+                "commando": {
+                    "mean shift": -11.2,
+                    "std mult": 0.23
+                },
+                "politician": {
+                    "mean shift": 17.2,
+                    "std mult": 0.84
+                },
+                "wealthy": {
+                    "mean shift": 20.2,
+                    "std mult": 0.75
+                },
+                "beast master": {
+                    "mean shift": -10.3,
+                    "std mult": 1.23
+                },
+                "entertainer": {
+                    "mean shift": -15.3,
+                    "std mult": 0.65
+                },
+                "chronicler": {
+                    "mean shift": 7.2,
+                    "std mult": 1.38
+                },
+                "Jedi": {
+                    "mean shift": 30.2,
+                    "std mult": 2.7
+                },
+                "bantha herder": {
+                    "mean shift": -2.3,
+                    "std mult": 1.32
+                },
+                "crime lord": {
+                    "mean shift": 16.9,
+                    "std mult": 1.43
+                },
+                "skug boss": {
+                    "mean shift": -3.5,
+                    "std mult": 1.21
+                },
+                "majordomo": {
+                    "mean shift": 3.8,
+                    "std mult": 0.81
+                },
+                "enforcer": {
+                    "mean shift": -5.7,
+                    "std mult": 0.81
+                }
+            },
+            "allegiance": {
+                "Imperial": {
+                    "mean shift": 1.2,
+                    "std mult": 0.91
+                },
+                "Rebel": {
+                    "mean shift": -0.8,
+                    "std mult": 1.07
+                },
+                "Neutral": {
+                    "mean shift": -0.31,
+                    "std mult": 1.023
+                }
+            },
+            "gender": {
+                "male": {
+                    "mean shift": -0.21,
+                    "std mult": 0.98
+                },
+                "female": {
+                    "mean shift": 0.11,
+                    "std mult": 1.032
+                }
+            }
+        }
+    },
+    "metadata": {
+        "planet": "Tatooine"
+    }
+}

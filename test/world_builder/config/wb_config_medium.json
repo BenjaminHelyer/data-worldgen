@@ -161,7 +161,7 @@
                 }
             },
             "species": {
-                "Wookiee": {
+                "wookiee": {
                     "mean shift": 150.0,
                     "std mult": 5.0
                 }
