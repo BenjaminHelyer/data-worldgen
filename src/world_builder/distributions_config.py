@@ -15,10 +15,17 @@ class NormalDist(BaseModel):
     std: float
 
 
-Distribution = Union[NormalDist]
+class LogNormalDist(BaseModel):
+    type: Literal["lognormal"]
+    mean: float
+    std: float
+
+
+Distribution = Union[NormalDist, LogNormalDist]
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
+    "lognormal": LogNormalDist,  # NEW
 }
 
 
@@ -49,6 +56,8 @@ def _sample(dist: Distribution) -> float:
     """
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
+    elif isinstance(dist, LogNormalDist):
+        return random.lognormvariate(dist.mean, dist.std)  # NEW
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 
