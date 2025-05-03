@@ -4,7 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from world_builder.population_config import load_config, PopulationConfig
-from world_builder.distributions_config import Distribution
+from world_builder.distributions_config import (
+    Distribution,
+    DistributionTransformOperation,
+    NormalDist,
+)
 
 parent_dir = Path(__file__).resolve().parent
 CONFIG_DIR = parent_dir / "config"
@@ -296,3 +300,86 @@ def test_invalid_override_distributions(config_json):
     with pytest.raises(ValidationError) as exc_info:
         PopulationConfig(**config_json)
     assert "override" in str(exc_info.value).lower()
+
+
+@pytest.mark.parametrize(
+    "transform_distributions",
+    [
+        # Only mean shift
+        {
+            "age": {
+                "species": {"Wookiee": DistributionTransformOperation(mean_shift=100.0)}
+            }
+        },
+        # Only std multiplier
+        {"age": {"city": {"Mos Eisley": DistributionTransformOperation(std_mult=2.0)}}},
+        # Both mean shift and std multiplier
+        {
+            "age": {
+                "city": {
+                    "Mos Eisley": DistributionTransformOperation(
+                        mean_shift=-5.0, std_mult=1.5
+                    )
+                },
+                "species": {"Human": DistributionTransformOperation(mean_shift=2.0)},
+            }
+        },
+        # Empty transform (permitted now)
+        {"age": {"species": {"Rodian": DistributionTransformOperation()}}},
+    ],
+)
+def test_valid_transform_distributions(transform_distributions):
+    config = PopulationConfig(
+        base_probabilities_finite={},
+        base_probabilities_distributions={
+            "age": NormalDist(type="normal", mean=30, std=5)
+        },
+        factors={},
+        override_distributions=[],
+        transform_distributions=transform_distributions,
+        metadata={},
+    )
+    assert config.transform_distributions == transform_distributions
+
+
+@pytest.mark.parametrize(
+    "transform_distributions",
+    [
+        # std_mult is negative
+        {
+            "age": {
+                "city": {"Mos Eisley": DistributionTransformOperation(std_mult=-1.0)}
+            }
+        },
+        # std_mult is zero
+        {"age": {"city": {"Mos Eisley": DistributionTransformOperation(std_mult=0.0)}}},
+        # mean_shift is NaN
+        {
+            "age": {
+                "species": {
+                    "Wookiee": DistributionTransformOperation(mean_shift=float("nan"))
+                }
+            }
+        },
+        # std_mult is infinity
+        {
+            "age": {
+                "species": {
+                    "Wookiee": DistributionTransformOperation(std_mult=float("inf"))
+                }
+            }
+        },
+    ],
+)
+def test_invalid_transform_distributions(transform_distributions):
+    with pytest.raises(ValidationError):
+        PopulationConfig(
+            base_probabilities_finite={},
+            base_probabilities_distributions={
+                "age": NormalDist(type="normal", mean=30, std=5)
+            },
+            factors={},
+            override_distributions=[],
+            transform_distributions=transform_distributions,
+            metadata={},
+        )

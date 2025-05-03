@@ -15,10 +15,16 @@ from typing import Dict, List
 from typing_extensions import Self
 import json
 from pathlib import Path
+import math
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from world_builder.distributions_config import Distribution, DistributionOverride
+from world_builder.distributions_config import (
+    Distribution,
+    DistributionOverride,
+    DistributionTransformMap,
+    DistributionTransformOperation,
+)
 
 
 class PopulationConfig(BaseModel):
@@ -69,6 +75,15 @@ class PopulationConfig(BaseModel):
         description=(
             "Optional overrides for base distributions based on specific field conditions. "
             "Overrides are processed in order; the first match applies."
+        ),
+    )
+
+    # transformations to apply to the probability distribution section
+    transform_distributions: DistributionTransformMap = Field(
+        default_factory=dict,
+        description=(
+            "Optional field-to-trait-based transformations for distributions. "
+            "E.g., age -> city -> 'Mos Eisley' -> mean shift."
         ),
     )
 
@@ -237,6 +252,63 @@ class PopulationConfig(BaseModel):
                             f"Override #{i} condition value '{cond_val}' is not valid for key '{cond_key}'. "
                             f"Expected one of: {list(allowed_values.keys())}"
                         )
+        return self
+
+    @model_validator(mode="after")
+    def _validate_transform_structure(self) -> "PopulationConfig":
+        """
+        Validates that the structure of transform_distributions is well-formed:
+        - Top-level keys are distribution fields.
+        - Each maps to a dict of condition fields (e.g., species, city).
+        - Each maps to dicts of values (e.g., 'Wookiee') to transform objects.
+        """
+        for dist_field, trait_map in self.transform_distributions.items():
+            if not isinstance(trait_map, dict):
+                raise ValueError(
+                    f"Transform for '{dist_field}' must be a dictionary of traits."
+                )
+
+            for trait_name, value_map in trait_map.items():
+                if not isinstance(value_map, dict):
+                    raise ValueError(
+                        f"Trait '{trait_name}' under '{dist_field}' must map to a dictionary."
+                    )
+
+                for trait_value, transform in value_map.items():
+                    if not isinstance(transform, DistributionTransformOperation):
+                        raise ValueError(
+                            f"Invalid transform object for {dist_field}.{trait_name}.{trait_value}: must be a DistributionTransformOperation."
+                        )
+        return self
+
+    @model_validator(mode="after")
+    def _validate_transform_values(self) -> "PopulationConfig":
+        """
+        Validates numerical correctness of each DistributionTransformOperation:
+        - mean_shift must be finite, if present
+        - std_mult must be positive and finite, if present
+        - (No enforcement of presence — empty transforms are allowed for forward compatibility)
+        """
+        for dist_field, trait_map in self.transform_distributions.items():
+            for trait_name, value_map in trait_map.items():
+                for trait_value, transform in value_map.items():
+                    if transform.mean_shift is not None:
+                        if math.isnan(transform.mean_shift) or math.isinf(
+                            transform.mean_shift
+                        ):
+                            raise ValueError(
+                                f"Invalid mean_shift for {dist_field}.{trait_name}.{trait_value}: must be a finite number."
+                            )
+
+                    if transform.std_mult is not None:
+                        if (
+                            transform.std_mult <= 0
+                            or math.isnan(transform.std_mult)
+                            or math.isinf(transform.std_mult)
+                        ):
+                            raise ValueError(
+                                f"Invalid std_mult for {dist_field}.{trait_name}.{trait_value}: must be a positive finite number."
+                            )
         return self
 
 

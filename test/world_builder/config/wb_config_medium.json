@@ -153,6 +153,21 @@
             }
         }
     ],
+    "transform_distributions": {
+        "age": {
+            "city": {
+                "Mos Eisley": {
+                    "mean shift": -2.5
+                }
+            },
+            "species": {
+                "Wookiee": {
+                    "mean shift": 150.0,
+                    "std mult": 5.0
+                }
+            }
+        }
+    },
     "metadata": {
         "planet": "Tatooine"
     }

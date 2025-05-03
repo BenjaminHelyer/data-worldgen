@@ -5,7 +5,7 @@ Holds the Pydantic BaseModels and distribution objects for various probaility di
 import random
 from typing import Literal, Union, Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 from scipy.stats import truncnorm
 
 
@@ -27,6 +27,21 @@ class TruncatedNormalDist(BaseModel):
     std: float
     lower: float = Field(description="Lower bound (inclusive)")
     upper: float = Field(float("inf"), description="Upper bound (inclusive)")
+
+
+class DistributionTransformOperation(BaseModel):
+    mean_shift: float | None = None
+    std_mult: float | None = None
+
+
+# Maps values like "Mos Eisley" or "Wookiee" to transforms
+DistributionTransformCondition = Dict[str, DistributionTransformOperation]
+
+# Maps fields like "city", "species" to their value->transform mappings
+DistributionTransformField = Dict[str, DistributionTransformCondition]
+
+# Maps target distribution fields like "age" to the field-based conditions
+DistributionTransformMap = Dict[str, DistributionTransformField]
 
 
 Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist]
