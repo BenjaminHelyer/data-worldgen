@@ -104,7 +104,7 @@ def _sample_finite_fields(
     sampled: Dict[str, Any],
 ) -> None:
     """
-    Mutates `sampled` by sampling each finite categorical field in topo order
+    Mutates `sampled` by sampling each finite categorical field in topological order
     (respecting config.factors). Any field already present in `sampled` is skipped.
     """
     finite_fields = list(config.base_probabilities_finite.keys())
@@ -136,8 +136,10 @@ def _apply_factor_multipliers(
     all_factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
 ) -> Dict[str, float]:
     """
+    Applies the factor multipliers.
+
     Adjust `base_probs` for `target_field` by walking:
-      source_field → target_field → source_value → {target_value: multiplier}
+      source_field -> target_field -> source_value -> {target_value: multiplier}
     """
     adjusted = base_probs.copy()
 

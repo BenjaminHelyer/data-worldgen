@@ -185,3 +185,4 @@ names/
 *.pdf
 planets/
 custom_config.json
+custom_wb.py
