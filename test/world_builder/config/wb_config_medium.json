@@ -73,9 +73,9 @@
     },
     "base_probabilities_distributions": {
         "age": {
-            "type": "normal",
+            "type": "lognormal",
             "mean": 30,
-            "std": 20
+            "std": 15
         }
     },
     "factors": {
@@ -145,7 +145,7 @@
             "condition": {"profession": "soldier"},
             "field": "age",
             "distribution": {
-                "type": "normal",
+                "type": "lognormal",
                 "mean": 20,
                 "std": 0.3
             }

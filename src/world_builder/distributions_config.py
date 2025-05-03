@@ -3,10 +3,10 @@ Holds the Pydantic BaseModels and distribution objects for various probaility di
 """
 
 import random
-
 from typing import Literal, Union, Dict, Any
 
 from pydantic import BaseModel, Field
+from scipy.stats import truncnorm
 
 
 class NormalDist(BaseModel):
@@ -21,11 +21,20 @@ class LogNormalDist(BaseModel):
     std: float
 
 
-Distribution = Union[NormalDist, LogNormalDist]
+class TruncatedNormalDist(BaseModel):
+    type: Literal["truncnorm"]
+    mean: float
+    std: float
+    lower: float = Field(description="Lower bound (inclusive)")
+    upper: float = Field(float("inf"), description="Upper bound (inclusive)")
+
+
+Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist]
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
-    "lognormal": LogNormalDist,  # NEW
+    "lognormal": LogNormalDist,
+    "truncated_normal": TruncatedNormalDist,
 }
 
 
@@ -57,7 +66,11 @@ def _sample(dist: Distribution) -> float:
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
     elif isinstance(dist, LogNormalDist):
-        return random.lognormvariate(dist.mean, dist.std)  # NEW
+        return random.lognormvariate(dist.mean, dist.std)
+    elif isinstance(dist, TruncatedNormalDist):
+        a = (dist.lower - dist.mean) / dist.std
+        b = (dist.upper - dist.mean) / dist.std
+        return truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std)
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 
