@@ -22,7 +22,7 @@ class LogNormalDist(BaseModel):
 
 
 class TruncatedNormalDist(BaseModel):
-    type: Literal["truncnorm"]
+    type: Literal["truncated_normal"]
     mean: float
     std: float
     lower: float = Field(description="Lower bound (inclusive)")

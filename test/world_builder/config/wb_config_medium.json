@@ -145,9 +145,11 @@
             "condition": {"profession": "soldier"},
             "field": "age",
             "distribution": {
-                "type": "lognormal",
+                "type": "truncated_normal",
                 "mean": 20,
-                "std": 0.3
+                "std": 5,
+                "lower": 18,
+                "upper": 40
             }
         }
     ],
