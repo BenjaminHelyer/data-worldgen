@@ -184,3 +184,4 @@ names/
 *.txt
 *.pdf
 planets/
+custom_config.json
