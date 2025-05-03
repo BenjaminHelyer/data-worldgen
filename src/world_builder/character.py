@@ -157,6 +157,49 @@ def _sample_finite_fields(config: PopulationConfig) -> Dict[str, Any]:
     return sampled
 
 
+def _sample_distribution_fields_with_overrides(
+    config: PopulationConfig, sampled: Dict[str, Any]
+) -> None:
+    """
+    Samples all fields defined in `base_probabilities_distributions`, applying conditional
+    overrides if applicable.
+
+    Behavior:
+    - For each distributional field (e.g., "age"), use the base distribution by default.
+    - If any overrides are defined in `config.override_distributions`, evaluate them **in order**.
+    - The **first matching override** (based on sampled field values) is used to replace the base distribution.
+    - If no override matches, fall back to the original base distribution.
+
+    A match occurs when:
+    - The override's `field` matches the current category, AND
+    - All key-value pairs in the override's `condition` match what's already sampled.
+
+    Example:
+        If category = "age" and sampled = {"profession": "soldier"},
+        and override.condition = {"profession": "soldier"},
+        then override.distribution replaces base_distributions["age"].
+
+    This function modifies the `sampled` dict in-place.
+    """
+    for category, base_dist in config.base_probabilities_distributions.items():
+        final_dist = base_dist  # Default to base distribution
+
+        if config.override_distributions:
+            for override in config.override_distributions:
+                if override.field != category:
+                    continue
+                if all(sampled.get(k) == v for k, v in override.condition.items()):
+                    final_dist = override.distribution
+                    break  # First match wins
+
+        if not isinstance(final_dist, Distribution):
+            raise TypeError(
+                f"Expected Distribution for '{category}', got {type(final_dist)}"
+            )
+
+        sampled[category] = sample_from_config(final_dist)
+
+
 def create_character(config: PopulationConfig) -> Character:
     """
     Factory for Character. Samples discrete categories in the order specified
@@ -166,31 +209,7 @@ def create_character(config: PopulationConfig) -> Character:
     sampled: Dict[str, Any] = {}
 
     sampled.update(_sample_finite_fields(config))
-
-    for category, dist in config.base_probabilities_distributions.items():
-        final_dist = dist  # default to base distribution
-
-        if config.override_distributions:
-            # overrides are applied in order, in precedence for which they appear
-            for override in config.override_distributions:
-                if override.field != category:
-                    continue
-                if all(
-                    sampled.get(key) == val for key, val in override.condition.items()
-                ):
-                    final_dist = override.distribution
-                    break  # stop at first matching override
-
-        if not isinstance(final_dist, Distribution):
-            raise TypeError(
-                f"Expected Distribution for '{category}', got {type(final_dist)}"
-            )
-
-        sampled[category] = sample_from_config(final_dist)
-
-    for field_name, field_value in config.metadata.items():
-        sampled[field_name] = field_value
-
+    _sample_distribution_fields_with_overrides(config, sampled)
     _assign_chain_code(sampled)
     _assign_names(sampled)
     _assign_metadata(sampled, config)
