@@ -56,6 +56,72 @@ def _apply_factors(
     return adjusted
 
 
+def _assign_metadata(sampled: Dict[str, Any], config: PopulationConfig) -> None:
+    """
+    Assigns constant metadata fields to the character.
+
+    Metadata is an optional dictionary specified in the config, consisting of string key-value pairs.
+    These fields are not sampled probabilistically; they are copied directly as constants into the character.
+    Common use cases might include static identifiers like planet name, data version, or authoring info.
+
+    Example:
+        config.metadata = {"planet": "Tatooine", "author": "Obi-Wan"}
+        ➞ sampled["planet"] = "Tatooine"
+           sampled["author"] = "Obi-Wan"
+    """
+    for field_name, field_value in config.metadata.items():
+        sampled[field_name] = field_value
+
+
+def _assign_chain_code(sampled: Dict[str, Any]) -> None:
+    """
+    Generates and assigns a unique chain code to the character.
+
+    The chain code is a UUIDv7-like identifier encoding species and gender information.
+    It is useful for later tracing or decoding metadata about the character.
+
+    Format (example):
+        "CC-HUM-M-0196940f-92d3-7000-97b8-f3f9cf01b7f3"
+
+    Components:
+        - "CC" prefix
+        - Species abbreviation (e.g., "HUM" for human, "ROD" for rodian)
+        - Gender abbreviation ("M" or "F")
+        - A UUIDv7-like suffix that encodes time-based uniqueness
+
+    The species and gender are pulled from the sampled fields. If missing, defaults are blank.
+    """
+    species = sampled.get("species", "")
+    is_female = str(sampled.get("gender", "")).lower() == "female"
+    sampled["chain_code"] = generate_chain_code(species, is_female)
+
+
+def _assign_names(sampled: Dict[str, Any]) -> None:
+    """
+    Generates and assigns a first name and surname for the character.
+
+    Name generation is performed using a generative model (e.g., a Markov chain),
+    trained separately for male and female first names, and for surnames by species.
+
+    Details:
+        - First name is generated using either `generate_female_first_name()` or
+          `generate_male_first_name()` based on the gender field.
+        - Surname is generated using `generate_surname(species=...)`, allowing species-specific naming patterns.
+
+    These generative functions ensure name plausibility while allowing creative variation.
+
+    Example output:
+        - first_name: "Sa" (generated for female)
+        - surname: "Saokaell" (generated for a human)
+    """
+    species = sampled.get("species", "")
+    is_female = str(sampled.get("gender", "")).lower() == "female"
+    sampled["first_name"] = (
+        generate_female_first_name() if is_female else generate_male_first_name()
+    )
+    sampled["surname"] = generate_surname(species=species)
+
+
 def create_character(config: PopulationConfig) -> Character:
     """
     Factory for Character. Samples discrete categories in the order specified
@@ -87,25 +153,24 @@ def create_character(config: PopulationConfig) -> Character:
             for override in config.override_distributions:
                 if override.field != category:
                     continue
-                if all(sampled.get(key) == val for key, val in override.condition.items()):
+                if all(
+                    sampled.get(key) == val for key, val in override.condition.items()
+                ):
                     final_dist = override.distribution
                     break  # stop at first matching override
 
         if not isinstance(final_dist, Distribution):
-            raise TypeError(f"Expected Distribution for '{category}', got {type(final_dist)}")
+            raise TypeError(
+                f"Expected Distribution for '{category}', got {type(final_dist)}"
+            )
 
         sampled[category] = sample_from_config(final_dist)
 
     for field_name, field_value in config.metadata.items():
         sampled[field_name] = field_value
 
-    species = sampled.get("species", "")
-    is_female = str(sampled.get("gender", "")).lower() == "female"
-    sampled["chain_code"] = generate_chain_code(species, is_female)
-
-    sampled["first_name"] = (
-        generate_female_first_name() if is_female else generate_male_first_name()
-    )
-    sampled["surname"] = generate_surname(species=species)
+    _assign_chain_code(sampled)
+    _assign_names(sampled)
+    _assign_metadata(sampled, config)
 
     return Character(**sampled)

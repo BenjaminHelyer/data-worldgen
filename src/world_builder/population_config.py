@@ -72,7 +72,6 @@ class PopulationConfig(BaseModel):
         ),
     )
 
-
     # catch-all dict for any miscellaneous, constant metadata fields
     metadata: Dict[str, str] = Field(
         default_factory=dict,
@@ -212,7 +211,7 @@ class PopulationConfig(BaseModel):
                             f"but '{influenced_var}' appears at position {pos_i} before '{factor_var}' ({pos_f}) in factors."
                         )
         return self
-    
+
     @model_validator(mode="after")
     def validate_override_distributions(self) -> Self:
         """

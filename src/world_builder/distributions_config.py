@@ -62,8 +62,8 @@ def sample_from_config(config: dict) -> float:
 
 class DistributionOverride(BaseModel):
     """
-    Represents a conditional override of a base distribution. 
-    
+    Represents a conditional override of a base distribution.
+
     For example, we might draw 'age' from a different distribution if 'profession' is 'soldier'.
     """
 
