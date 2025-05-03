@@ -189,7 +189,7 @@ def _sample_distribution_fields_with_overrides(
     This function modifies the `sampled` dict in-place.
     """
     for category, base_dist in config.base_probabilities_distributions.items():
-        final_dist = base_dist  # Default to base distribution
+        final_dist = base_dist  # default to base distribution
 
         if config.override_distributions:
             for override in config.override_distributions:
@@ -197,7 +197,7 @@ def _sample_distribution_fields_with_overrides(
                     continue
                 if all(sampled.get(k) == v for k, v in override.condition.items()):
                     final_dist = override.distribution
-                    break  # First match wins
+                    break  # first match wins
 
         if not isinstance(final_dist, Distribution):
             raise TypeError(
