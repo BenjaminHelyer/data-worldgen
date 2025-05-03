@@ -33,42 +33,6 @@ class Character:
         return f"Character({props})"
 
 
-def _apply_factors(
-    base_probs: Dict[str, float],
-    target_field: str,
-    sampled_values: Dict[str, Any],
-    all_factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
-) -> Dict[str, float]:
-    """
-    Adjusts the base probabilities for `target_field` using multipliers
-    defined in `all_factors`, based on already sampled fields.
-
-    This supports factor graphs of the form:
-      source_field -> target_field -> source_value -> {target_value: multiplier}
-    """
-    adjusted = base_probs.copy()
-
-    for source_field, target_map in all_factors.items():
-        if target_field not in target_map:
-            continue
-
-        source_value = sampled_values.get(source_field)
-        if source_value is None:
-            continue
-
-        multipliers = target_map[target_field].get(source_value, {})
-        for target_value, multiplier in multipliers.items():
-            if target_value in adjusted:
-                adjusted[target_value] *= multiplier
-
-    # Normalize the adjusted probabilities
-    total = sum(adjusted.values())
-    if total > 0:
-        adjusted = {k: v / total for k, v in adjusted.items()}
-
-    return adjusted
-
-
 def _assign_metadata(sampled: Dict[str, Any], config: PopulationConfig) -> None:
     """
     Assigns constant metadata fields to the character.
@@ -135,37 +99,67 @@ def _assign_names(sampled: Dict[str, Any]) -> None:
     sampled["surname"] = generate_surname(species=species)
 
 
-def _sample_finite_fields(config: PopulationConfig) -> Dict[str, Any]:
+def _sample_finite_fields(
+    config: PopulationConfig,
+    sampled: Dict[str, Any],
+) -> None:
     """
-    Samples values for all finite categorical fields using base probabilities and
-    modifying them based on conditional factors from previously sampled fields.
-
-    The sampling respects the topological order of `factors` to enable causal consistency.
+    Mutates `sampled` by sampling each finite categorical field in topo order
+    (respecting config.factors). Any field already present in `sampled` is skipped.
     """
-    sampled: Dict[str, Any] = {}
-
     finite_fields = list(config.base_probabilities_finite.keys())
 
-    # determine the sampling order: first factor targets, then independent fields
-    ordered_fields = [field for field in config.factors if field in finite_fields]
-    ordered_fields += [field for field in finite_fields if field not in ordered_fields]
+    # sampling order: first any fields that appear as factor-targets, then the rest
+    ordered = [field for field in config.factors if field in finite_fields]
+    ordered += [field for field in finite_fields if field not in ordered]
 
-    for field in ordered_fields:
+    for field in ordered:
+        if field in sampled:
+            continue
+
         base_probs = config.base_probabilities_finite[field]
-
-        # adjust base_probs if the field is influenced by other sampled fields
-        adjusted_probs = _apply_factors(
+        adjusted = _apply_factor_multipliers(
             base_probs=base_probs,
             target_field=field,
             sampled_values=sampled,
-            all_factors=config.factors
+            all_factors=config.factors,
         )
 
-        # sample one value based on adjusted probabilities
-        options, weights = zip(*adjusted_probs.items())
-        sampled[field] = random.choices(population=options, weights=weights, k=1)[0]
+        choices, weights = zip(*adjusted.items())
+        sampled[field] = random.choices(choices, weights=weights, k=1)[0]
 
-    return sampled
+
+def _apply_factor_multipliers(
+    base_probs: Dict[str, float],
+    target_field: str,
+    sampled_values: Dict[str, Any],
+    all_factors: Dict[str, Dict[str, Dict[str, Dict[str, float]]]],
+) -> Dict[str, float]:
+    """
+    Adjust `base_probs` for `target_field` by walking:
+      source_field → target_field → source_value → {target_value: multiplier}
+    """
+    adjusted = base_probs.copy()
+
+    for source_field, target_map in all_factors.items():
+        # only if this source field actually influences our target
+        if target_field not in target_map:
+            continue
+
+        source_val = sampled_values.get(source_field)
+        if source_val is None:
+            continue
+
+        for t_val, mult in target_map[target_field].get(source_val, {}).items():
+            if t_val in adjusted:
+                adjusted[t_val] *= mult
+
+    total = sum(adjusted.values())
+    if total > 0:
+        for k in adjusted:
+            adjusted[k] /= total
+
+    return adjusted
 
 
 def _sample_distribution_fields_with_overrides(
@@ -219,7 +213,7 @@ def create_character(config: PopulationConfig) -> Character:
     """
     sampled: Dict[str, Any] = {}
 
-    sampled.update(_sample_finite_fields(config))
+    _sample_finite_fields(config, sampled)
     _sample_distribution_fields_with_overrides(config, sampled)
     _assign_chain_code(sampled)
     _assign_names(sampled)

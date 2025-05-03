@@ -1,5 +1,6 @@
 from uuid import UUID
 from types import SimpleNamespace
+from typing_extensions import Dict, Any
 from collections import Counter
 
 import pytest
@@ -120,7 +121,8 @@ def test_assign_names_fields_present(sampled):
 )
 def test_sample_finite_fields(finite_probs, factors, expected_keys, expected_choices):
     config = SimpleNamespace(base_probabilities_finite=finite_probs, factors=factors)
-    sampled = _sample_finite_fields(config)
+    sampled: Dict[str, Any] = {}
+    _sample_finite_fields(config, sampled)
 
     assert set(sampled.keys()) == set(expected_keys)
     for key in expected_keys:
@@ -133,72 +135,93 @@ class DummyConfig:
         self.factors = factors
 
 
-@pytest.mark.parametrize("base_probs, factors, sampled_fixed, target_field, expected_dominant", [
-    # Case 1: Base probs are uniform, but 'city' factor gives 1000x multiplier to 'sullustan'
-    (
-        {"species": {"sullustan": 0.2, "zabrak": 0.2, "trandoshan": 0.2, "rodian": 0.2, "moncal": 0.2}},
-        {
-            "city": {
+@pytest.mark.parametrize(
+    "base_probs, factors, sampled_fixed, target_field, expected_dominant",
+    [
+        # Case 1: Base probs are uniform, but 'city' factor gives 1000x multiplier to 'sullustan'
+        (
+            {
                 "species": {
-                    "Mos Eisley": {
-                        "sullustan": 1000.0,
-                        "zabrak": 1.0,
-                        "trandoshan": 1.0,
-                        "rodian": 1.0,
-                        "moncal": 1.0
+                    "sullustan": 0.2,
+                    "zabrak": 0.2,
+                    "trandoshan": 0.2,
+                    "rodian": 0.2,
+                    "moncal": 0.2,
+                }
+            },
+            {
+                "city": {
+                    "species": {
+                        "Mos Eisley": {
+                            "sullustan": 1000.0,
+                            "zabrak": 1.0,
+                            "trandoshan": 1.0,
+                            "rodian": 1.0,
+                            "moncal": 1.0,
+                        }
                     }
                 }
-            }
-        },
-        {"city": "Mos Eisley"},
-        "species",
-        "sullustan"
-    ),
-
-    # Case 2: No influencing factor, so uniform distribution expected
-    (
-        {"species": {"sullustan": 0.25, "zabrak": 0.25, "trandoshan": 0.25, "rodian": 0.25}},
-        {},
-        {},
-        "species",
-        None  # No dominant outcome expected
-    ),
-
-    # Case 3: Factor favors 'moncal' by a large margin
-    (
-        {"species": {"sullustan": 0.1, "zabrak": 0.1, "trandoshan": 0.1, "rodian": 0.1, "moncal": 0.6}},
-        {
-            "planet": {
+            },
+            {"city": "Mos Eisley"},
+            "species",
+            "sullustan",
+        ),
+        # Case 2: No influencing factor, so uniform distribution expected
+        (
+            {
                 "species": {
-                    "Dac": {
-                        "moncal": 1000.0
-                    }
+                    "sullustan": 0.25,
+                    "zabrak": 0.25,
+                    "trandoshan": 0.25,
+                    "rodian": 0.25,
                 }
-            }
-        },
-        {"planet": "Dac"},
-        "species",
-        "moncal"
-    ),
-])
-def test_sample_finite_fields_respects_factors(base_probs, factors, sampled_fixed, target_field, expected_dominant):
+            },
+            {},
+            {},
+            "species",
+            None,  # No dominant outcome expected
+        ),
+        # Case 3: Factor favors 'moncal' by a large margin
+        (
+            {
+                "species": {
+                    "sullustan": 0.1,
+                    "zabrak": 0.1,
+                    "trandoshan": 0.1,
+                    "rodian": 0.1,
+                    "moncal": 0.6,
+                }
+            },
+            {"planet": {"species": {"Dac": {"moncal": 1000.0}}}},
+            {"planet": "Dac"},
+            "species",
+            "moncal",
+        ),
+    ],
+)
+def test_sample_finite_fields_respects_factors(
+    base_probs, factors, sampled_fixed, target_field, expected_dominant
+):
     NUM_SAMPLES = 500
     config = DummyConfig(base_probabilities_finite=base_probs, factors=factors)
 
     def wrapped_sampler():
         sampled = sampled_fixed.copy()
-        base = _sample_finite_fields(config)
-        sampled.update(base)
+        _sample_finite_fields(config, sampled)
         return sampled[target_field]
 
     results = Counter(wrapped_sampler() for _ in range(NUM_SAMPLES))
 
     if expected_dominant:
         dominant_ratio = results[expected_dominant] / NUM_SAMPLES
-        assert dominant_ratio > 0.8, f"Expected '{expected_dominant}' to dominate, got ratio {dominant_ratio:.2f}"
+        assert (
+            dominant_ratio > 0.8
+        ), f"Expected '{expected_dominant}' to dominate, got ratio {dominant_ratio:.2f}"
     else:
         expected_count = NUM_SAMPLES / len(base_probs[target_field])
         for k in base_probs[target_field]:
             count = results[k]
             ratio = count / expected_count
-            assert 0.7 < ratio < 1.3, f"Expected near-uniform distribution for '{k}', got ratio {ratio:.2f}"
+            assert (
+                0.7 < ratio < 1.3
+            ), f"Expected near-uniform distribution for '{k}', got ratio {ratio:.2f}"
