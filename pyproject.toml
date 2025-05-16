@@ -20,8 +20,16 @@ dependencies = [
     "pyarrow",
     "beautifulsoup4",
     "requests",
-    "pytest"
+    "pytest",
+    "pylint"
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pylint]
+max-line-length = 100
+disable = [
+    "R0903",
+]
+fail-under = 7.0
