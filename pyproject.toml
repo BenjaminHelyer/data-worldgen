@@ -10,7 +10,17 @@ description = "A world generation toolkit"
 readme = "README.md"
 
 dependencies = [
-
+    "pandas",
+    "numpy",
+    "scipy",
+    "streamlit",
+    "altair",
+    "matplotlib",
+    "pydantic>=2.0.0",
+    "pyarrow",
+    "beautifulsoup4",
+    "requests",
+    "pytest"
 ]
 
 [tool.setuptools.packages.find]
