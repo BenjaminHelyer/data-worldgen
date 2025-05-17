@@ -102,6 +102,32 @@ sudo tee /etc/logrotate.d/world-builder << EOF
 }
 EOF
 
+# Install CloudWatch Agent
+echo "Installing CloudWatch Agent..."
+sudo dnf install -y amazon-cloudwatch-agent
+if [ $? -eq 0 ]; then
+    echo "CloudWatch Agent installed successfully"
+else
+    echo "Error installing CloudWatch Agent"
+    # We don't exit here, as the main application might still function
+fi
+
+# Copy CloudWatch Agent config from repo example
+echo "Copying CloudWatch Agent config from repo example..."
+CLOUDWATCH_CONFIG_SRC="$APP_DIR/data-worldgen/examples/world_builder/wb_cloudwatch_agent.json"
+CLOUDWATCH_CONFIG_DEST="/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
+sudo cp "$CLOUDWATCH_CONFIG_SRC" "$CLOUDWATCH_CONFIG_DEST"
+
+# Optionally, you may want to replace variables in the config file (project_name, environment) using sed
+sudo sed -i "s/\\${project_name}/$project_name/g" "$CLOUDWATCH_CONFIG_DEST"
+sudo sed -i "s/\\${environment}/$environment/g" "$CLOUDWATCH_CONFIG_DEST"
+
+# Start and enable CloudWatch Agent
+echo "Starting CloudWatch Agent..."
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:$CLOUDWATCH_CONFIG_DEST -s
+sudo systemctl enable amazon-cloudwatch-agent
+
 # Start service
 echo "Configuring and starting service..."
 sudo systemctl daemon-reload

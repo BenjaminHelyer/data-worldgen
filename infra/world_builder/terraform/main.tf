@@ -69,6 +69,36 @@ resource "aws_iam_role_policy" "s3_access" {
   })
 }
 
+resource "aws_iam_policy" "cloudwatch_agent_policy" {
+  name        = "${var.project_name}-${var.environment}-cloudwatch-agent-policy"
+  description = "Policy for CloudWatch agent to send logs and metrics"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "cloudwatch:PutMetricData",
+          "ec2:DescribeTags",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups",
+          "logs:CreateLogStream",
+          "logs:CreateLogGroup"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent_attach" {
+  role       = aws_iam_role.world_builder_ec2_role.name
+  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+
 # EC2 instance
 resource "aws_instance" "world_builder" {
   ami                    = var.ami_id
