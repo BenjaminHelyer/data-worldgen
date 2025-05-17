@@ -119,10 +119,6 @@ CLOUDWATCH_CONFIG_DEST="/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-a
 sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
 sudo cp "$CLOUDWATCH_CONFIG_SRC" "$CLOUDWATCH_CONFIG_DEST"
 
-# Optionally, you may want to replace variables in the config file (project_name, environment) using sed
-sudo sed -i "s/\\${project_name}/$project_name/g" "$CLOUDWATCH_CONFIG_DEST"
-sudo sed -i "s/\\${environment}/$environment/g" "$CLOUDWATCH_CONFIG_DEST"
-
 # Start and enable CloudWatch Agent
 echo "Starting CloudWatch Agent..."
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:$CLOUDWATCH_CONFIG_DEST -s

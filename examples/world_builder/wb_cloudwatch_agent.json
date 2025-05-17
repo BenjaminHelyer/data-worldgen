@@ -62,13 +62,13 @@
         "collect_list": [
           {
             "file_path": "/var/log/world-builder/app.log",
-            "log_group_name": "/${project_name}/${environment}/app",
+            "log_group_name": "/world-builder/dev/app",
             "log_stream_name": "{instance_id}/app.log",
             "timezone": "UTC"
           },
           {
             "file_path": "/var/log/user-data.log",
-            "log_group_name": "/${project_name}/${environment}/user-data",
+            "log_group_name": "/world-builder/dev/user-data",
             "log_stream_name": "{instance_id}/user-data.log",
             "timezone": "UTC"
           }
