@@ -81,8 +81,8 @@ Type=simple
 User=world-builder
 WorkingDirectory=$APP_DIR
 Environment=PATH=$APP_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-ExecStart=$APP_DIR/venv/bin/python /opt/world-builder/data-worldgen/data-worldgen/examples/world_builder/wb_s3_example.py
-Restart=always
+ExecStart=$APP_DIR/venv/bin/python /opt/world-builder/data-worldgen/data-worldgen/examples/world_builder/wb_benchmark.py
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
