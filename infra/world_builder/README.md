@@ -85,16 +85,35 @@ infra/
    ssh ec2-user@<instance-ip> 'sudo tail -f /var/log/world-builder/app.log'
    ```
 
-## Contributing
+## Debugging & Monitoring
 
-1. Create a feature branch
-2. Make your changes
-3. Test thoroughly
-4. Submit a pull request
+### Check User Data Script Output
+After launching an instance, SSH in and run:
 
-## Notes
+```bash
+sudo cat /var/log/user-data.log
+```
+This will show the output and any errors from the user data script that runs at boot.
 
-- The EC2 instance runs as a systemd service
-- Logs are automatically rotated daily
-- The application runs under a dedicated service user
-- Instance storage is encrypted by default 
+### Monitor the world-builder systemd Service
+
+- **Check service status:**
+  ```bash
+  sudo systemctl status world-builder
+  ```
+- **View service logs:**
+  ```bash
+  sudo journalctl -u world-builder
+  ```
+- **Follow logs in real time:**
+  ```bash
+  sudo journalctl -u world-builder -f
+  ```
+- **Restart the service:**
+  ```bash
+  sudo systemctl restart world-builder
+  ```
+- **Reload systemd after editing the service file:**
+  ```bash
+  sudo systemctl daemon-reload
+  ```
