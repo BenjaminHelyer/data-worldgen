@@ -21,7 +21,9 @@ dependencies = [
     "beautifulsoup4",
     "requests",
     "pytest",
-    "pylint"
+    "pylint",
+    "boto3",
+    "botocore"
 ]
 
 [tool.setuptools.packages.find]
