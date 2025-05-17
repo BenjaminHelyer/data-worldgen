@@ -15,10 +15,10 @@ output "instance_private_ip" {
 
 output "iam_role_name" {
   description = "Name of the IAM role created for the EC2 instance"
-  value       = aws_iam_role.ec2_role.name
+  value       = aws_iam_role.world_builder_ec2_role.name
 }
 
 output "iam_role_arn" {
   description = "ARN of the IAM role created for the EC2 instance"
-  value       = aws_iam_role.ec2_role.arn
+  value       = aws_iam_role.world_builder_ec2_role.arn
 } 

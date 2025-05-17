@@ -17,7 +17,7 @@ else
 fi
 
 echo "Installing required packages..."
-sudo dnf install -y python3-pip git
+sudo dnf install -y git python3.11
 if [ $? -eq 0 ]; then
     echo "Required packages installed successfully"
 else
@@ -26,7 +26,7 @@ else
 fi
 
 # Create app directory
-APP_DIR="/opt/world-builder"
+APP_DIR="/opt/world-builder/data-worldgen"
 echo "Creating application directory: $APP_DIR"
 sudo mkdir -p $APP_DIR
 sudo chown ec2-user:ec2-user $APP_DIR
@@ -35,17 +35,10 @@ echo "Changed to directory: $(pwd)"
 
 # Set up Python environment
 echo "Setting up Python virtual environment..."
-python3 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
-echo "Python version: $(python3 --version)"
-echo "Pip version: $(pip --version)"
-
-# Install dependencies
-echo "Installing pip and poetry..."
-pip install --upgrade pip
-pip install poetry
-echo "Poetry version: $(poetry --version)"
-
+echo "Python version: $(python --version)"
+echo "Pip version: $(venv/bin/pip --version)"
 
 echo "Fresh clone of repository..."
 git clone https://github.com/BenjaminHelyer/data-worldgen
@@ -55,8 +48,12 @@ echo "Going into the repository..."
 cd data-worldgen
 echo "Changed to directory: $(pwd)"
 
-echo "Installing project dependencies with poetry..."
-poetry install
+# now that we have the repo, ensure that all project files are owned by the user
+sudo chown -R ec2-user:ec2-user /opt/world-builder/data-worldgen
+
+# this is not ideal but we just use editable mode for now
+echo "Installing project dependencies with pip (editable mode)..."
+pip install -e .
 
 # Set up logging directory
 echo "Setting up logging directory..."
@@ -84,7 +81,7 @@ Type=simple
 User=world-builder
 WorkingDirectory=$APP_DIR
 Environment=PATH=$APP_DIR/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-ExecStart=$APP_DIR/venv/bin/python custom_wb.py
+ExecStart=$APP_DIR/venv/bin/python /opt/world-builder/data-worldgen/data-worldgen/examples/world_builder/wb_example.py
 Restart=always
 
 [Install]
@@ -117,6 +114,5 @@ sudo systemctl status world-builder
 
 echo "Setup completed at $(date)"
 echo "Final system status:"
-echo "- Poetry version: $(poetry --version)"
 echo "- Service status: $(sudo systemctl is-active world-builder)"
-echo "- Python version: $(python3 --version)"
+echo "- Python version: $(python3.11 --version)"

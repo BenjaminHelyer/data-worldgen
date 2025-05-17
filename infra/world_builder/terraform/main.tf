@@ -43,14 +43,14 @@ resource "aws_iam_role" "world_builder_ec2_role" {
 
 # IAM instance profile for EC2 instances with the World Builder functionality
 resource "aws_iam_instance_profile" "world_builder_ec2_role" {
-  name = "${var.project_name}-${var.environment}-ec2-profile"
-  role = aws_iam_role.ec2_role.name
+  name = "${var.project_name}-${var.environment}-world-builder-ec2-role"
+  role = aws_iam_role.world_builder_ec2_role.name
 }
 
 # S3 read access policy for the above World Builder Role
 resource "aws_iam_role_policy" "s3_access" {
   name = "${var.project_name}-${var.environment}-s3-access"
-  role = aws_iam_role.ec2_role.id
+  role = aws_iam_role.world_builder_ec2_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -115,4 +115,4 @@ data "aws_security_group" "existing" {
 
 output "security_group_info" {
   value = data.aws_security_group.existing
-} 
+}
