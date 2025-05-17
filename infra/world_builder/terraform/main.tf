@@ -47,7 +47,7 @@ resource "aws_iam_instance_profile" "world_builder_ec2_role" {
   role = aws_iam_role.world_builder_ec2_role.name
 }
 
-# S3 read access policy for the above World Builder Role
+# S3 write access policy for the above World Builder Role
 resource "aws_iam_role_policy" "s3_access" {
   name = "${var.project_name}-${var.environment}-s3-access"
   role = aws_iam_role.world_builder_ec2_role.id
@@ -58,12 +58,11 @@ resource "aws_iam_role_policy" "s3_access" {
       {
         Effect = "Allow"
         Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
+          "s3:PutObject",
+          "s3:DeleteObject"
         ]
         Resource = [
-          "arn:aws:s3:::${var.project_name}-${var.environment}/*",
-          "arn:aws:s3:::${var.project_name}-${var.environment}"
+          "arn:aws:s3:::world-builder-example/*"
         ]
       }
     ]
