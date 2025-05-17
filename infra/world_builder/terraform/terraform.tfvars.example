@@ -1,0 +1,16 @@
+# Infrastructure Configuration
+aws_region = "us-east-2"
+vpc_id     = "vpc-123"
+subnet_id  = "subnet-456"
+
+# Security
+security_group_id = "sg-123"
+key_name         = "your-key-name" # ssh key name
+
+# Instance Configuration
+ami_id        = "ami-456"
+instance_type = "t3.medium"
+
+# Project Configuration
+project_name = "world-builder"
+environment  = "dev"

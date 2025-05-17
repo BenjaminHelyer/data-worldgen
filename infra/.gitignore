@@ -1,0 +1,30 @@
+# Terraform specific
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Credentials and secrets
+*.pem
+credentials.json
+secrets.json
+.env
+.envrc
+
+# Local development
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# AWS specific
+.aws/
+aws.json
+
+# Temporary files
+*.log
+*.bak
+*~ 

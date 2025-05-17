@@ -186,3 +186,6 @@ names/
 planets/
 custom_config.json
 custom_wb.py
+
+# vscode
+.vscode/
