@@ -32,7 +32,7 @@ variable "ami_id" {
 variable "benchmark_instance_types" {
   description = "List of EC2 instance types to benchmark."
   type        = list(string)
-  default     = ["t3.medium", "t3.large", "m5.large"]
+  default     = ["t4g.nano", "t4g.medium", "t4g.xlarge", "t4g.2xlarge"]
 }
 
 variable "project_name" {
