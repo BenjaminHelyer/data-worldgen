@@ -5,6 +5,8 @@ from multiprocessing import Pool, cpu_count
 import os
 
 import pandas as pd
+import boto3
+import requests
 
 from world_builder import load_config, create_character
 from data_export.s3_upload import upload_to_s3
@@ -82,3 +84,30 @@ try:
 except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
+
+def terminate_instance():
+    """Terminate this EC2 instance via AWS API."""
+    # Query the AWS EC2 instance metadata service to get this instance's unique ID.
+    # 169.254.169.254 is a special IP only accessible from within the instance.
+    # The /latest/meta-data/instance-id path returns the instance's ID as a string.
+    try:
+        instance_id = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=2).text
+    except Exception as e:
+        logger.error(f"Could not get instance ID: {e}")
+        print(f"Could not get instance ID: {e}")
+        return
+
+    # Set your region here if different
+    region = 'us-east-1'  # <-- Change to your instance's region if needed
+    ec2 = boto3.client('ec2', region_name=region)
+
+    try:
+        response = ec2.terminate_instances(InstanceIds=[instance_id])
+        logger.info(f"Terminate response: {response}")
+        print(f"Terminate response: {response}")
+    except Exception as e:
+        logger.error(f"Failed to terminate instance: {e}")
+        print(f"Failed to terminate instance: {e}")
+
+# At the very end of the script, after all processing and logging:
+terminate_instance()
