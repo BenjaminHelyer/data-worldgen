@@ -119,7 +119,7 @@ resource "aws_iam_role_policy" "ec2_terminate" {
 # EC2 instance
 resource "aws_instance" "world_builder" {
   for_each               = toset(var.benchmark_instance_types)
-  ami                    = var.ami_id
+  ami                    = var.ami_map[local.instance_architectures[each.value]]
   instance_type          = each.value
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group_id]
@@ -150,6 +150,37 @@ resource "aws_instance" "world_builder" {
 
 # Common tags for all resources
 locals {
+  instance_architectures = {
+    "t4g.nano"    = "arm64"
+    "t4g.medium"  = "arm64"
+    "t4g.xlarge"  = "arm64"
+    "t4g.2xlarge" = "arm64"
+    "m5.large"    = "x86_64"
+    "m5.xlarge"   = "x86_64"
+    "m5.2xlarge"  = "x86_64"
+    "m5.4xlarge"  = "x86_64"
+    "m5.8xlarge"  = "x86_64"
+    "m5.12xlarge" = "x86_64"
+    "m5.24xlarge" = "x86_64"
+    "m8g.medium"    = "arm64"
+    "m8g.large"     = "arm64"
+    "m8g.xlarge"    = "arm64"
+    "m8g.2xlarge"   = "arm64"
+    "m8g.4xlarge"   = "arm64"
+    "m8g.8xlarge"   = "arm64"
+    "m8g.16xlarge"  = "arm64"
+    "m8g.24xlarge"  = "arm64"
+    "m8g.48xlarge"  = "arm64"
+    "c8g.medium"    = "arm64"
+    "c8g.large"     = "arm64"
+    "c8g.xlarge"    = "arm64"
+    "c8g.2xlarge"   = "arm64"
+    "c8g.4xlarge"   = "arm64"
+    "c8g.8xlarge"   = "arm64"
+    "c8g.16xlarge"  = "arm64"
+    "c8g.24xlarge"  = "arm64"
+    "c8g.48xlarge"  = "arm64"
+  }
   common_tags = {
     Project     = var.project_name
     Environment = var.environment

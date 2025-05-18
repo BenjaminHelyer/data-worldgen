@@ -8,9 +8,14 @@ security_group_id = "sg-123"
 key_name         = "your-key-name" # ssh key name
 
 # Instance Configuration
-ami_id        = "ami-456"
 instance_type = "t3.medium"
 
 # Project Configuration
 project_name = "world-builder"
 environment  = "dev"
+
+# AMI IDs for different architectures
+ami_map = {
+  x86_64 = "ami-xxxxxxxxxxxxxxxxx"   # Replace with your x86_64 AMI ID
+  arm64  = "ami-yyyyyyyyyyyyyyyyy"   # Replace with your arm64 AMI ID
+}
