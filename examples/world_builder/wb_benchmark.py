@@ -56,11 +56,11 @@ for round_num in ROUND_COUNTS:
         for num_proc in PROCESS_COUNTS:
             start_time = time.time()
             with Pool(processes=num_proc) as pool:
-                population = pool.map(create_character_wrapper, range(pop_size))
-            population_data = [char.__dict__ for char in population]
-            df = pd.DataFrame(population_data)
-            # parquet_path = current_dir / f"population_{pop_size}_proc{num_proc}.parquet"
-            # df.to_parquet(parquet_path, index=False)
+                # we don't care about memory here -- in fact, we want to be independent of it for these benchmarks
+                # Use imap() instead of map() to process one at a time
+                # Immediately discard each result after processing
+                for _ in pool.imap(create_character_wrapper, range(pop_size)):
+                    pass
             elapsed = time.time() - start_time
             print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
             results.append({
