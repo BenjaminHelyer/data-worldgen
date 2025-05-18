@@ -11,23 +11,6 @@ import requests
 from world_builder import load_config, create_character
 from data_export.s3_upload import upload_to_s3
 
-current_dir = Path(__file__).resolve().parent
-CONFIG_FILE = current_dir / "wb_config.json"
-
-# Population sizes to benchmark
-POP_SIZES = [10]
-# Number of processes to benchmark
-PROCESS_COUNTS = list(range(1, 9))
-# Number of rounds to run
-ROUND_COUNTS = list(range(1, 3))
-
-# Load configuration (this will validate probabilities)
-config = load_config(CONFIG_FILE)
-
-# S3 upload settings
-BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
-S3_KEY = "population/parquet/benchmark.csv"  # <-- S3 object key/path
-
 # Set up logging to file for CloudWatch Agent
 try:
     logging.basicConfig(
@@ -44,46 +27,6 @@ except: # use default logging if not running in EC2
         format='%(asctime)s %(levelname)s %(message)s',
     )
     logger = logging.getLogger(__name__)
-
-def create_character_wrapper(_):
-    # Wrapper to allow Pool.map to call create_character with config
-    return create_character(config)
-
-results = []
-
-for round_num in ROUND_COUNTS:
-    for pop_size in POP_SIZES:
-        for num_proc in PROCESS_COUNTS:
-            start_time = time.time()
-            with Pool(processes=num_proc) as pool:
-                population = pool.map(create_character_wrapper, range(pop_size))
-            population_data = [char.__dict__ for char in population]
-            df = pd.DataFrame(population_data)
-            # parquet_path = current_dir / f"population_{pop_size}_proc{num_proc}.parquet"
-            # df.to_parquet(parquet_path, index=False)
-            elapsed = time.time() - start_time
-            print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
-            results.append({
-                "round_num": round_num,
-                "population_size": pop_size,
-                "num_processes": num_proc,
-                "time_seconds": elapsed
-            })
-
-# Write benchmark results to CSV
-results_df = pd.DataFrame(results)
-csv_path = current_dir / "wb_benchmark_results.csv"
-results_df.to_csv(csv_path, index=False)
-print(f"Benchmark results written to {csv_path}")
-
-# Upload the csv file to S3
-try:
-    upload_to_s3(str(csv_path), BUCKET_NAME, S3_KEY)
-    logger.info(f"Successfully uploaded {csv_path} to s3://{BUCKET_NAME}/{S3_KEY}")
-    print(f"Successfully uploaded {csv_path} to s3://{BUCKET_NAME}/{S3_KEY}")
-except Exception as e:
-    logger.error(f"Failed to upload to S3: {e}")
-    print(f"Failed to upload to S3: {e}")
 
 def get_metadata(path):
     """Fetch metadata from the EC2 metadata service using IMDSv2."""
@@ -105,6 +48,74 @@ def get_metadata(path):
     except Exception as e:
         logger.error(f"Failed to get metadata for {path}: {e}")
         raise
+
+current_dir = Path(__file__).resolve().parent
+CONFIG_FILE = current_dir / "wb_config.json"
+
+# Population sizes to benchmark
+POP_SIZES = [10]
+# Number of processes to benchmark
+PROCESS_COUNTS = list(range(1, 9))
+# Number of rounds to run
+ROUND_COUNTS = list(range(1, 3))
+
+# Load configuration (this will validate probabilities)
+config = load_config(CONFIG_FILE)
+
+# Fetch instance type using metadata
+try:
+    instance_type = get_metadata("instance-type")
+    logger.info(f"Instance type: {instance_type}")
+    print(f"Instance type: {instance_type}")
+except Exception as e:
+    logger.error(f"Could not get instance type: {e}")
+    print(f"Could not get instance type: {e}")
+    instance_type = "unknown"
+
+# S3 upload settings
+BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
+S3_KEY = f"population/benchmark/benchmark_{instance_type}.csv"  # <-- S3 object key/path with instance type
+
+def create_character_wrapper(_):
+    # Wrapper to allow Pool.map to call create_character with config
+    return create_character(config)
+
+results = []
+
+for round_num in ROUND_COUNTS:
+    for pop_size in POP_SIZES:
+        for num_proc in PROCESS_COUNTS:
+            start_time = time.time()
+            with Pool(processes=num_proc) as pool:
+                # we don't care about memory here -- in fact, we want to be independent of it for these benchmarks
+                # Use imap() instead of map() to process one at a time
+                # Immediately discard each result after processing
+                for _ in pool.imap(create_character_wrapper, range(pop_size)):
+                    pass
+            elapsed = time.time() - start_time
+            print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
+            results.append({
+                "round_num": round_num,
+                "population_size": pop_size,
+                "num_processes": num_proc,
+                "time_seconds": elapsed,
+                "instance_type": instance_type
+            })
+
+# Write benchmark results to CSV
+results_df = pd.DataFrame(results)
+csv_path = current_dir / "wb_benchmark_results.csv"
+results_df.to_csv(csv_path, index=False)
+print(f"Benchmark results written to {csv_path}")
+
+# Upload the csv file to S3
+try:
+    upload_to_s3(str(csv_path), BUCKET_NAME, S3_KEY)
+    logger.info(f"Successfully uploaded {csv_path} to s3://{BUCKET_NAME}/{S3_KEY}")
+    print(f"Successfully uploaded {csv_path} to s3://{BUCKET_NAME}/{S3_KEY}")
+except Exception as e:
+    logger.error(f"Failed to upload to S3: {e}")
+    print(f"Failed to upload to S3: {e}")
 
 def terminate_instance():
     """Terminate this EC2 instance via AWS API."""
