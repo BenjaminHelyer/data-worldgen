@@ -91,9 +91,11 @@ def terminate_instance():
     # 169.254.169.254 is a special IP only accessible from within the instance.
     # The /latest/meta-data/instance-id path returns the instance's ID as a string.
     try:
-        instance_id = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=2).text
-        logger.info(f"Instance ID: {instance_id}")
-        print(f"Instance ID: {instance_id}")
+        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=2).text
+        instance_id = response.text
+        logger.info(f"Request status: {response.status_code}")
+        logger.info(f"Instance ID: {response.text}")
+        print(f"Instance ID: {response.text}")
     except Exception as e:
         logger.error(f"Could not get instance ID: {e}")
         print(f"Could not get instance ID: {e}")
