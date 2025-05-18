@@ -85,25 +85,44 @@ except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
 
+def get_metadata(path):
+    """Fetch metadata from the EC2 metadata service using IMDSv2."""
+    try:
+        # get the token first to authenticate the metadata request
+        token = requests.put(
+            "http://169.254.169.254/latest/api/token",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+            timeout=2
+        ).text
+        # now get the actual metadata from the request, using the token
+        response = requests.get(
+            f"http://169.254.169.254/latest/meta-data/{path}",
+            headers={"X-aws-ec2-metadata-token": token},
+            timeout=2
+        )
+        response.raise_for_status()
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Failed to get metadata for {path}: {e}")
+        raise
+
 def terminate_instance():
     """Terminate this EC2 instance via AWS API."""
-    # Query the AWS EC2 instance metadata service to get this instance's unique ID.
-    # 169.254.169.254 is a special IP only accessible from within the instance.
-    # The /latest/meta-data/instance-id path returns the instance's ID as a string.
     try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=2)
-        instance_id = response.text
-        logger.info(f"Request status: {response.status_code}")
-        logger.info(f"Instance ID: {response.text}")
-        print(f"Instance ID: {response.text}")
+        instance_id = get_metadata("instance-id")
+        logger.info(f"Instance ID: {instance_id}")
+        print(f"Instance ID: {instance_id}")
     except Exception as e:
         logger.error(f"Could not get instance ID: {e}")
         print(f"Could not get instance ID: {e}")
         return
 
-    # Set your region here if different
     try:
-        region = requests.get('http://169.254.169.254/latest/meta-data/placement/region', timeout=2).text
+        try:
+            region = get_metadata("placement/region")
+        except Exception:
+            az = get_metadata("placement/availability-zone")
+            region = az[:-1]
         logger.info(f"Region: {region}")
         print(f"Region: {region}")
     except Exception as e:
