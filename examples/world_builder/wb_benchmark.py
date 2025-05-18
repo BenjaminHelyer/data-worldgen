@@ -11,23 +11,6 @@ import requests
 from world_builder import load_config, create_character
 from data_export.s3_upload import upload_to_s3
 
-current_dir = Path(__file__).resolve().parent
-CONFIG_FILE = current_dir / "wb_config.json"
-
-# Population sizes to benchmark
-POP_SIZES = [10]
-# Number of processes to benchmark
-PROCESS_COUNTS = list(range(1, 9))
-# Number of rounds to run
-ROUND_COUNTS = list(range(1, 3))
-
-# Load configuration (this will validate probabilities)
-config = load_config(CONFIG_FILE)
-
-# S3 upload settings
-BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
-S3_KEY = "population/parquet/benchmark.csv"  # <-- S3 object key/path
-
 # Set up logging to file for CloudWatch Agent
 try:
     logging.basicConfig(
@@ -44,6 +27,54 @@ except: # use default logging if not running in EC2
         format='%(asctime)s %(levelname)s %(message)s',
     )
     logger = logging.getLogger(__name__)
+
+def get_metadata(path):
+    """Fetch metadata from the EC2 metadata service using IMDSv2."""
+    try:
+        # get the token first to authenticate the metadata request
+        token = requests.put(
+            "http://169.254.169.254/latest/api/token",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+            timeout=2
+        ).text
+        # now get the actual metadata from the request, using the token
+        response = requests.get(
+            f"http://169.254.169.254/latest/meta-data/{path}",
+            headers={"X-aws-ec2-metadata-token": token},
+            timeout=2
+        )
+        response.raise_for_status()
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Failed to get metadata for {path}: {e}")
+        raise
+
+current_dir = Path(__file__).resolve().parent
+CONFIG_FILE = current_dir / "wb_config.json"
+
+# Population sizes to benchmark
+POP_SIZES = [10]
+# Number of processes to benchmark
+PROCESS_COUNTS = list(range(1, 9))
+# Number of rounds to run
+ROUND_COUNTS = list(range(1, 3))
+
+# Load configuration (this will validate probabilities)
+config = load_config(CONFIG_FILE)
+
+# Fetch instance type using metadata
+try:
+    instance_type = get_metadata("instance-type")
+    logger.info(f"Instance type: {instance_type}")
+    print(f"Instance type: {instance_type}")
+except Exception as e:
+    logger.error(f"Could not get instance type: {e}")
+    print(f"Could not get instance type: {e}")
+    instance_type = "unknown"
+
+# S3 upload settings
+BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
+S3_KEY = f"population/benchmark/benchmark_{instance_type}.csv"  # <-- S3 object key/path with instance type
 
 def create_character_wrapper(_):
     # Wrapper to allow Pool.map to call create_character with config
@@ -67,7 +98,8 @@ for round_num in ROUND_COUNTS:
                 "round_num": round_num,
                 "population_size": pop_size,
                 "num_processes": num_proc,
-                "time_seconds": elapsed
+                "time_seconds": elapsed,
+                "instance_type": instance_type
             })
 
 # Write benchmark results to CSV
@@ -84,27 +116,6 @@ try:
 except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
-
-def get_metadata(path):
-    """Fetch metadata from the EC2 metadata service using IMDSv2."""
-    try:
-        # get the token first to authenticate the metadata request
-        token = requests.put(
-            "http://169.254.169.254/latest/api/token",
-            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
-            timeout=2
-        ).text
-        # now get the actual metadata from the request, using the token
-        response = requests.get(
-            f"http://169.254.169.254/latest/meta-data/{path}",
-            headers={"X-aws-ec2-metadata-token": token},
-            timeout=2
-        )
-        response.raise_for_status()
-        return response.text.strip()
-    except Exception as e:
-        logger.error(f"Failed to get metadata for {path}: {e}")
-        raise
 
 def terminate_instance():
     """Terminate this EC2 instance via AWS API."""
