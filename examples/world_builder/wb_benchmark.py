@@ -52,10 +52,12 @@ def get_metadata(path):
 current_dir = Path(__file__).resolve().parent
 CONFIG_FILE = current_dir / "wb_config.json"
 
+NUM_CORES = cpu_count()
+logger.info(f"Number of cores: {NUM_CORES}")
+print(f"Number of cores: {NUM_CORES}")
+
 # Population sizes to benchmark
-POP_SIZES = [10]
-# Number of processes to benchmark
-PROCESS_COUNTS = list(range(1, 9))
+POP_SIZES = [100]
 # Number of rounds to run
 ROUND_COUNTS = list(range(1, 3))
 
@@ -84,23 +86,23 @@ results = []
 
 for round_num in ROUND_COUNTS:
     for pop_size in POP_SIZES:
-        for num_proc in PROCESS_COUNTS:
-            start_time = time.time()
-            with Pool(processes=num_proc) as pool:
-                # we don't care about memory here -- in fact, we want to be independent of it for these benchmarks
-                # Use imap() instead of map() to process one at a time
-                # Immediately discard each result after processing
-                for _ in pool.imap(create_character_wrapper, range(pop_size)):
-                    pass
-            elapsed = time.time() - start_time
-            print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
-            results.append({
-                "round_num": round_num,
-                "population_size": pop_size,
-                "num_processes": num_proc,
-                "time_seconds": elapsed,
-                "instance_type": instance_type
-            })
+        start_time = time.time()
+        num_proc = NUM_CORES
+        with Pool(processes=num_proc) as pool:
+            # we don't care about memory here -- in fact, we want to be independent of it for these benchmarks
+            # Use imap() instead of map() to process one at a time
+            # Immediately discard each result after processing
+            for _ in pool.imap(create_character_wrapper, range(pop_size)):
+                pass
+        elapsed = time.time() - start_time
+        print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
+        results.append({
+            "round_num": round_num,
+            "population_size": pop_size,
+            "num_processes": num_proc,
+            "time_seconds": elapsed,
+            "instance_type": instance_type
+        })
 
 # Write benchmark results to CSV
 results_df = pd.DataFrame(results)
