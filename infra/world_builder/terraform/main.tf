@@ -98,6 +98,23 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent_attach" {
   policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
 }
 
+resource "aws_iam_role_policy" "ec2_terminate" {
+  name = "${var.project_name}-${var.environment}-ec2-terminate"
+  role = aws_iam_role.world_builder_ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:TerminateInstances"
+        ],
+        Resource = "*" # Optionally restrict to the instance ARN if available
+      }
+    ]
+  })
+}
 
 # EC2 instance
 resource "aws_instance" "world_builder" {
