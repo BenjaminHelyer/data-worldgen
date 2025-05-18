@@ -57,9 +57,9 @@ logger.info(f"Number of cores: {NUM_CORES}")
 print(f"Number of cores: {NUM_CORES}")
 
 # Population sizes to benchmark
-POP_SIZES = [100]
+POP_SIZES = [100, 1000, 10000, 100000, 1000000]
 # Number of rounds to run
-ROUND_COUNTS = list(range(1, 3))
+ROUND_COUNTS = list(range(1, 6))
 
 # Load configuration (this will validate probabilities)
 config = load_config(CONFIG_FILE)
