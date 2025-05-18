@@ -15,7 +15,7 @@ current_dir = Path(__file__).resolve().parent
 CONFIG_FILE = current_dir / "wb_config.json"
 
 # Population sizes to benchmark
-POP_SIZES = [100, 1000]
+POP_SIZES = [10]
 # Number of processes to benchmark
 PROCESS_COUNTS = list(range(1, 9))
 # Number of rounds to run
@@ -100,10 +100,27 @@ def terminate_instance():
         return
 
     # Set your region here if different
-    region = 'us-east-1'  # <-- Change to your instance's region if needed
-    ec2 = boto3.client('ec2', region_name=region)
+    try:
+        region = requests.get('http://169.254.169.254/latest/meta-data/placement/region', timeout=2).text
+        logger.info(f"Region: {region}")
+        print(f"Region: {region}")
+    except Exception as e:
+        logger.error(f"Could not get region: {e}")
+        print(f"Could not get region: {e}")
+        return
 
     try:
+        ec2 = boto3.client('ec2', region_name=region)
+        logger.info(f"EC2 client created")
+        print(f"EC2 client created")
+    except Exception as e:
+        logger.error(f"Could not create EC2 client: {e}")
+        print(f"Could not create EC2 client: {e}")
+        return
+
+    try:
+        logger.info(f"Terminating instance: {instance_id}")
+        print(f"Terminating instance: {instance_id}")
         response = ec2.terminate_instances(InstanceIds=[instance_id])
         logger.info(f"Terminate response: {response}")
         print(f"Terminate response: {response}")
