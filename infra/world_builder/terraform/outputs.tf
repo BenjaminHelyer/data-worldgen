@@ -21,4 +21,19 @@ output "iam_role_name" {
 output "iam_role_arn" {
   description = "ARN of the IAM role created for the EC2 instance"
   value       = aws_iam_role.world_builder_ec2_role.arn
+}
+
+output "instance_ids" {
+  description = "IDs of the EC2 instances launched for benchmarking."
+  value       = { for k, inst in aws_instance.world_builder : k => inst.id }
+}
+
+output "instance_public_ips" {
+  description = "Public IP addresses of the EC2 instances."
+  value       = { for k, inst in aws_instance.world_builder : k => inst.public_ip }
+}
+
+output "instance_private_ips" {
+  description = "Private IP addresses of the EC2 instances."
+  value       = { for k, inst in aws_instance.world_builder : k => inst.private_ip }
 } 
