@@ -57,7 +57,7 @@ logger.info(f"Number of cores: {NUM_CORES}")
 print(f"Number of cores: {NUM_CORES}")
 
 # Population sizes to benchmark
-POP_SIZES = [100, 1000, 10000, 100000, 1000000]
+POP_SIZES = [100, 1000, 10000]
 # Number of rounds to run
 ROUND_COUNTS = list(range(1, 6))
 
@@ -96,6 +96,7 @@ for round_num in ROUND_COUNTS:
                 pass
         elapsed = time.time() - start_time
         print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
+        logger.info(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
         results.append({
             "round_num": round_num,
             "population_size": pop_size,
