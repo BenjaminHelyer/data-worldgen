@@ -118,18 +118,20 @@ resource "aws_iam_role_policy" "ec2_terminate" {
 
 # EC2 instance
 resource "aws_instance" "world_builder" {
+  for_each               = toset(var.benchmark_instance_types)
   ami                    = var.ami_id
-  instance_type          = var.instance_type
+  instance_type          = each.value
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group_id]
-  key_name              = var.key_name
-  iam_instance_profile  = aws_iam_instance_profile.world_builder_ec2_role.name
+  key_name               = var.key_name
+  iam_instance_profile   = aws_iam_instance_profile.world_builder_ec2_role.name
 
   associate_public_ip_address = true
 
   user_data = templatefile("${path.module}/user_data.sh", {
     project_name = var.project_name
     environment  = var.environment
+    instance_type = each.value
   })
 
   root_block_device {
@@ -141,7 +143,7 @@ resource "aws_instance" "world_builder" {
   tags = merge(
     local.common_tags,
     {
-      Name = "${var.project_name}-${var.environment}-instance"
+      Name = "${var.project_name}-${var.environment}-instance-${each.value}"
     }
   )
 }

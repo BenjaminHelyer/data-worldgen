@@ -29,10 +29,10 @@ variable "ami_id" {
   type        = string
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t3.medium"
+variable "benchmark_instance_types" {
+  description = "List of EC2 instance types to benchmark."
+  type        = list(string)
+  default     = ["t3.medium", "t3.large", "m5.large"]
 }
 
 variable "project_name" {
