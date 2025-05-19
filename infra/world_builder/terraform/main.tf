@@ -59,7 +59,8 @@ resource "aws_iam_role_policy" "s3_access" {
         Effect = "Allow"
         Action = [
           "s3:PutObject",
-          "s3:DeleteObject"
+          "s3:DeleteObject",
+          "s3:GetObject"
         ]
         Resource = [
           "arn:aws:s3:::world-builder-example/*"
