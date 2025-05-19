@@ -32,7 +32,7 @@ variable "ami_map" {
 variable "benchmark_instance_types" {
   description = "List of EC2 instance types to benchmark."
   type        = list(string)
-  default = ["m8g.8xlarge"]
+  default = ["c8g.8xlarge"]
 }
 
 variable "project_name" {
