@@ -15,6 +15,8 @@ CONFIG_FILE = current_dir / "wb_config.json"
 BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
 S3_KEY = "population/parquet/population.parquet"  # <-- S3 object key/path
 
+POP_SIZE = 100
+
 # Set up logging to file for CloudWatch Agent
 logging.basicConfig(
     level=logging.INFO,
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 config = load_config(CONFIG_FILE)
 
 # Create a population of 100 random characters
-population = [create_character(config) for _ in range(100)]
+population = [create_character(config) for _ in range(POP_SIZE)]
 
 # Optionally, print some characters
 for char in population[:5]:
