@@ -57,7 +57,7 @@ logger.info(f"Number of cores: {NUM_CORES}")
 print(f"Number of cores: {NUM_CORES}")
 
 # Population sizes to benchmark
-POP_SIZES = [100, 1000, 10000, 1000000]
+POP_SIZES = [100, 1000, 10000]
 # Number of rounds to run
 ROUND_COUNTS = list(range(1, 6))
 
