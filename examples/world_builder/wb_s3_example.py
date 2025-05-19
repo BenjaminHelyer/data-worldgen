@@ -20,6 +20,7 @@ S3_KEY = "population/parquet/population.parquet"
 S3_CONFIG_KEY = "population/config/wb_config.json"  # Example S3 key for config
 USE_S3_CONFIG = True  # Set to True to load config from S3
 
+# default pop size if not specified in S3
 POP_SIZE = 100
 
 # Set up logging to file for CloudWatch Agent
@@ -32,8 +33,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Load configuration (this will validate probabilities)
 if USE_S3_CONFIG:
+    # Download and load config from S3
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_config_file:
         try:
             download_from_s3(BUCKET_NAME, S3_CONFIG_KEY, tmp_config_file.name)
@@ -41,6 +42,17 @@ if USE_S3_CONFIG:
             config = load_config(Path(tmp_config_file.name))
         except Exception as e:
             logger.error(f"Failed to download config from S3: {e}")
+            raise
+    # Download and load POP_SIZE from S3
+    S3_POP_SIZE_KEY = "population/config/pop_size.txt"
+    with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as tmp_pop_size_file:
+        try:
+            download_from_s3(BUCKET_NAME, S3_POP_SIZE_KEY, tmp_pop_size_file.name)
+            logger.info(f"Downloaded pop size from s3://{BUCKET_NAME}/{S3_POP_SIZE_KEY} to {tmp_pop_size_file.name}")
+            with open(tmp_pop_size_file.name, "r") as f:
+                POP_SIZE = int(f.read().strip())
+        except Exception as e:
+            logger.info(f"Failed to download pop size from S3: {e}, using default pop size of {POP_SIZE}")
             raise
 else:
     config = load_config(CONFIG_FILE)
