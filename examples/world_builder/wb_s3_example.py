@@ -4,6 +4,8 @@ import tempfile
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
+import requests
+import boto3
 
 from world_builder import load_config, create_character
 from data_export.s3_upload import upload_to_s3, download_from_s3
@@ -37,6 +39,28 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+def get_metadata(path):
+    """Fetch metadata from the EC2 metadata service using IMDSv2."""
+    try:
+        # get the token first to authenticate the metadata request
+        token = requests.put(
+            "http://169.254.169.254/latest/api/token",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+            timeout=2
+        ).text
+        # now get the actual metadata from the request, using the token
+        response = requests.get(
+            f"http://169.254.169.254/latest/meta-data/{path}",
+            headers={"X-aws-ec2-metadata-token": token},
+            timeout=2
+        )
+        response.raise_for_status()
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Failed to get metadata for {path}: {e}")
+        raise
+
 
 if USE_S3_CONFIG:
     # Download and load config from S3
@@ -98,3 +122,48 @@ try:
 except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
+
+def terminate_instance():
+    """Terminate this EC2 instance via AWS API."""
+    try:
+        instance_id = get_metadata("instance-id")
+        logger.info(f"Instance ID: {instance_id}")
+        print(f"Instance ID: {instance_id}")
+    except Exception as e:
+        logger.error(f"Could not get instance ID: {e}")
+        print(f"Could not get instance ID: {e}")
+        return
+
+    try:
+        try:
+            region = get_metadata("placement/region")
+        except Exception:
+            az = get_metadata("placement/availability-zone")
+            region = az[:-1]
+        logger.info(f"Region: {region}")
+        print(f"Region: {region}")
+    except Exception as e:
+        logger.error(f"Could not get region: {e}")
+        print(f"Could not get region: {e}")
+        return
+
+    try:
+        ec2 = boto3.client('ec2', region_name=region)
+        logger.info(f"EC2 client created")
+        print(f"EC2 client created")
+    except Exception as e:
+        logger.error(f"Could not create EC2 client: {e}")
+        print(f"Could not create EC2 client: {e}")
+        return
+
+    try:
+        logger.info(f"Terminating instance: {instance_id}")
+        print(f"Terminating instance: {instance_id}")
+        response = ec2.terminate_instances(InstanceIds=[instance_id])
+        logger.info(f"Terminate response: {response}")
+        print(f"Terminate response: {response}")
+    except Exception as e:
+        logger.error(f"Failed to terminate instance: {e}")
+        print(f"Failed to terminate instance: {e}")
+
+terminate_instance()
