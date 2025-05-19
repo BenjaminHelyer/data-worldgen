@@ -2,8 +2,9 @@
 Holds the Pydantic BaseModels and distribution objects for various probaility distributions.
 """
 
-import random
+import numpy as np
 from typing import Literal, Union, Dict, Any, Protocol
+import random
 
 from pydantic import BaseModel, Field
 from scipy.stats import truncnorm
@@ -111,6 +112,7 @@ def _parse(config: Any) -> Distribution:
 def _sample(dist: Distribution) -> float:
     """
     Draw a random sample from a distribution model instance.
+    Uses Python's random module for consistency across all distributions.
     """
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
@@ -119,7 +121,9 @@ def _sample(dist: Distribution) -> float:
     elif isinstance(dist, TruncatedNormalDist):
         a = (dist.lower - dist.mean) / dist.std
         b = (dist.upper - dist.mean) / dist.std
-        return truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std)
+        # Use Python's random module to generate uniform random numbers for scipy
+        rng = np.random.RandomState(random.randint(0, 2**32 - 1))
+        return float(truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng))
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 
