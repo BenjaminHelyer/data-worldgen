@@ -1,6 +1,7 @@
 from pathlib import Path
 import logging
 import tempfile
+from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 
@@ -22,6 +23,8 @@ USE_S3_CONFIG = True  # Set to True to load config from S3
 
 # default pop size if not specified in S3
 POP_SIZE = 100
+
+NUM_CORES = cpu_count()
 
 # Set up logging to file for CloudWatch Agent
 logging.basicConfig(
@@ -57,8 +60,16 @@ if USE_S3_CONFIG:
 else:
     config = load_config(CONFIG_FILE)
 
-# Create a population of 100 random characters
-population = [create_character(config) for _ in range(POP_SIZE)]
+def _create_character_wrapper(args):
+    config = args
+    return create_character(config)
+
+# Create argument list (same config object, repeated N times)
+args = [config] * POP_SIZE
+
+# Parallel character generation
+with Pool(processes=NUM_CORES) as pool:
+    population = pool.map(_create_character_wrapper, args)
 
 # Optionally, print some characters
 for char in population[:5]:
