@@ -26,6 +26,8 @@ POP_SIZE = 100
 
 NUM_CORES = cpu_count()
 
+logging.info(f"Using {NUM_CORES} cores")
+
 # Set up logging to file for CloudWatch Agent
 logging.basicConfig(
     level=logging.INFO,
