@@ -53,7 +53,7 @@ if USE_S3_CONFIG:
                 POP_SIZE = int(f.read().strip())
         except Exception as e:
             logger.info(f"Failed to download pop size from S3: {e}, using default pop size of {POP_SIZE}")
-            raise
+            # do not raise, just use the default pop size
 else:
     config = load_config(CONFIG_FILE)
 
