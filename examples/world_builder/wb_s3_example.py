@@ -2,7 +2,9 @@ from pathlib import Path
 import logging
 import tempfile
 from multiprocessing import Pool, cpu_count
-
+import random
+import os
+import time
 import pandas as pd
 import requests
 import boto3
@@ -87,6 +89,8 @@ else:
     config = load_config(CONFIG_FILE)
 
 def _create_character_wrapper(args):
+    seed = int(time.time() * 1000000) ^ os.getpid()
+    random.seed(seed)
     config = args
     return create_character(config)
 
