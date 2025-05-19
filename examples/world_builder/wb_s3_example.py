@@ -1,10 +1,11 @@
 from pathlib import Path
 import logging
+import tempfile
 
 import pandas as pd
 
 from world_builder import load_config, create_character
-from data_export.s3_upload import upload_to_s3
+from data_export.s3_upload import upload_to_s3, download_from_s3
 
 
 current_dir = Path(__file__).resolve().parent
@@ -12,8 +13,12 @@ current_dir = Path(__file__).resolve().parent
 CONFIG_FILE = current_dir / "wb_config.json"
 
 # S3 upload settings
-BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
-S3_KEY = "population/parquet/population.parquet"  # <-- S3 object key/path
+BUCKET_NAME = "world-builder-example"
+S3_KEY = "population/parquet/population.parquet"
+
+# S3 config settings
+S3_CONFIG_KEY = "population/config/wb_config.json"  # Example S3 key for config
+USE_S3_CONFIG = True  # Set to True to load config from S3
 
 POP_SIZE = 100
 
@@ -28,7 +33,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Load configuration (this will validate probabilities)
-config = load_config(CONFIG_FILE)
+if USE_S3_CONFIG:
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_config_file:
+        try:
+            download_from_s3(BUCKET_NAME, S3_CONFIG_KEY, tmp_config_file.name)
+            logger.info(f"Downloaded config from s3://{BUCKET_NAME}/{S3_CONFIG_KEY} to {tmp_config_file.name}")
+            config = load_config(Path(tmp_config_file.name))
+        except Exception as e:
+            logger.error(f"Failed to download config from S3: {e}")
+            raise
+else:
+    config = load_config(CONFIG_FILE)
 
 # Create a population of 100 random characters
 population = [create_character(config) for _ in range(POP_SIZE)]
