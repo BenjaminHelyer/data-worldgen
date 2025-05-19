@@ -32,7 +32,7 @@ variable "ami_map" {
 variable "benchmark_instance_types" {
   description = "List of EC2 instance types to benchmark."
   type        = list(string)
-  default     = ["t4g.nano", "t4g.medium", "t4g.xlarge", "t4g.2xlarge", "m5.large", "m5.xlarge", "m5.2xlarge", "m5.4xlarge", "m5.8xlarge", "m5.12xlarge", "m5.24xlarge", "m8g.medium", "m8g.large", "m8g.xlarge", "m8g.2xlarge", "m8g.4xlarge", "m8g.8xlarge", "m8g.16xlarge", "m8g.24xlarge", "m8g.48xlarge", "c8g.medium", "c8g.large", "c8g.xlarge", "c8g.2xlarge", "c8g.4xlarge", "c8g.8xlarge", "c8g.16xlarge", "c8g.24xlarge", "c8g.48xlarge"]
+  default = ["c8g.8xlarge"]
 }
 
 variable "project_name" {
