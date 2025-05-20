@@ -74,6 +74,47 @@ The configuration is defined in a JSON file with the following structure:
 
 ## Example Configurations
 
+### Constant Net Worth
+
+### Net Worth with Age
+
+The net worth configuration system models how a character's wealth evolves over time based on their profession and attributes. Each profession can have its own unique function that determines how net worth scales with these attributes.
+
+For example, a Sith's net worth might be constant regardless of age, as they are provided for by the Empire:
+
+```json
+{
+    "profession_net_worth": {
+        "Sith": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": {
+                    "value": 10000
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "constant",
+                        "params": {
+                            "value": 1000
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "imperial_credits"
+    }
+}
+```
+
+In this example, a Sith would have a mean net worth of 10,000 imperial credits with a standard deviation of 1,000 credits, regardless of their age.
+
 ### Linear Scaling with Age
 
 ```json
