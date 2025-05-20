@@ -12,12 +12,12 @@ The config is a JSON file that contains the following fields:
 """
 
 from typing import Dict, List
-from typing_extensions import Self
 import json
 from pathlib import Path
 import math
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing_extensions import Self
 
 from world_builder.distributions_config import (
     Distribution,
