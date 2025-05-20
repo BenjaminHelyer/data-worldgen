@@ -123,7 +123,9 @@ def _sample(dist: Distribution) -> float:
         b = (dist.upper - dist.mean) / dist.std
         # Use Python's random module to generate uniform random numbers for scipy
         rng = np.random.RandomState(random.randint(0, 2**32 - 1))
-        return float(truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng))
+        return float(
+            truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
+        )
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 
