@@ -8,7 +8,14 @@ from pathlib import Path
 
 from world_builder.net_worth_generator import NetWorth, generate_net_worth
 from world_builder.net_worth_config import NetWorthConfig, load_config
-from world_builder.distributions_config import NormalDist
+from world_builder.distributions_config import (
+    FunctionBasedDist,
+    FunctionConfig,
+    NoiseFunctionConfig,
+    LinearParams,
+    ExponentialParams,
+    QuadraticParams,
+)
 from world_builder.character import Character
 
 
@@ -18,6 +25,7 @@ class MockCharacter:
 
     chain_code: str
     profession: str
+    age: int = 30  # Default age for testing
 
 
 def test_networth_creation():
@@ -76,13 +84,29 @@ def test_networth_repr():
 
 
 def test_generate_net_worth_basic():
-    """Test basic net worth generation with a simple normal distribution."""
+    """Test basic net worth generation with a simple function-based distribution."""
     # Create a mock character
-    character = MockCharacter(chain_code="TEST123", profession="farmer")
+    character = MockCharacter(chain_code="TEST123", profession="farmer", age=30)
 
     # Create a simple config with one profession
     config = NetWorthConfig(
-        profession_net_worth={"farmer": NormalDist(type="normal", mean=100, std=20)},
+        profession_net_worth={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=5, intercept=100)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear", params=LinearParams(slope=0.1, intercept=0)
+                        ),
+                    },
+                ),
+            )
+        },
         metadata={"currency": "credits"},
     )
 
@@ -93,6 +117,8 @@ def test_generate_net_worth_basic():
     assert net_worth.chain_code == "TEST123"
     assert isinstance(net_worth.liquid_currency, float)
     assert net_worth.currency_type == "credits"
+    # For age=30, mean should be 5*30 + 100 = 250
+    assert 150 <= net_worth.liquid_currency <= 350  # mean ± 100
 
 
 def test_generate_net_worth_unknown_profession():
@@ -100,7 +126,23 @@ def test_generate_net_worth_unknown_profession():
     character = MockCharacter(chain_code="TEST123", profession="unknown_profession")
 
     config = NetWorthConfig(
-        profession_net_worth={"farmer": NormalDist(type="normal", mean=100, std=20)},
+        profession_net_worth={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=5, intercept=100)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear", params=LinearParams(slope=0.1, intercept=0)
+                        ),
+                    },
+                ),
+            )
+        },
         metadata={"currency": "credits"},
     )
 
@@ -116,7 +158,23 @@ def test_generate_net_worth_default_currency():
     character = MockCharacter(chain_code="TEST123", profession="farmer")
 
     config = NetWorthConfig(
-        profession_net_worth={"farmer": NormalDist(type="normal", mean=100, std=20)},
+        profession_net_worth={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=5, intercept=100)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear", params=LinearParams(slope=0.1, intercept=0)
+                        ),
+                    },
+                ),
+            )
+        },
         metadata={},  # No currency specified
     )
 
@@ -129,7 +187,23 @@ def test_generate_net_worth_custom_currency():
     character = MockCharacter(chain_code="TEST123", profession="farmer")
 
     config = NetWorthConfig(
-        profession_net_worth={"farmer": NormalDist(type="normal", mean=100, std=20)},
+        profession_net_worth={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=5, intercept=100)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear", params=LinearParams(slope=0.1, intercept=0)
+                        ),
+                    },
+                ),
+            )
+        },
         metadata={"currency": "imperial_credits"},
     )
 

@@ -1,9 +1,27 @@
 {
     "profession_net_worth": {
         "Jedi": {
-            "type": "normal",
-            "mean": 1000,
-            "std": 200
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 20,
+                    "intercept": 400
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": {
+                            "slope": 2,
+                            "intercept": 0
+                        }
+                    }
+                }
+            }
         }
     },
     "metadata": {

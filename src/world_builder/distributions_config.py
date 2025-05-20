@@ -77,8 +77,10 @@ class NoiseFunctionConfig(BaseModel):
             raise ValueError("Noise function must specify field_name")
         if "scale_factor" not in self.params:
             raise ValueError("Noise function must specify scale_factor")
-        if not isinstance(self.params["scale_factor"], dict):
+        if not isinstance(self.params["scale_factor"], (dict, FunctionConfig)):
             raise ValueError("scale_factor must be a function configuration")
+        if isinstance(self.params["scale_factor"], dict):
+            self.params["scale_factor"] = FunctionConfig(**self.params["scale_factor"])
         return self
 
 

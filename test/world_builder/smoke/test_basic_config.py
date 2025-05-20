@@ -36,9 +36,17 @@ def test_micro_config():
     assert len(net_worths) == POPULATION_SIZE
 
     # Verify net worth properties
-    for net_worth in net_worths:
+    for character, net_worth in zip(population, net_worths):
         assert isinstance(net_worth.liquid_currency, float)
         assert net_worth.currency_type == "credits"
-        # Verify that the net worth is within reasonable bounds for a Jedi
+
+        # Calculate expected mean based on age
+        expected_mean = 20 * character.age + 400
+        # Calculate expected std based on age
+        expected_std = 2 * character.age
+
+        # Verify that the net worth is within reasonable bounds
         # Using 5 standard deviations as a reasonable bound
-        assert 400 <= net_worth.liquid_currency <= 1600  # mean ± 5*std
+        lower_bound = max(0, expected_mean - 5 * expected_std)
+        upper_bound = expected_mean + 5 * expected_std
+        assert lower_bound <= net_worth.liquid_currency <= upper_bound
