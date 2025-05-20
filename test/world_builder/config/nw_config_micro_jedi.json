@@ -1,0 +1,13 @@
+{
+    "profession_net_worth": {
+        "Jedi": {
+            "type": "normal",
+            "mean": 1000,
+            "std": 200
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+} 
