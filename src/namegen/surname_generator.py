@@ -16,11 +16,32 @@ suffix_lookup = {
 }
 
 
-def extract_planet_root(name):
+def extract_planet_root(name: str) -> str:
+    """
+    Extracts the first word of a planet name and converts it to lowercase.
+
+    Args:
+        name: The full planet name (e.g. "New Alderaan")
+
+    Returns:
+        The lowercase first word of the planet name (e.g. "new")
+    """
     return name.split()[0].lower()
 
 
-def random_segment(word, min_len=2, max_len=5):
+def random_segment(word: str, min_len: int = 2, max_len: int = 5) -> str:
+    """
+    Extracts a random segment of a word between min_len and max_len characters.
+
+    Args:
+        word: The input word to extract a segment from
+        min_len: Minimum length of the segment (default: 2)
+        max_len: Maximum length of the segment (default: 5)
+
+    Returns:
+        A random segment of the input word. If the word is shorter than min_len,
+        returns the entire word.
+    """
     if len(word) <= min_len:
         return word
     start = random.randint(0, len(word) - min_len)
