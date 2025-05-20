@@ -4,10 +4,12 @@ Tests for the net worth generator module.
 
 import pytest
 from dataclasses import dataclass
+from pathlib import Path
 
 from world_builder.net_worth_generator import NetWorth, generate_net_worth
-from world_builder.net_worth_config import NetWorthConfig
+from world_builder.net_worth_config import NetWorthConfig, load_config
 from world_builder.distributions_config import NormalDist
+from world_builder.character import Character
 
 
 @dataclass
@@ -133,3 +135,26 @@ def test_generate_net_worth_custom_currency():
 
     net_worth = generate_net_worth(character, config)
     assert net_worth.currency_type == "imperial_credits"
+
+
+def test_generate_net_worth_from_file():
+    """Test the full net worth generation process using a real Character and config file."""
+    # Create a real character
+    character = Character(
+        species="human",
+        age=30,
+        profession="farmer",
+        chain_code="TEST123",
+    )
+
+    # Load config from file
+    config_path = Path(__file__).parent / "config" / "nw_config_micro.json"
+    config = load_config(config_path)
+
+    # Generate net worth
+    net_worth = generate_net_worth(character, config)
+
+    # Verify the result
+    assert net_worth.chain_code == "TEST123"
+    assert isinstance(net_worth.liquid_currency, float)
+    assert net_worth.currency_type == "credits"
