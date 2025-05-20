@@ -2,10 +2,10 @@
 Holds the Pydantic BaseModels and distribution objects for various probaility distributions.
 """
 
-import numpy as np
 from typing import Literal, Union, Dict, Any, Protocol
 import random
 
+import numpy as np
 from pydantic import BaseModel, Field
 from scipy.stats import truncnorm
 
