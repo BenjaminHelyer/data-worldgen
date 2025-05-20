@@ -18,12 +18,14 @@ class DistributionTransformOperation(BaseModel):
         mean_shift: Optional amount to shift the mean by (additive)
         std_mult: Optional amount to multiply the standard deviation by
     """
+
     mean_shift: float | None = None
     std_mult: float | None = None
 
 
 class TransformableDistribution(Protocol):
     """Protocol defining distributions that can be transformed."""
+
     def with_transform(
         self, transform: DistributionTransformOperation
     ) -> "TransformableDistribution":
@@ -48,6 +50,7 @@ class NormalDist(BaseModel):
         mean: Mean (μ) of the distribution
         std: Standard deviation (σ) of the distribution
     """
+
     type: Literal["normal"]
     mean: float
     std: float
@@ -79,6 +82,7 @@ class LogNormalDist(BaseModel):
         mean: Mean (μ) of the underlying normal distribution
         std: Standard deviation (σ) of the underlying normal distribution
     """
+
     type: Literal["lognormal"]
     mean: float
     std: float
@@ -114,6 +118,7 @@ class TruncatedNormalDist(BaseModel):
         lower: Lower bound (inclusive) for truncation
         upper: Upper bound (inclusive) for truncation, defaults to positive infinity
     """
+
     type: Literal["truncated_normal"]
     mean: float
     std: float
