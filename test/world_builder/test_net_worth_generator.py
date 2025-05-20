@@ -15,6 +15,7 @@ from world_builder.distributions_config import (
     LinearParams,
     ExponentialParams,
     QuadraticParams,
+    ConstantParams,
 )
 from world_builder.character import Character
 
@@ -232,3 +233,44 @@ def test_generate_net_worth_from_file():
     assert net_worth.chain_code == "TEST123"
     assert isinstance(net_worth.liquid_currency, float)
     assert net_worth.currency_type == "credits"
+
+
+def test_generate_net_worth_constant():
+    """Test net worth generation with a constant function."""
+    # Test with different ages to ensure net worth remains constant
+    ages = [20, 30, 40, 50]
+
+    config = NetWorthConfig(
+        profession_net_worth={
+            "Sith": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="constant", params=ConstantParams(value=10000)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="constant", params=ConstantParams(value=1000)
+                        ),
+                    },
+                ),
+            )
+        },
+        metadata={"currency": "imperial_credits"},
+    )
+
+    # Generate net worth for each age
+    for age in ages:
+        character = MockCharacter(chain_code="TEST123", profession="Sith", age=age)
+        net_worth = generate_net_worth(character, config)
+
+        # Verify the result
+        assert net_worth.chain_code == "TEST123"
+        assert isinstance(net_worth.liquid_currency, float)
+        assert net_worth.currency_type == "imperial_credits"
+
+        # Mean should be 10000 with std of 1000
+        # Allow for 5 standard deviations of variation
+        assert 5000 <= net_worth.liquid_currency <= 15000

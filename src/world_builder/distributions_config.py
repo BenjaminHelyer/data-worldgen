@@ -16,6 +16,12 @@ class FunctionParams(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
+class ConstantParams(FunctionParams):
+    """Parameters for constant function."""
+
+    value: float
+
+
 class LinearParams(FunctionParams):
     """Parameters for linear function."""
 
@@ -43,12 +49,14 @@ class FunctionConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    type: Literal["linear", "exponential", "quadratic"]
-    params: Union[LinearParams, ExponentialParams, QuadraticParams]
+    type: Literal["constant", "linear", "exponential", "quadratic"]
+    params: Union[ConstantParams, LinearParams, ExponentialParams, QuadraticParams]
 
     @model_validator(mode="after")
     def validate_params(self) -> "FunctionConfig":
         """Validate that params match the function type."""
+        if self.type == "constant" and not isinstance(self.params, ConstantParams):
+            raise ValueError("Constant function requires ConstantParams")
         if self.type == "linear" and not isinstance(self.params, LinearParams):
             raise ValueError("Linear function requires LinearParams")
         if self.type == "exponential" and not isinstance(

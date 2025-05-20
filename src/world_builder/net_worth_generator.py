@@ -63,7 +63,9 @@ def evaluate_function(func_config: FunctionConfig, x: float) -> float:
     Returns:
         The function value at x
     """
-    if func_config.type == "linear":
+    if func_config.type == "constant":
+        return func_config.params.value
+    elif func_config.type == "linear":
         return func_config.params.slope * x + func_config.params.intercept
     elif func_config.type == "exponential":
         return func_config.params.base * math.exp(func_config.params.rate * x)

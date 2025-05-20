@@ -40,13 +40,6 @@ def test_micro_config():
         assert isinstance(net_worth.liquid_currency, float)
         assert net_worth.currency_type == "credits"
 
-        # Calculate expected mean based on age
-        expected_mean = 20 * character.age + 400
-        # Calculate expected std based on age
-        expected_std = 2 * character.age
-
-        # Verify that the net worth is within reasonable bounds
-        # Using 5 standard deviations as a reasonable bound
-        lower_bound = max(0, expected_mean - 5 * expected_std)
-        upper_bound = expected_mean + 5 * expected_std
-        assert lower_bound <= net_worth.liquid_currency <= upper_bound
+        # With constant functions, mean is 1000 and std is 100
+        # Allow for 5 standard deviations of variation
+        assert 500 <= net_worth.liquid_currency <= 1500

@@ -3,10 +3,9 @@
         "Jedi": {
             "field_name": "age",
             "mean_function": {
-                "type": "linear",
+                "type": "constant",
                 "params": {
-                    "slope": 20,
-                    "intercept": 400
+                    "value": 1000
                 }
             },
             "noise_function": {
@@ -14,10 +13,9 @@
                 "params": {
                     "field_name": "age",
                     "scale_factor": {
-                        "type": "linear",
+                        "type": "constant",
                         "params": {
-                            "slope": 2,
-                            "intercept": 0
+                            "value": 100
                         }
                     }
                 }
