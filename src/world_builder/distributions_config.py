@@ -11,22 +11,57 @@ from scipy.stats import truncnorm
 
 
 class DistributionTransformOperation(BaseModel):
+    """
+    Defines a transformation operation that can be applied to a distribution.
+
+    Attributes:
+        mean_shift: Optional amount to shift the mean by (additive)
+        std_mult: Optional amount to multiply the standard deviation by
+    """
     mean_shift: float | None = None
     std_mult: float | None = None
 
 
 class TransformableDistribution(Protocol):
+    """Protocol defining distributions that can be transformed."""
     def with_transform(
         self, transform: DistributionTransformOperation
-    ) -> "TransformableDistribution": ...
+    ) -> "TransformableDistribution":
+        """
+        Returns a new distribution with the transform applied.
+
+        Args:
+            transform: The transformation operation to apply
+
+        Returns:
+            A new distribution with the transformation applied
+        """
+        ...
 
 
 class NormalDist(BaseModel):
+    """
+    Normal (Gaussian) distribution.
+
+    Attributes:
+        type: Literal "normal" to identify this distribution type
+        mean: Mean (μ) of the distribution
+        std: Standard deviation (σ) of the distribution
+    """
     type: Literal["normal"]
     mean: float
     std: float
 
     def with_transform(self, transform: DistributionTransformOperation) -> "NormalDist":
+        """
+        Returns a new normal distribution with the transform applied.
+
+        Args:
+            transform: The transformation operation to apply
+
+        Returns:
+            A new NormalDist with shifted mean and/or scaled standard deviation
+        """
         return self.model_copy(
             update={
                 "mean": self.mean + (transform.mean_shift or 0.0),
@@ -36,6 +71,14 @@ class NormalDist(BaseModel):
 
 
 class LogNormalDist(BaseModel):
+    """
+    Log-normal distribution.
+
+    Attributes:
+        type: Literal "lognormal" to identify this distribution type
+        mean: Mean (μ) of the underlying normal distribution
+        std: Standard deviation (σ) of the underlying normal distribution
+    """
     type: Literal["lognormal"]
     mean: float
     std: float
@@ -43,6 +86,15 @@ class LogNormalDist(BaseModel):
     def with_transform(
         self, transform: DistributionTransformOperation
     ) -> "LogNormalDist":
+        """
+        Returns a new log-normal distribution with the transform applied.
+
+        Args:
+            transform: The transformation operation to apply
+
+        Returns:
+            A new LogNormalDist with shifted mean and/or scaled standard deviation
+        """
         return self.model_copy(
             update={
                 "mean": self.mean + (transform.mean_shift or 0.0),
@@ -52,6 +104,16 @@ class LogNormalDist(BaseModel):
 
 
 class TruncatedNormalDist(BaseModel):
+    """
+    Truncated normal distribution - a normal distribution bounded by lower and upper limits.
+
+    Attributes:
+        type: Literal "truncated_normal" to identify this distribution type
+        mean: Mean (μ) of the underlying normal distribution
+        std: Standard deviation (σ) of the underlying normal distribution
+        lower: Lower bound (inclusive) for truncation
+        upper: Upper bound (inclusive) for truncation, defaults to positive infinity
+    """
     type: Literal["truncated_normal"]
     mean: float
     std: float
@@ -61,6 +123,15 @@ class TruncatedNormalDist(BaseModel):
     def with_transform(
         self, transform: DistributionTransformOperation
     ) -> "TruncatedNormalDist":
+        """
+        Returns a new truncated normal distribution with the transform applied.
+
+        Args:
+            transform: The transformation operation to apply
+
+        Returns:
+            A new TruncatedNormalDist with shifted mean and/or scaled standard deviation
+        """
         return self.model_copy(
             update={
                 "mean": self.mean + (transform.mean_shift or 0.0),
