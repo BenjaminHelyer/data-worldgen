@@ -7,6 +7,7 @@ This module contains a utility function to upload a local file to an S3 bucket u
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
+
 def upload_to_s3(local_file_path: str, bucket_name: str, s3_key: str) -> None:
     """
     Upload a local file to an S3 bucket.
@@ -19,7 +20,7 @@ def upload_to_s3(local_file_path: str, bucket_name: str, s3_key: str) -> None:
         NoCredentialsError: If AWS credentials are not found.
         ClientError: If the upload fails due to AWS error.
     """
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     try:
         s3_client.upload_file(local_file_path, bucket_name, s3_key)
     except FileNotFoundError:
@@ -28,6 +29,7 @@ def upload_to_s3(local_file_path: str, bucket_name: str, s3_key: str) -> None:
         raise NoCredentialsError("AWS credentials not found.")
     except ClientError as e:
         raise ClientError(e.response, e.operation_name)
+
 
 def download_from_s3(bucket_name: str, s3_key: str, local_file_path: str) -> None:
     """
@@ -40,11 +42,10 @@ def download_from_s3(bucket_name: str, s3_key: str, local_file_path: str) -> Non
         NoCredentialsError: If AWS credentials are not found.
         ClientError: If the download fails due to AWS error.
     """
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     try:
         s3_client.download_file(bucket_name, s3_key, local_file_path)
     except NoCredentialsError:
         raise NoCredentialsError("AWS credentials not found.")
     except ClientError as e:
-        raise ClientError(e.response, e.operation_name) 
-    
+        raise ClientError(e.response, e.operation_name)
