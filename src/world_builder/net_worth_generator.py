@@ -4,9 +4,10 @@ Module for generating net worth values for characters based on their professions
 
 from dataclasses import dataclass
 from typing import Optional
+import random
+import math
 
-from world_builder.net_worth_config import NetWorthConfig
-from world_builder.distributions_config import sample_from_config
+from world_builder.net_worth_config import NetWorthConfig, FunctionConfig
 from world_builder.character import Character
 
 
@@ -50,13 +51,38 @@ class NetWorth:
         )
 
 
+def evaluate_function(func_config: FunctionConfig, x: float) -> float:
+    """
+    Evaluate a function configuration at a given x value.
+
+    Args:
+        func_config: The function configuration to evaluate
+        x: The input value
+
+    Returns:
+        The function value at x
+    """
+    if func_config.type == "linear":
+        return func_config.params.slope * x + func_config.params.intercept
+    elif func_config.type == "exponential":
+        return func_config.params.base * math.exp(func_config.params.rate * x)
+    elif func_config.type == "quadratic":
+        return (
+            func_config.params.a * x * x
+            + func_config.params.b * x
+            + func_config.params.c
+        )
+    else:
+        raise ValueError(f"Unknown function type: {func_config.type}")
+
+
 def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth:
     """
     Generate a net worth value for a character based on their profession.
 
     Args:
         character: The character to generate net worth for
-        config: The net worth configuration containing profession-based distributions
+        config: The net worth configuration containing profession-based functions
 
     Returns:
         A NetWorth object with the generated values
@@ -69,11 +95,25 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
             f"Character profession '{character.profession}' not found in net worth config"
         )
 
-    # Get the distribution for this profession
-    dist_config = config.profession_net_worth[character.profession]
+    # Get the configuration for this profession
+    prof_config = config.profession_net_worth[character.profession]
 
-    # Sample from the distribution
-    liquid_currency = sample_from_config(dist_config)
+    # Get the field value (e.g., age) from the character
+    field_value = getattr(character, prof_config.field_name)
+
+    # Calculate the mean value using the mean function
+    mean_value = evaluate_function(prof_config.mean_function, field_value)
+
+    # Calculate the standard deviation using the scale factor function
+    std_value = evaluate_function(
+        prof_config.noise_function.params["scale_factor"], field_value
+    )
+
+    # Generate the final value by adding normal noise
+    liquid_currency = mean_value + random.gauss(0, std_value)
+
+    # Ensure the value is positive
+    liquid_currency = max(0, liquid_currency)
 
     # Get currency type from metadata, defaulting to "credits" if not specified
     currency_type = config.metadata.get("currency", "credits")

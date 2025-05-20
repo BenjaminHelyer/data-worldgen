@@ -6,8 +6,90 @@ from typing import Literal, Union, Dict, Any, Protocol
 import random
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from scipy.stats import truncnorm
+
+
+class FunctionParams(BaseModel):
+    """Base class for function parameters."""
+
+    model_config = ConfigDict(frozen=True)
+
+
+class LinearParams(FunctionParams):
+    """Parameters for linear function."""
+
+    slope: float
+    intercept: float
+
+
+class ExponentialParams(FunctionParams):
+    """Parameters for exponential function."""
+
+    base: float
+    rate: float
+
+
+class QuadraticParams(FunctionParams):
+    """Parameters for quadratic function."""
+
+    a: float
+    b: float
+    c: float
+
+
+class FunctionConfig(BaseModel):
+    """Configuration for a mathematical function."""
+
+    model_config = ConfigDict(frozen=True)
+
+    type: Literal["linear", "exponential", "quadratic"]
+    params: Union[LinearParams, ExponentialParams, QuadraticParams]
+
+    @model_validator(mode="after")
+    def validate_params(self) -> "FunctionConfig":
+        """Validate that params match the function type."""
+        if self.type == "linear" and not isinstance(self.params, LinearParams):
+            raise ValueError("Linear function requires LinearParams")
+        if self.type == "exponential" and not isinstance(
+            self.params, ExponentialParams
+        ):
+            raise ValueError("Exponential function requires ExponentialParams")
+        if self.type == "quadratic" and not isinstance(self.params, QuadraticParams):
+            raise ValueError("Quadratic function requires QuadraticParams")
+        return self
+
+
+class NoiseFunctionConfig(BaseModel):
+    """Configuration for the noise function."""
+
+    model_config = ConfigDict(frozen=True)
+
+    type: Literal["normal"]
+    params: Dict[str, Any] = Field(
+        description="Parameters for the noise function, including field_name and scale_factor"
+    )
+
+    @model_validator(mode="after")
+    def validate_params(self) -> "NoiseFunctionConfig":
+        """Validate noise function parameters."""
+        if "field_name" not in self.params:
+            raise ValueError("Noise function must specify field_name")
+        if "scale_factor" not in self.params:
+            raise ValueError("Noise function must specify scale_factor")
+        if not isinstance(self.params["scale_factor"], dict):
+            raise ValueError("scale_factor must be a function configuration")
+        return self
+
+
+class FunctionBasedDist(BaseModel):
+    """Configuration for a profession's net worth calculation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    field_name: str
+    mean_function: FunctionConfig
+    noise_function: NoiseFunctionConfig
 
 
 class DistributionTransformOperation(BaseModel):
@@ -155,7 +237,7 @@ DistributionTransformField = Dict[str, DistributionTransformCondition]
 DistributionTransformMap = Dict[str, DistributionTransformField]
 
 
-Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist]
+Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist, FunctionBasedDist]
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
@@ -202,6 +284,8 @@ def _sample(dist: Distribution) -> float:
         return float(
             truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
         )
+    elif isinstance(dist, FunctionBasedDist):
+        raise NotImplementedError("FunctionBasedDist sampling not implemented yet")
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 

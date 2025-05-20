@@ -9,6 +9,9 @@ from world_builder.distributions_config import (
     NormalDist,
     LogNormalDist,
     TruncatedNormalDist,
+    FunctionBasedDist,
+    FunctionConfig,
+    NoiseFunctionConfig,
 )
 
 parent_dir = Path(__file__).resolve().parent
@@ -33,50 +36,121 @@ def test_load_config_smoke(filename):
 
 # Valid configurations should use the new schema keys:
 good_configs = [
-    # test for basic normal distribution
+    # test for basic function-based distribution
     {
         "profession_net_worth": {
-            "farmer": {"type": "normal", "mean": 100, "std": 20},
-            "merchant": {"type": "normal", "mean": 500, "std": 100},
-        },
-        "metadata": {"currency": "credits"},
-    },
-    # test for mixed distribution types
-    {
-        "profession_net_worth": {
-            "smuggler": {"type": "lognormal", "mean": 3.0, "std": 1.0},
-            "bounty_hunter": {
-                "type": "truncated_normal",
-                "mean": 1000,
-                "std": 200,
-                "lower": 0,
-            },
-            "jedi": {"type": "normal", "mean": 50, "std": 10},
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": {"slope": 5, "intercept": 100},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": {"slope": 0.1, "intercept": 0},
+                        },
+                    },
+                },
+            }
         },
         "metadata": {"currency": "credits", "era": "Clone Wars"},
+    },
+    # test for multiple professions with different functions
+    {
+        "profession_net_worth": {
+            "merchant": {
+                "field_name": "experience",
+                "mean_function": {
+                    "type": "exponential",
+                    "params": {"base": 50, "rate": 0.1},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "experience",
+                        "scale_factor": {
+                            "type": "quadratic",
+                            "params": {"a": 0.01, "b": 0, "c": 0},
+                        },
+                    },
+                },
+            }
+        },
+        "metadata": {"currency": "credits"},
     },
 ]
 
 # Invalid configurations should trigger validation errors:
 bad_configs = [
-    # invalid distribution type
+    # missing field_name
     {
         "profession_net_worth": {
-            "farmer": {"type": "invalid", "mean": 100, "std": 20},
+            "farmer": {
+                "mean_function": {
+                    "type": "linear",
+                    "params": {"slope": 5, "intercept": 100},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": {"slope": 0.1, "intercept": 0},
+                        },
+                    },
+                },
+            }
         },
         "metadata": {"currency": "credits"},
     },
-    # missing required distribution parameters
+    # invalid function type
     {
         "profession_net_worth": {
-            "merchant": {"type": "normal", "mean": 500},  # missing std
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "invalid",
+                    "params": {"slope": 5, "intercept": 100},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": {"slope": 0.1, "intercept": 0},
+                        },
+                    },
+                },
+            }
         },
         "metadata": {"currency": "credits"},
     },
-    # negative standard deviation
+    # missing required function parameters
     {
         "profession_net_worth": {
-            "farmer": {"type": "normal", "mean": 100, "std": -20},
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": {"slope": 5},  # missing intercept
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": {"slope": 0.1, "intercept": 0},
+                        },
+                    },
+                },
+            }
         },
         "metadata": {"currency": "credits"},
     },
@@ -95,7 +169,11 @@ def test_networthconfig_valid(config_data):
         config_data["profession_net_worth"].keys()
     )
     for profession, dist in config.profession_net_worth.items():
-        assert isinstance(dist, Distribution)
+        assert isinstance(dist, FunctionBasedDist)
+        # Validate the structure of the function-based distribution
+        assert isinstance(dist.mean_function, FunctionConfig)
+        assert isinstance(dist.noise_function, NoiseFunctionConfig)
+        assert dist.field_name is not None
     # Check metadata
     if "metadata" in config_data:
         assert config.metadata == config_data["metadata"]
@@ -110,21 +188,52 @@ def test_networthconfig_invalid(config_data):
         NetWorthConfig(**config_data)
 
 
-def test_distribution_types():
+def test_function_types():
     """
-    Test that different distribution types are properly handled.
+    Test that different function types are properly handled.
     """
     config = NetWorthConfig(
         profession_net_worth={
-            "normal": NormalDist(type="normal", mean=100, std=20),
-            "lognormal": LogNormalDist(type="lognormal", mean=3.0, std=1.0),
-            "truncated": TruncatedNormalDist(
-                type="truncated_normal", mean=1000, std=200, lower=0
-            ),
+            "linear_test": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": {"slope": 5, "intercept": 100},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": {"slope": 0.1, "intercept": 0},
+                        },
+                    },
+                },
+            },
+            "exponential_test": {
+                "field_name": "experience",
+                "mean_function": {
+                    "type": "exponential",
+                    "params": {"base": 50, "rate": 0.1},
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "experience",
+                        "scale_factor": {
+                            "type": "quadratic",
+                            "params": {"a": 0.01, "b": 0, "c": 0},
+                        },
+                    },
+                },
+            },
         },
         metadata={"test": "test"},
     )
 
-    assert isinstance(config.profession_net_worth["normal"], NormalDist)
-    assert isinstance(config.profession_net_worth["lognormal"], LogNormalDist)
-    assert isinstance(config.profession_net_worth["truncated"], TruncatedNormalDist)
+    for profession, dist in config.profession_net_worth.items():
+        assert isinstance(dist, FunctionBasedDist)
+        assert dist.field_name is not None
+        assert isinstance(dist.mean_function, FunctionConfig)
+        assert isinstance(dist.noise_function, NoiseFunctionConfig)

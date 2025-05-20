@@ -1,19 +1,21 @@
 {
     "profession_net_worth": {
         "farmer": {
-            "type": "normal",
-            "mean": 100,
-            "std": 20
-        },
-        "merchant": {
-            "type": "normal",
-            "mean": 500,
-            "std": 100
-        },
-        "smuggler": {
-            "type": "lognormal",
-            "mean": 3.0,
-            "std": 1.0
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 5, "intercept": 100 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 0.1, "intercept": 0 }
+                    }
+                }
+            }
         }
     },
     "metadata": {
