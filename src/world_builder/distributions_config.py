@@ -6,8 +6,100 @@ from typing import Literal, Union, Dict, Any, Protocol
 import random
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 from scipy.stats import truncnorm
+
+
+class FunctionParams(BaseModel):
+    """Base class for function parameters."""
+
+    model_config = ConfigDict(frozen=True)
+
+
+class ConstantParams(FunctionParams):
+    """Parameters for constant function."""
+
+    value: float
+
+
+class LinearParams(FunctionParams):
+    """Parameters for linear function."""
+
+    slope: float
+    intercept: float
+
+
+class ExponentialParams(FunctionParams):
+    """Parameters for exponential function."""
+
+    base: float
+    rate: float
+
+
+class QuadraticParams(FunctionParams):
+    """Parameters for quadratic function."""
+
+    a: float
+    b: float
+    c: float
+
+
+class FunctionConfig(BaseModel):
+    """Configuration for a mathematical function."""
+
+    model_config = ConfigDict(frozen=True)
+
+    type: Literal["constant", "linear", "exponential", "quadratic"]
+    params: Union[ConstantParams, LinearParams, ExponentialParams, QuadraticParams]
+
+    @model_validator(mode="after")
+    def validate_params(self) -> "FunctionConfig":
+        """Validate that params match the function type."""
+        if self.type == "constant" and not isinstance(self.params, ConstantParams):
+            raise ValueError("Constant function requires ConstantParams")
+        if self.type == "linear" and not isinstance(self.params, LinearParams):
+            raise ValueError("Linear function requires LinearParams")
+        if self.type == "exponential" and not isinstance(
+            self.params, ExponentialParams
+        ):
+            raise ValueError("Exponential function requires ExponentialParams")
+        if self.type == "quadratic" and not isinstance(self.params, QuadraticParams):
+            raise ValueError("Quadratic function requires QuadraticParams")
+        return self
+
+
+class NoiseFunctionConfig(BaseModel):
+    """Configuration for the noise function."""
+
+    model_config = ConfigDict(frozen=True)
+
+    type: Literal["normal"]
+    params: Dict[str, Any] = Field(
+        description="Parameters for the noise function, including field_name and scale_factor"
+    )
+
+    @model_validator(mode="after")
+    def validate_params(self) -> "NoiseFunctionConfig":
+        """Validate noise function parameters."""
+        if "field_name" not in self.params:
+            raise ValueError("Noise function must specify field_name")
+        if "scale_factor" not in self.params:
+            raise ValueError("Noise function must specify scale_factor")
+        if not isinstance(self.params["scale_factor"], (dict, FunctionConfig)):
+            raise ValueError("scale_factor must be a function configuration")
+        if isinstance(self.params["scale_factor"], dict):
+            self.params["scale_factor"] = FunctionConfig(**self.params["scale_factor"])
+        return self
+
+
+class FunctionBasedDist(BaseModel):
+    """Configuration for a profession's net worth calculation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    field_name: str
+    mean_function: FunctionConfig
+    noise_function: NoiseFunctionConfig
 
 
 class DistributionTransformOperation(BaseModel):
@@ -18,12 +110,14 @@ class DistributionTransformOperation(BaseModel):
         mean_shift: Optional amount to shift the mean by (additive)
         std_mult: Optional amount to multiply the standard deviation by
     """
+
     mean_shift: float | None = None
     std_mult: float | None = None
 
 
 class TransformableDistribution(Protocol):
     """Protocol defining distributions that can be transformed."""
+
     def with_transform(
         self, transform: DistributionTransformOperation
     ) -> "TransformableDistribution":
@@ -48,6 +142,7 @@ class NormalDist(BaseModel):
         mean: Mean (μ) of the distribution
         std: Standard deviation (σ) of the distribution
     """
+
     type: Literal["normal"]
     mean: float
     std: float
@@ -79,6 +174,7 @@ class LogNormalDist(BaseModel):
         mean: Mean (μ) of the underlying normal distribution
         std: Standard deviation (σ) of the underlying normal distribution
     """
+
     type: Literal["lognormal"]
     mean: float
     std: float
@@ -114,6 +210,7 @@ class TruncatedNormalDist(BaseModel):
         lower: Lower bound (inclusive) for truncation
         upper: Upper bound (inclusive) for truncation, defaults to positive infinity
     """
+
     type: Literal["truncated_normal"]
     mean: float
     std: float
@@ -150,7 +247,7 @@ DistributionTransformField = Dict[str, DistributionTransformCondition]
 DistributionTransformMap = Dict[str, DistributionTransformField]
 
 
-Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist]
+Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist, FunctionBasedDist]
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
@@ -197,6 +294,8 @@ def _sample(dist: Distribution) -> float:
         return float(
             truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
         )
+    elif isinstance(dist, FunctionBasedDist):
+        raise NotImplementedError("FunctionBasedDist sampling not implemented yet")
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 

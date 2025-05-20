@@ -1,0 +1,29 @@
+{
+    "profession_net_worth": {
+        "Jedi": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": {
+                    "value": 1000
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "constant",
+                        "params": {
+                            "value": 100
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+} 

@@ -1,0 +1,25 @@
+{
+    "profession_net_worth": {
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 5, "intercept": 100 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 0.1, "intercept": 0 }
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+}
