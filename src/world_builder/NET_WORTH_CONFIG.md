@@ -90,7 +90,7 @@ For example, a Sith's net worth might be constant regardless of age, as they are
             "mean_function": {
                 "type": "constant",
                 "params": {
-                    "value": 10000
+                    "value": 100000
                 }
             },
             "noise_function": {
@@ -100,7 +100,7 @@ For example, a Sith's net worth might be constant regardless of age, as they are
                     "scale_factor": {
                         "type": "constant",
                         "params": {
-                            "value": 1000
+                            "value": 0.0
                         }
                     }
                 }
@@ -113,7 +113,7 @@ For example, a Sith's net worth might be constant regardless of age, as they are
 }
 ```
 
-In this example, a Sith would have a mean net worth of 10,000 imperial credits with a standard deviation of 1,000 credits, regardless of their age.
+In this example, a Sith would have a constant net worth of 100,000 imperial credits with no variation, regardless of their age.
 
 ### Linear Scaling with Age
 

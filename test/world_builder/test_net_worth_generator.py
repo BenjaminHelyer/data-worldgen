@@ -245,14 +245,14 @@ def test_generate_net_worth_constant():
             "Sith": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
-                    type="constant", params=ConstantParams(value=10000)
+                    type="constant", params=ConstantParams(value=100000)
                 ),
                 noise_function=NoiseFunctionConfig(
                     type="normal",
                     params={
                         "field_name": "age",
                         "scale_factor": FunctionConfig(
-                            type="constant", params=ConstantParams(value=1000)
+                            type="constant", params=ConstantParams(value=0)
                         ),
                     },
                 ),
@@ -268,9 +268,7 @@ def test_generate_net_worth_constant():
 
         # Verify the result
         assert net_worth.chain_code == "TEST123"
-        assert isinstance(net_worth.liquid_currency, float)
+        assert (
+            net_worth.liquid_currency == 100000
+        )  # Should be exactly 100000 with no noise
         assert net_worth.currency_type == "imperial_credits"
-
-        # Mean should be 10000 with std of 1000
-        # Allow for 5 standard deviations of variation
-        assert 5000 <= net_worth.liquid_currency <= 15000
