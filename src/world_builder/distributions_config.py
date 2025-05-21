@@ -73,7 +73,7 @@ class NoiseFunctionConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    type: Literal["normal"]
+    type: Literal["normal", "lognormal"]
     params: Dict[str, Any] = Field(
         description="Parameters for the noise function, including field_name and scale_factor"
     )
@@ -295,8 +295,37 @@ def _sample(dist: Distribution) -> float:
             truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
         )
     elif isinstance(dist, FunctionBasedDist):
-        raise NotImplementedError("FunctionBasedDist sampling not implemented yet")
+        if dist.noise_function.type == "normal":
+            scale = dist.noise_function.params["scale_factor"]
+            if isinstance(scale, FunctionConfig):
+                scale_value = _evaluate_function(scale, 0)
+            else:
+                scale_value = scale
+            return random.gauss(0, scale_value)
+        elif dist.noise_function.type == "lognormal":
+            scale = dist.noise_function.params["scale_factor"]
+            if isinstance(scale, FunctionConfig):
+                scale_value = _evaluate_function(scale, 0)
+            else:
+                scale_value = scale
+            return random.lognormvariate(0, scale_value)
+        raise NotImplementedError(
+            f"FunctionBasedDist sampling not implemented for noise type: {dist.noise_function.type}"
+        )
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
+
+
+def _evaluate_function(func: FunctionConfig, x: float) -> float:
+    """Helper function to evaluate a function configuration."""
+    if func.type == "constant":
+        return func.params.value
+    elif func.type == "linear":
+        return func.params.slope * x + func.params.intercept
+    elif func.type == "exponential":
+        return func.params.base * (func.params.rate**x)
+    elif func.type == "quadratic":
+        return func.params.a * (x**2) + func.params.b * x + func.params.c
+    raise ValueError(f"Unsupported function type: {func.type}")
 
 
 def sample_from_config(config: dict) -> float:
