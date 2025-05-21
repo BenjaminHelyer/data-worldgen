@@ -185,6 +185,7 @@ names/
 *.pdf
 planets/
 custom_config.json
+custom_net_worth_config.json
 custom_wb.py
 
 # vscode
