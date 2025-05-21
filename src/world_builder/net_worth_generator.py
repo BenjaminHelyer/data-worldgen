@@ -8,7 +8,11 @@ import random
 import math
 
 from world_builder.net_worth_config import NetWorthConfig
-from world_builder.distributions_config import FunctionConfig, FunctionBasedDist
+from world_builder.distributions_config import (
+    FunctionConfig,
+    FunctionBasedDist,
+    sample_from_config,
+)
 from world_builder.character import Character
 
 
@@ -104,15 +108,10 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     # Get the field value (e.g., age) from the character
     field_value = getattr(character, prof_config.field_name)
 
-    # Calculate the mean value using the mean function
-    mean_value = evaluate_function(prof_config.mean_function, field_value)
-
-    # Calculate the standard deviation using the scale factor function
-    scale_factor_config = prof_config.noise_function.params["scale_factor"]
-    std_value = evaluate_function(scale_factor_config, field_value)
-
-    # Generate the final value by adding normal noise
-    liquid_currency = mean_value + random.gauss(0, std_value)
+    # Generate the net worth using the distribution
+    config_dict = prof_config.model_dump()
+    config_dict["type"] = "function_based"  # Add the type field
+    liquid_currency = sample_from_config(config_dict, field_value)
 
     # Ensure the value is positive
     liquid_currency = max(0, liquid_currency)
