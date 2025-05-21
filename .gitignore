@@ -187,6 +187,7 @@ planets/
 custom_config.json
 custom_net_worth_config.json
 custom_wb.py
+plot_net_worth.py
 
 # vscode
 .vscode/
