@@ -97,13 +97,13 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     Raises:
         ValueError: If the character's profession is not found in the config
     """
-    if character.profession not in config.profession_net_worth:
+    if character.profession not in config.profession_liquid_currency:
         raise ValueError(
             f"Character profession '{character.profession}' not found in net worth config"
         )
 
     # Get the configuration for this profession
-    prof_config = config.profession_net_worth[character.profession]
+    prof_config = config.profession_liquid_currency[character.profession]
 
     # Get the field value (e.g., age) from the character
     field_value = getattr(character, prof_config.field_name)

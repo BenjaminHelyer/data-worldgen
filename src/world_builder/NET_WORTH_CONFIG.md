@@ -1,125 +1,23 @@
 # Net Worth Configuration
 
-This document describes the configuration system for generating character net worth values in the world builder.
+This document describes the configuration format for net worth generation in the world builder.
 
 ## Overview
 
-The net worth configuration system models how a character's wealth evolves over time based on their profession and attributes. The core concept is that net worth follows a predictable trend over a character's lifetime (e.g., increasing with age or experience), but with natural variation at any given point in time. For example, a farmer's wealth might generally increase with age, but two 30-year-old farmers could have different net worths due to various factors like crop yields, market conditions, or personal circumstances.
+The net worth configuration file is a JSON file that defines how net worth values are generated for characters based on their professions. The configuration allows for flexible, profession-specific distributions that can take into account character attributes like age or experience.
 
-The system captures this by defining two components for each profession:
-1. A mean function that describes the expected wealth trend over time (e.g., linear growth with age)
-2. A noise function that adds realistic variation around this trend
+## Configuration Format
 
-This approach allows us to generate realistic net worth distributions that reflect both the systematic progression of wealth in a profession and the natural variation we'd expect to see in real-world scenarios.
+The configuration file has two main sections:
 
-The net worth configuration system uses function-based distributions to calculate a character's net worth based on their attributes (e.g., age, experience). Each profession can have its own unique function that determines how net worth scales with these attributes.
+1. `profession_liquid_currency`: Defines the net worth generation rules for each profession
+2. `metadata`: Contains additional configuration metadata
 
-## Configuration Structure
-
-The configuration is defined in a JSON file with the following structure:
+### Example Configuration
 
 ```json
 {
-    "profession_net_worth": {
-        "profession_name": {
-            "field_name": "attribute_name",
-            "mean_function": {
-                "type": "function_type",
-                "params": {
-                    // Function-specific parameters
-                }
-            },
-            "noise_function": {
-                "type": "normal",
-                "params": {
-                    "field_name": "attribute_name",
-                    "scale_factor": {
-                        "type": "function_type",
-                        "params": {
-                            // Function-specific parameters
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "metadata": {
-        "currency": "currency_type",
-        // Additional metadata fields
-    }
-}
-```
-
-### Components
-
-1. **profession_net_worth**: A dictionary mapping profession names to their net worth configurations.
-
-2. **field_name**: The character attribute to use for net worth calculation (e.g., "age", "experience").
-
-3. **mean_function**: Defines how the base net worth scales with the attribute.
-   - **type**: One of "linear", "exponential", or "quadratic"
-   - **params**: Parameters specific to the function type:
-     - Linear: `slope` and `intercept`
-     - Exponential: `base` and `rate`
-     - Quadratic: `a`, `b`, and `c`
-
-4. **noise_function**: Defines the random variation in net worth.
-   - **type**: Currently only supports "normal" distribution
-   - **params**:
-     - **field_name**: The attribute to use for scaling
-     - **scale_factor**: A function configuration that determines how the standard deviation scales with the attribute
-
-5. **metadata**: Optional metadata fields.
-   - **currency**: The type of currency (defaults to "credits")
-
-## Example Configurations
-
-### Constant Net Worth
-
-### Net Worth with Age
-
-The net worth configuration system models how a character's wealth evolves over time based on their profession and attributes. Each profession can have its own unique function that determines how net worth scales with these attributes.
-
-For example, a Sith's net worth might be constant regardless of age, as they are provided for by the Empire:
-
-```json
-{
-    "profession_net_worth": {
-        "Sith": {
-            "field_name": "age",
-            "mean_function": {
-                "type": "constant",
-                "params": {
-                    "value": 100000
-                }
-            },
-            "noise_function": {
-                "type": "normal",
-                "params": {
-                    "field_name": "age",
-                    "scale_factor": {
-                        "type": "constant",
-                        "params": {
-                            "value": 0.0
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "metadata": {
-        "currency": "imperial_credits"
-    }
-}
-```
-
-In this example, a Sith would have a constant net worth of 100,000 imperial credits with no variation, regardless of their age.
-
-### Linear Scaling with Age
-
-```json
-{
-    "profession_net_worth": {
+    "profession_liquid_currency": {
         "farmer": {
             "field_name": "age",
             "mean_function": {
@@ -145,20 +43,77 @@ In this example, a Sith would have a constant net worth of 100,000 imperial cred
         }
     },
     "metadata": {
-        "currency": "credits"
+        "currency": "credits",
+        "era": "Clone Wars"
     }
 }
 ```
 
-In this example:
-- A 30-year-old farmer would have a mean net worth of 250 credits (5 * 30 + 100)
-- The standard deviation would be 3 credits (0.1 * 30 + 0)
+## Configuration Fields
 
-### Exponential Growth with Experience
+1. **profession_liquid_currency**: A dictionary mapping profession names to their net worth configurations.
+   Each profession entry contains:
+   - `field_name`: The character attribute to use (e.g., "age")
+   - `mean_function`: Function configuration for the mean value
+   - `noise_function`: Function configuration for the noise/variation
+
+2. **metadata**: Optional metadata fields
+   - `currency`: The currency type (defaults to "credits")
+   - `era`: The era this configuration is for
+
+## Function Types
+
+The configuration supports several function types for both mean and noise calculations:
+
+1. **Linear**: `y = mx + b`
+   ```json
+   {
+       "type": "linear",
+       "params": {
+           "slope": 5,
+           "intercept": 100
+       }
+   }
+   ```
+
+2. **Exponential**: `y = a * e^(rx)`
+   ```json
+   {
+       "type": "exponential",
+       "params": {
+           "base": 50,
+           "rate": 0.1
+       }
+   }
+   ```
+
+3. **Quadratic**: `y = ax² + bx + c`
+   ```json
+   {
+       "type": "quadratic",
+       "params": {
+           "a": 1,
+           "b": 2,
+           "c": 3
+       }
+   }
+   ```
+
+4. **Constant**: `y = k`
+   ```json
+   {
+       "type": "constant",
+       "params": {
+           "value": 1000
+       }
+   }
+   ```
+
+## Example: Complex Configuration
 
 ```json
 {
-    "profession_net_worth": {
+    "profession_liquid_currency": {
         "merchant": {
             "field_name": "experience",
             "mean_function": {
@@ -183,34 +138,16 @@ In this example:
                 }
             }
         }
+    },
+    "metadata": {
+        "currency": "credits"
     }
 }
 ```
 
-In this example:
-- A merchant with 5 years of experience would have a mean net worth of 82.4 credits (50 * e^(0.1 * 5))
-- The standard deviation would be 0.25 credits (0.01 * 5^2)
+## Notes
 
-## Implementation Details
-
-The net worth generation process:
-1. Gets the character's attribute value (e.g., age)
-2. Calculates the mean net worth using the mean_function
-3. Calculates the standard deviation using the noise_function's scale_factor
-4. Generates the final net worth by adding normally distributed noise
-5. Ensures the net worth is never negative
-
-## Best Practices
-
-1. **Mean Functions**:
-   - Use linear functions for steady growth
-   - Use exponential functions for accelerating growth
-   - Use quadratic functions for growth that accelerates then slows
-
-2. **Noise Functions**:
-   - Keep scale factors small relative to mean values
-   - Consider using quadratic scale factors for professions where wealth variation increases with experience
-
-3. **Field Selection**:
-   - Use "age" for professions where experience correlates with age
-   - Use "experience" for professions where experience can be gained independently of age 
+1. All monetary values are in the specified currency units (defaults to "credits")
+2. Functions can use any numeric character attribute (age, experience, etc.)
+3. Noise functions support normal, lognormal, and truncated normal distributions
+4. The configuration is validated when loaded to ensure all required fields are present 
