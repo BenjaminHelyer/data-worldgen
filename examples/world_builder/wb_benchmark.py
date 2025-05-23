@@ -15,18 +15,19 @@ from data_export.s3_upload import upload_to_s3
 try:
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s %(message)s',
+        format="%(asctime)s %(levelname)s %(message)s",
         handlers=[
-            logging.FileHandler('/var/log/world-builder/app.log'),
-        ]
+            logging.FileHandler("/var/log/world-builder/app.log"),
+        ],
     )
     logger = logging.getLogger(__name__)
-except: # use default logging if not running in EC2
+except:  # use default logging if not running in EC2
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s %(message)s',
+        format="%(asctime)s %(levelname)s %(message)s",
     )
     logger = logging.getLogger(__name__)
+
 
 def get_metadata(path):
     """Fetch metadata from the EC2 metadata service using IMDSv2."""
@@ -35,19 +36,20 @@ def get_metadata(path):
         token = requests.put(
             "http://169.254.169.254/latest/api/token",
             headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
-            timeout=2
+            timeout=2,
         ).text
         # now get the actual metadata from the request, using the token
         response = requests.get(
             f"http://169.254.169.254/latest/meta-data/{path}",
             headers={"X-aws-ec2-metadata-token": token},
-            timeout=2
+            timeout=2,
         )
         response.raise_for_status()
         return response.text.strip()
     except Exception as e:
         logger.error(f"Failed to get metadata for {path}: {e}")
         raise
+
 
 current_dir = Path(__file__).resolve().parent
 CONFIG_FILE = current_dir / "wb_config.json"
@@ -78,9 +80,11 @@ except Exception as e:
 BUCKET_NAME = "world-builder-example"  # <-- Replace with your S3 bucket name
 S3_KEY = f"population/benchmark/benchmark_{instance_type}.csv"  # <-- S3 object key/path with instance type
 
+
 def create_character_wrapper(_):
     # Wrapper to allow Pool.map to call create_character with config
     return create_character(config)
+
 
 results = []
 
@@ -95,15 +99,21 @@ for round_num in ROUND_COUNTS:
             for _ in pool.imap(create_character_wrapper, range(pop_size)):
                 pass
         elapsed = time.time() - start_time
-        print(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
-        logger.info(f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds")
-        results.append({
-            "round_num": round_num,
-            "population_size": pop_size,
-            "num_processes": num_proc,
-            "time_seconds": elapsed,
-            "instance_type": instance_type
-        })
+        print(
+            f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds"
+        )
+        logger.info(
+            f"Round: {round_num}, Population size: {pop_size}, Processes: {num_proc}, Time taken: {elapsed:.2f} seconds"
+        )
+        results.append(
+            {
+                "round_num": round_num,
+                "population_size": pop_size,
+                "num_processes": num_proc,
+                "time_seconds": elapsed,
+                "instance_type": instance_type,
+            }
+        )
 
 # Write benchmark results to CSV
 results_df = pd.DataFrame(results)
@@ -119,6 +129,7 @@ try:
 except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
+
 
 def terminate_instance():
     """Terminate this EC2 instance via AWS API."""
@@ -145,7 +156,7 @@ def terminate_instance():
         return
 
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = boto3.client("ec2", region_name=region)
         logger.info(f"EC2 client created")
         print(f"EC2 client created")
     except Exception as e:
@@ -162,6 +173,7 @@ def terminate_instance():
     except Exception as e:
         logger.error(f"Failed to terminate instance: {e}")
         print(f"Failed to terminate instance: {e}")
+
 
 # At the very end of the script, after all processing and logging:
 terminate_instance()

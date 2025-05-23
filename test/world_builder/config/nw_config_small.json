@@ -1,0 +1,253 @@
+{
+    "profession_liquid_currency": {
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 5, "intercept": 100 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 0.1, "intercept": 0 }
+                    }
+                }
+            }
+        }
+    },
+    "profession_has": {
+        "primary_residence": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.02, "intercept": 0.1 }
+                }
+            }
+        },
+        "other_properties": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.01, "intercept": 0.05 }
+                }
+            }
+        },
+        "starships": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.005, "intercept": 0.01 }
+                }
+            }
+        },
+        "speeders": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.015, "intercept": 0.05 }
+                }
+            }
+        },
+        "other_vehicles": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.01, "intercept": 0.03 }
+                }
+            }
+        },
+        "luxury_property": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.008, "intercept": 0.02 }
+                }
+            }
+        },
+        "galactic_stock": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.012, "intercept": 0.04 }
+                }
+            }
+        },
+        "business": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 0.01, "intercept": 0.03 }
+                }
+            }
+        }
+    },
+    "profession_value": {
+        "primary_residence": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 1000, "intercept": 50000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 100, "intercept": 5000 }
+                        }
+                    }
+                }
+            }
+        },
+        "other_properties": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 500, "intercept": 25000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 50, "intercept": 2500 }
+                        }
+                    }
+                }
+            }
+        },
+        "starships": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 2000, "intercept": 100000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 200, "intercept": 10000 }
+                        }
+                    }
+                }
+            }
+        },
+        "speeders": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 300, "intercept": 15000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 30, "intercept": 1500 }
+                        }
+                    }
+                }
+            }
+        },
+        "other_vehicles": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 400, "intercept": 20000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 40, "intercept": 2000 }
+                        }
+                    }
+                }
+            }
+        },
+        "luxury_property": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 3000, "intercept": 150000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 300, "intercept": 15000 }
+                        }
+                    }
+                }
+            }
+        },
+        "galactic_stock": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 800, "intercept": 40000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 80, "intercept": 4000 }
+                        }
+                    }
+                }
+            }
+        },
+        "business": {
+            "farmer": {
+                "field_name": "age",
+                "mean_function": {
+                    "type": "linear",
+                    "params": { "slope": 2500, "intercept": 125000 }
+                },
+                "noise_function": {
+                    "type": "normal",
+                    "params": {
+                        "field_name": "age",
+                        "scale_factor": {
+                            "type": "linear",
+                            "params": { "slope": 250, "intercept": 12500 }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+} 

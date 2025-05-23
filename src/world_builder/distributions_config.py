@@ -251,7 +251,33 @@ DistributionTransformField = Dict[str, DistributionTransformCondition]
 DistributionTransformMap = Dict[str, DistributionTransformField]
 
 
-Distribution = Union[NormalDist, LogNormalDist, TruncatedNormalDist, FunctionBasedDist]
+class BernoulliBasedDist(BaseModel):
+    """
+    Configuration for a Bernoulli distribution where the probability parameter
+    is determined by a function of some field value (e.g. age).
+
+    This is a simplified distribution that only uses a mean_function
+    to determine the probability parameter, which is then used as the
+    parameter of a Bernoulli trial.
+
+    Attributes:
+        field_name: The character field to use as input (e.g. 'age')
+        mean_function: Function that determines the probability parameter
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    field_name: str
+    mean_function: FunctionConfig
+
+
+Distribution = Union[
+    NormalDist,
+    LogNormalDist,
+    TruncatedNormalDist,
+    FunctionBasedDist,
+    BernoulliBasedDist,
+]
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,
@@ -357,6 +383,10 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
         raise NotImplementedError(
             f"FunctionBasedDist sampling not implemented for noise type: {dist.noise_function.type}"
         )
+    elif isinstance(dist, BernoulliBasedDist):
+        # For Bernoulli distribution, we use the probability parameter from the mean_function
+        probability = _evaluate_function(dist.mean_function, field_value)
+        return random.random() < probability
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 

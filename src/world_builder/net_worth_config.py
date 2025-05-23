@@ -4,17 +4,24 @@ This module implements a basic helper function, load_config, to load the net wor
 This helper function returns a Pydantic model, which automatically validates the config.
 
 The config is a JSON file that contains the following fields:
-- profession_liquid_currency: a dictionary mapping professions to their net worth distributions
+- profession_liquid_currency: a dictionary mapping professions to their net worth distributions (required)
+- profession_has: an optional dictionary mapping asset types to profession ownership probabilities
+- profession_value: an optional dictionary mapping asset types to profession value distributions
 - metadata: optional metadata fields
 """
 
-from typing import Dict
+from typing import Dict, Optional
 import json
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from world_builder.distributions_config import Distribution, FunctionBasedDist
+from world_builder.distributions_config import (
+    Distribution,
+    FunctionBasedDist,
+    FunctionConfig,
+    BernoulliBasedDist,
+)
 
 
 class NetWorthConfig(BaseModel):
@@ -22,15 +29,29 @@ class NetWorthConfig(BaseModel):
     Configuration for net worth generation.
 
     Attributes:
-        profession_liquid_currency: Maps each profession to its net worth distribution
+        profession_liquid_currency: Maps each profession to its net worth distribution (required)
+        profession_has: Optional mapping of asset types to profession ownership probabilities
+        profession_value: Optional mapping of asset types to profession value distributions
         metadata: Optional metadata fields
     """
 
     model_config = ConfigDict(frozen=True)
 
-    # Maps each profession to its net worth distribution
+    # Required mapping of professions to their net worth distributions
     profession_liquid_currency: Dict[str, FunctionBasedDist] = Field(
         description="Required mapping of professions to their net worth distributions."
+    )
+
+    # Optional mapping of asset types to profession ownership probabilities
+    profession_has: Optional[Dict[str, Dict[str, BernoulliBasedDist]]] = Field(
+        default=None,
+        description="Optional mapping of asset types to profession ownership probabilities.",
+    )
+
+    # Optional mapping of asset types to profession value distributions
+    profession_value: Optional[Dict[str, Dict[str, FunctionBasedDist]]] = Field(
+        default=None,
+        description="Optional mapping of asset types to profession value distributions.",
     )
 
     # catch-all dict for any miscellaneous, constant metadata fields
