@@ -4,7 +4,7 @@ This module implements a basic helper function, load_config, to load the net wor
 This helper function returns a Pydantic model, which automatically validates the config.
 
 The config is a JSON file that contains the following fields:
-- profession_net_worth: a dictionary mapping professions to their net worth distributions
+- profession_liquid_currency: a dictionary mapping professions to their net worth distributions
 - metadata: optional metadata fields
 """
 
@@ -22,14 +22,14 @@ class NetWorthConfig(BaseModel):
     Configuration for net worth generation.
 
     Attributes:
-        profession_net_worth: Maps each profession to its net worth distribution
+        profession_liquid_currency: Maps each profession to its net worth distribution
         metadata: Optional metadata fields
     """
 
     model_config = ConfigDict(frozen=True)
 
     # Maps each profession to its net worth distribution
-    profession_net_worth: Dict[str, FunctionBasedDist] = Field(
+    profession_liquid_currency: Dict[str, FunctionBasedDist] = Field(
         description="Required mapping of professions to their net worth distributions."
     )
 

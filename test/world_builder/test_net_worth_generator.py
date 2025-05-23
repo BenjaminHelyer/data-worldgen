@@ -91,7 +91,7 @@ def test_generate_net_worth_basic():
 
     # Create a simple config with one profession
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "farmer": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
@@ -127,7 +127,7 @@ def test_generate_net_worth_unknown_profession():
     character = MockCharacter(chain_code="TEST123", profession="unknown_profession")
 
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "farmer": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
@@ -159,7 +159,7 @@ def test_generate_net_worth_default_currency():
     character = MockCharacter(chain_code="TEST123", profession="farmer")
 
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "farmer": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
@@ -188,7 +188,7 @@ def test_generate_net_worth_custom_currency():
     character = MockCharacter(chain_code="TEST123", profession="farmer")
 
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "farmer": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
@@ -241,7 +241,7 @@ def test_generate_net_worth_constant():
     ages = [20, 30, 40, 50]
 
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "Sith": FunctionBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(

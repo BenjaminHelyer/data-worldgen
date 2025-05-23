@@ -39,7 +39,7 @@ def test_load_config_smoke(filename):
 good_configs = [
     # test for basic function-based distribution
     {
-        "profession_net_worth": {
+        "profession_liquid_currency": {
             "farmer": {
                 "field_name": "age",
                 "mean_function": {
@@ -62,7 +62,7 @@ good_configs = [
     },
     # test for multiple professions with different functions
     {
-        "profession_net_worth": {
+        "profession_liquid_currency": {
             "merchant": {
                 "field_name": "experience",
                 "mean_function": {
@@ -89,7 +89,7 @@ good_configs = [
 bad_configs = [
     # missing field_name
     {
-        "profession_net_worth": {
+        "profession_liquid_currency": {
             "farmer": {
                 "mean_function": {
                     "type": "linear",
@@ -111,7 +111,7 @@ bad_configs = [
     },
     # invalid function type
     {
-        "profession_net_worth": {
+        "profession_liquid_currency": {
             "farmer": {
                 "field_name": "age",
                 "mean_function": {
@@ -134,7 +134,7 @@ bad_configs = [
     },
     # missing required function parameters
     {
-        "profession_net_worth": {
+        "profession_liquid_currency": {
             "farmer": {
                 "field_name": "age",
                 "mean_function": {
@@ -166,10 +166,10 @@ def test_networthconfig_valid(config_data):
     """
     config = NetWorthConfig(**config_data)
     # Check that distributions are loaded correctly
-    assert set(config.profession_net_worth.keys()) == set(
-        config_data["profession_net_worth"].keys()
+    assert set(config.profession_liquid_currency.keys()) == set(
+        config_data["profession_liquid_currency"].keys()
     )
-    for profession, dist in config.profession_net_worth.items():
+    for profession, dist in config.profession_liquid_currency.items():
         assert isinstance(dist, FunctionBasedDist)
         # Validate the structure of the function-based distribution
         assert isinstance(dist.mean_function, FunctionConfig)
@@ -194,7 +194,7 @@ def test_function_types():
     Test that different function types are properly handled.
     """
     config = NetWorthConfig(
-        profession_net_worth={
+        profession_liquid_currency={
             "linear_test": {
                 "field_name": "age",
                 "mean_function": {
@@ -233,7 +233,7 @@ def test_function_types():
         metadata={"test": "test"},
     )
 
-    for profession, dist in config.profession_net_worth.items():
+    for profession, dist in config.profession_liquid_currency.items():
         assert isinstance(dist, FunctionBasedDist)
         assert dist.field_name is not None
         assert isinstance(dist.mean_function, FunctionConfig)
@@ -250,7 +250,7 @@ def test_load_large_config():
 
     # Test basic structure
     assert isinstance(config, NetWorthConfig)
-    assert hasattr(config, "profession_net_worth")
+    assert hasattr(config, "profession_liquid_currency")
     assert hasattr(config, "metadata")
 
     # Test metadata
@@ -266,8 +266,8 @@ def test_load_large_config():
     }
 
     for profession, expected_config in profession_configs.items():
-        assert profession in config.profession_net_worth
-        dist = config.profession_net_worth[profession]
+        assert profession in config.profession_liquid_currency
+        dist = config.profession_liquid_currency[profession]
 
         # Verify distribution structure
         assert isinstance(dist, FunctionBasedDist)
