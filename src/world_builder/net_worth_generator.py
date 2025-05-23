@@ -258,6 +258,7 @@ def _generate_asset_value(
     has_config: Optional[Dict[str, Any]],
     value_config: Optional[Dict[str, Any]],
     profession: str,
+    asset_type: str,
 ) -> tuple[Optional[bool], Optional[float]]:
     """
     Helper function to generate ownership and value for an asset type.
@@ -267,6 +268,7 @@ def _generate_asset_value(
         has_config: The configuration for asset ownership probability
         value_config: The configuration for asset value distribution
         profession: The character's profession
+        asset_type: The type of asset to generate for
 
     Returns:
         A tuple of (owns_asset, asset_value) where both could be None
@@ -274,8 +276,12 @@ def _generate_asset_value(
     owns_asset = None
     asset_value = None
 
-    if has_config is not None and profession in has_config:
-        residence_config = has_config[profession]
+    if (
+        has_config is not None
+        and asset_type in has_config
+        and profession in has_config[asset_type]
+    ):
+        residence_config = has_config[asset_type][profession]
         field_value = getattr(character, residence_config.field_name)
         probability = evaluate_function(residence_config.mean_function, field_value)
         # Ensure probability is between 0 and 1
@@ -284,8 +290,8 @@ def _generate_asset_value(
 
         # If they own the asset, generate its value
         if owns_asset and value_config is not None:
-            if profession in value_config:
-                value_config_data = value_config[profession]
+            if asset_type in value_config and profession in value_config[asset_type]:
+                value_config_data = value_config[asset_type][profession]
                 field_value = getattr(character, value_config_data.field_name)
                 config_dict = value_config_data.model_dump()
                 config_dict["type"] = "function_based"
@@ -335,58 +341,66 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     # Generate all asset ownership and values
     owns_primary_residence, primary_residence_value = _generate_asset_value(
         character,
-        config.profession_has_primary_residence,
-        config.profession_primary_residence_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "primary_residence",
     )
 
     owns_other_properties, other_properties_net_value = _generate_asset_value(
         character,
-        config.profession_has_other_properties,
-        config.profession_other_properties_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "other_properties",
     )
 
     owns_starships, starships_net_value = _generate_asset_value(
         character,
-        config.profession_has_starships,
-        config.profession_starships_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "starships",
     )
 
     owns_speeders, speeders_net_value = _generate_asset_value(
         character,
-        config.profession_has_speeders,
-        config.profession_speeders_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "speeders",
     )
 
     owns_other_vehicles, other_vehicles_net_value = _generate_asset_value(
         character,
-        config.profession_has_other_vehicles,
-        config.profession_other_vehicles_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "other_vehicles",
     )
 
     owns_luxury_property, luxury_property_net_value = _generate_asset_value(
         character,
-        config.profession_has_luxury_property,
-        config.profession_luxury_property_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "luxury_property",
     )
 
     owns_galactic_stock, galactic_stock_net_value = _generate_asset_value(
         character,
-        config.profession_has_galactic_stock,
-        config.profession_galactic_stock_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "galactic_stock",
     )
 
     owns_business, business_net_value = _generate_asset_value(
         character,
-        config.profession_has_business,
-        config.profession_business_net_value,
+        config.profession_has,
+        config.profession_value,
         character.profession,
+        "business",
     )
 
     return NetWorth(

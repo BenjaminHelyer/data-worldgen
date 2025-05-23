@@ -1,3 +1,7 @@
+"""
+Tests for the net worth configuration module.
+"""
+
 from pathlib import Path
 
 import pytest
@@ -293,20 +297,22 @@ def test_load_config_with_primary_residence():
 
     # Test basic structure
     assert isinstance(config, NetWorthConfig)
-    assert config.profession_has_primary_residence is not None
-    assert config.profession_primary_residence_value is not None
-    assert "farmer" in config.profession_has_primary_residence
-    assert "farmer" in config.profession_primary_residence_value
+    assert config.profession_has is not None
+    assert config.profession_value is not None
+    assert "primary_residence" in config.profession_has
+    assert "primary_residence" in config.profession_value
+    assert "farmer" in config.profession_has["primary_residence"]
+    assert "farmer" in config.profession_value["primary_residence"]
 
     # Test residence ownership config structure
-    residence_config = config.profession_has_primary_residence["farmer"]
+    residence_config = config.profession_has["primary_residence"]["farmer"]
     assert residence_config.field_name == "age"
     assert residence_config.mean_function.type == "linear"
     assert residence_config.mean_function.params.slope == 0.02
     assert residence_config.mean_function.params.intercept == 0.1
 
     # Test residence value config structure
-    value_config = config.profession_primary_residence_value["farmer"]
+    value_config = config.profession_value["primary_residence"]["farmer"]
     assert value_config.field_name == "age"
     assert value_config.mean_function.type == "linear"
     assert value_config.mean_function.params.slope == 1000
@@ -326,28 +332,31 @@ def test_load_config_with_all_assets():
 
     # Test basic structure
     assert isinstance(config, NetWorthConfig)
-    assert config.profession_has_primary_residence is not None
-    assert config.profession_primary_residence_value is not None
-    assert config.profession_has_other_properties is not None
-    assert config.profession_other_properties_net_value is not None
-    assert config.profession_has_starships is not None
-    assert config.profession_starships_net_value is not None
-    assert config.profession_has_speeders is not None
-    assert config.profession_speeders_net_value is not None
-    assert config.profession_has_other_vehicles is not None
-    assert config.profession_other_vehicles_net_value is not None
-    assert config.profession_has_luxury_property is not None
-    assert config.profession_luxury_property_net_value is not None
-    assert config.profession_has_galactic_stock is not None
-    assert config.profession_galactic_stock_net_value is not None
-    assert config.profession_has_business is not None
-    assert config.profession_business_net_value is not None
+    assert config.profession_has is not None
+    assert config.profession_value is not None
+
+    # Test that each asset type exists in both has and value configs
+    asset_types = [
+        "primary_residence",
+        "other_properties",
+        "starships",
+        "speeders",
+        "other_vehicles",
+        "luxury_property",
+        "galactic_stock",
+        "business",
+    ]
+
+    for asset_type in asset_types:
+        assert asset_type in config.profession_has
+        assert asset_type in config.profession_value
+        assert "farmer" in config.profession_has[asset_type]
+        assert "farmer" in config.profession_value[asset_type]
 
     # Test that each asset type has the correct structure for "farmer" profession
     asset_configs = [
         (
-            "profession_has_primary_residence",
-            "profession_primary_residence_value",
+            "primary_residence",
             0.02,
             0.1,
             1000,
@@ -356,8 +365,7 @@ def test_load_config_with_all_assets():
             5000,
         ),  # ownership_slope, ownership_intercept, value_slope, value_intercept, noise_slope, noise_intercept
         (
-            "profession_has_other_properties",
-            "profession_other_properties_net_value",
+            "other_properties",
             0.01,
             0.05,
             500,
@@ -366,8 +374,7 @@ def test_load_config_with_all_assets():
             2500,
         ),
         (
-            "profession_has_starships",
-            "profession_starships_net_value",
+            "starships",
             0.005,
             0.01,
             2000,
@@ -376,8 +383,7 @@ def test_load_config_with_all_assets():
             10000,
         ),
         (
-            "profession_has_speeders",
-            "profession_speeders_net_value",
+            "speeders",
             0.015,
             0.05,
             300,
@@ -386,8 +392,7 @@ def test_load_config_with_all_assets():
             1500,
         ),
         (
-            "profession_has_other_vehicles",
-            "profession_other_vehicles_net_value",
+            "other_vehicles",
             0.01,
             0.03,
             400,
@@ -396,8 +401,7 @@ def test_load_config_with_all_assets():
             2000,
         ),
         (
-            "profession_has_luxury_property",
-            "profession_luxury_property_net_value",
+            "luxury_property",
             0.008,
             0.02,
             3000,
@@ -406,8 +410,7 @@ def test_load_config_with_all_assets():
             15000,
         ),
         (
-            "profession_has_galactic_stock",
-            "profession_galactic_stock_net_value",
+            "galactic_stock",
             0.012,
             0.04,
             800,
@@ -416,8 +419,7 @@ def test_load_config_with_all_assets():
             4000,
         ),
         (
-            "profession_has_business",
-            "profession_business_net_value",
+            "business",
             0.01,
             0.03,
             2500,
@@ -428,8 +430,7 @@ def test_load_config_with_all_assets():
     ]
 
     for (
-        has_field,
-        value_field,
+        asset_type,
         ownership_slope,
         ownership_intercept,
         value_slope,
@@ -438,14 +439,14 @@ def test_load_config_with_all_assets():
         noise_intercept,
     ) in asset_configs:
         # Test ownership config
-        has_config = getattr(config, has_field)["farmer"]
+        has_config = config.profession_has[asset_type]["farmer"]
         assert has_config.field_name == "age"
         assert has_config.mean_function.type == "linear"
         assert has_config.mean_function.params.slope == ownership_slope
         assert has_config.mean_function.params.intercept == ownership_intercept
 
         # Test value config
-        value_config = getattr(config, value_field)["farmer"]
+        value_config = config.profession_value[asset_type]["farmer"]
         assert value_config.field_name == "age"
         assert value_config.mean_function.type == "linear"
         assert value_config.mean_function.params.slope == value_slope
