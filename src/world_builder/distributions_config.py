@@ -4,6 +4,7 @@ Holds the Pydantic BaseModels and distribution objects for various probaility di
 
 from typing import Literal, Union, Dict, Any, Protocol
 import random
+import math
 
 import numpy as np
 from pydantic import BaseModel, Field, ConfigDict, model_validator
@@ -73,7 +74,7 @@ class NoiseFunctionConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    type: Literal["normal"]
+    type: Literal["normal", "lognormal", "truncated_normal"]
     params: Dict[str, Any] = Field(
         description="Parameters for the noise function, including field_name and scale_factor"
     )
@@ -89,6 +90,9 @@ class NoiseFunctionConfig(BaseModel):
             raise ValueError("scale_factor must be a function configuration")
         if isinstance(self.params["scale_factor"], dict):
             self.params["scale_factor"] = FunctionConfig(**self.params["scale_factor"])
+        if self.type == "truncated_normal":
+            if "lower" not in self.params or "upper" not in self.params:
+                raise ValueError("truncated_normal requires lower and upper bounds")
         return self
 
 
@@ -267,17 +271,20 @@ def _parse(config: Any) -> Distribution:
     if not isinstance(config, dict):
         raise TypeError(f"Config must be a dict or BaseModel, got {type(config)}")
 
-    dist_type = (
-        config.type
-    )  # note that the key in config of 'type' is a distribution type, e.g., 'normal' or 'binomial', not a Python language type
-    if dist_type not in DISTRIBUTION_REGISTRY:
+    dist_type = config.get("type")
+    if dist_type is None:
+        raise ValueError("Config must specify a 'type' field")
+
+    if dist_type == "function_based":
+        return FunctionBasedDist(**config)
+    elif dist_type not in DISTRIBUTION_REGISTRY:
         raise ValueError(f"Unsupported distribution type: {dist_type}")
 
     model_cls = DISTRIBUTION_REGISTRY[dist_type]
     return model_cls(**config)
 
 
-def _sample(dist: Distribution) -> float:
+def _sample(dist: Distribution, field_value: float = 0) -> float:
     """
     Draw a random sample from a distribution model instance.
     Uses Python's random module for consistency across all distributions.
@@ -285,7 +292,11 @@ def _sample(dist: Distribution) -> float:
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
     elif isinstance(dist, LogNormalDist):
-        return random.lognormvariate(dist.mean, dist.std)
+        # For lognormal, we need to adjust the parameters to prevent overflow
+        # Using the relationship between normal and lognormal parameters
+        mu = math.log(dist.mean**2 / math.sqrt(dist.std**2 + dist.mean**2))
+        sigma = math.sqrt(math.log(1 + (dist.std / dist.mean) ** 2))
+        return random.lognormvariate(mu, sigma)
     elif isinstance(dist, TruncatedNormalDist):
         a = (dist.lower - dist.mean) / dist.std
         b = (dist.upper - dist.mean) / dist.std
@@ -295,16 +306,79 @@ def _sample(dist: Distribution) -> float:
             truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
         )
     elif isinstance(dist, FunctionBasedDist):
-        raise NotImplementedError("FunctionBasedDist sampling not implemented yet")
+        # First calculate the mean value
+        mean_value = _evaluate_function(dist.mean_function, field_value)
+
+        # Then add the noise
+        if dist.noise_function.type == "normal":
+            scale = dist.noise_function.params["scale_factor"]
+            if isinstance(scale, FunctionConfig):
+                scale_value = _evaluate_function(scale, field_value)
+            else:
+                scale_value = scale
+            return mean_value + random.gauss(0, scale_value)
+        elif dist.noise_function.type == "lognormal":
+            scale = dist.noise_function.params["scale_factor"]
+            if isinstance(scale, FunctionConfig):
+                scale_value = _evaluate_function(scale, field_value)
+            else:
+                scale_value = scale
+
+            # For lognormal noise, we use a different parameterization to handle large values
+            # We want the noise to be multiplicative rather than additive for large values
+            noise_factor = math.exp(
+                random.gauss(0, math.log1p(scale_value / mean_value))
+            )
+            return mean_value * noise_factor
+        elif dist.noise_function.type == "truncated_normal":
+            scale = dist.noise_function.params["scale_factor"]
+            if isinstance(scale, FunctionConfig):
+                scale_value = _evaluate_function(scale, field_value)
+            else:
+                scale_value = scale
+            lower = dist.noise_function.params["lower"]
+            upper = dist.noise_function.params["upper"]
+            # Generate noise between lower and upper bounds
+            rng = np.random.RandomState(random.randint(0, 2**32 - 1))
+            noise = float(
+                truncnorm.rvs(
+                    (lower - 0) / scale_value,  # a = (lower - loc) / scale
+                    (upper - 0) / scale_value,  # b = (upper - loc) / scale
+                    loc=0,  # center at 0
+                    scale=scale_value,
+                    random_state=rng,
+                )
+            )
+            if noise < 0:
+                raise ValueError(
+                    f"Got negative noise value: {noise} for truncated normal with lower={lower}"
+                )
+            return mean_value + noise
+        raise NotImplementedError(
+            f"FunctionBasedDist sampling not implemented for noise type: {dist.noise_function.type}"
+        )
     raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
 
 
-def sample_from_config(config: dict) -> float:
+def _evaluate_function(func: FunctionConfig, x: float) -> float:
+    """Helper function to evaluate a function configuration."""
+    if func.type == "constant":
+        return func.params.value
+    elif func.type == "linear":
+        return func.params.slope * x + func.params.intercept
+    elif func.type == "exponential":
+        return func.params.base * math.exp(func.params.rate * x)
+    elif func.type == "quadratic":
+        return func.params.a * (x**2) + func.params.b * x + func.params.c
+    raise ValueError(f"Unsupported function type: {func.type}")
+
+
+def sample_from_config(config: dict, field_value: float = 0) -> float:
     """
     Convenience method: parse config dict and draw a sample.
     """
     dist = _parse(config)
-    return _sample(dist)
+    return _sample(dist, field_value)
 
 
 class DistributionOverride(BaseModel):

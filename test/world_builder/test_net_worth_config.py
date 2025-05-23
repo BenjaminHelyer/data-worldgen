@@ -23,6 +23,7 @@ CONFIG_FILE = CONFIG_DIR / "nw_config_micro.json"
     "filename",
     [
         "nw_config_micro.json",
+        "nw_config_large.json",
     ],  # known good configs -- should pass
 )
 def test_load_config_smoke(filename):
@@ -237,3 +238,47 @@ def test_function_types():
         assert dist.field_name is not None
         assert isinstance(dist.mean_function, FunctionConfig)
         assert isinstance(dist.noise_function, NoiseFunctionConfig)
+
+
+def test_load_large_config():
+    """
+    Test loading and validating the large config file specifically.
+    This test verifies the structure and content of the large config file.
+    """
+    config_path = CONFIG_DIR / "nw_config_large.json"
+    config = load_config(config_path)
+
+    # Test basic structure
+    assert isinstance(config, NetWorthConfig)
+    assert hasattr(config, "profession_net_worth")
+    assert hasattr(config, "metadata")
+
+    # Test metadata
+    assert config.metadata["currency"] == "credits"
+    assert config.metadata["era"] == "Clone Wars"
+
+    # Test specific professions with their expected configurations
+    profession_configs = {
+        "bounty hunter": {"noise_type": "normal", "mean_type": "exponential"},
+        "Jedi": {"noise_type": "normal", "mean_type": "constant"},
+        "politician": {"noise_type": "lognormal", "mean_type": "linear"},
+        "wealthy": {"noise_type": "truncated_normal", "mean_type": "exponential"},
+    }
+
+    for profession, expected_config in profession_configs.items():
+        assert profession in config.profession_net_worth
+        dist = config.profession_net_worth[profession]
+
+        # Verify distribution structure
+        assert isinstance(dist, FunctionBasedDist)
+        assert dist.field_name == "age"
+        assert isinstance(dist.mean_function, FunctionConfig)
+        assert isinstance(dist.noise_function, NoiseFunctionConfig)
+
+        # Verify function types match expected configuration
+        assert dist.noise_function.type == expected_config["noise_type"]
+        assert dist.mean_function.type == expected_config["mean_type"]
+
+        # Verify required parameters exist
+        assert "field_name" in dist.noise_function.params
+        assert "scale_factor" in dist.noise_function.params
