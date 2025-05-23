@@ -78,7 +78,11 @@ def test_networth_creation():
 def test_networth_immutability():
     """Test that NetWorth objects are immutable through properties."""
     net_worth = NetWorth(
-        chain_code="TEST123", liquid_currency=1000.0, currency_type="credits"
+        chain_code="TEST123",
+        liquid_currency=1000.0,
+        currency_type="credits",
+        owns_primary_residence=True,
+        primary_residence_value=50000.0,
     )
 
     # Test that we can't set attributes directly
@@ -89,33 +93,17 @@ def test_networth_immutability():
     with pytest.raises(AttributeError):
         net_worth.currency_type = "imperial_credits"
     with pytest.raises(AttributeError):
-        net_worth.owns_other_properties = True
+        net_worth.owns_primary_residence = False
     with pytest.raises(AttributeError):
-        net_worth.other_properties_net_value = 25000.0
+        net_worth.primary_residence_value = 75000.0
+
+    # Test that we can't add new attributes after initialization
     with pytest.raises(AttributeError):
-        net_worth.owns_starships = True
+        net_worth.new_attribute = "value"
     with pytest.raises(AttributeError):
-        net_worth.starships_net_value = 100000.0
+        net_worth.owns_new_asset = True
     with pytest.raises(AttributeError):
-        net_worth.owns_speeders = True
-    with pytest.raises(AttributeError):
-        net_worth.speeders_net_value = 15000.0
-    with pytest.raises(AttributeError):
-        net_worth.owns_other_vehicles = True
-    with pytest.raises(AttributeError):
-        net_worth.other_vehicles_net_value = 20000.0
-    with pytest.raises(AttributeError):
-        net_worth.owns_luxury_property = True
-    with pytest.raises(AttributeError):
-        net_worth.luxury_property_net_value = 150000.0
-    with pytest.raises(AttributeError):
-        net_worth.owns_galactic_stock = True
-    with pytest.raises(AttributeError):
-        net_worth.galactic_stock_net_value = 40000.0
-    with pytest.raises(AttributeError):
-        net_worth.owns_business = True
-    with pytest.raises(AttributeError):
-        net_worth.business_net_value = 125000.0
+        net_worth.new_asset_value = 100000.0
 
 
 def test_networth_equality():
@@ -215,18 +203,39 @@ def test_networth_repr():
         business_net_value=125000.0,
     )
 
-    expected_repr = (
-        "NetWorth(chain_code='TEST123', liquid_currency=1000.0, currency_type='credits', "
-        "owns_primary_residence=True, primary_residence_value=50000.0, "
-        "owns_other_properties=True, other_properties_net_value=25000.0, "
-        "owns_starships=True, starships_net_value=100000.0, "
-        "owns_speeders=True, speeders_net_value=15000.0, "
-        "owns_other_vehicles=True, other_vehicles_net_value=20000.0, "
-        "owns_luxury_property=True, luxury_property_net_value=150000.0, "
-        "owns_galactic_stock=True, galactic_stock_net_value=40000.0, "
-        "owns_business=True, business_net_value=125000.0)"
-    )
-    assert repr(net_worth) == expected_repr
+    repr_str = repr(net_worth)
+
+    # Check that it starts with NetWorth( and ends with )
+    assert repr_str.startswith("NetWorth(")
+    assert repr_str.endswith(")")
+
+    # Check that all expected attributes are present in the repr
+    expected_attrs = [
+        "chain_code='TEST123'",
+        "liquid_currency=1000.0",
+        "currency_type='credits'",
+        "owns_primary_residence=True",
+        "primary_residence_value=50000.0",
+        "owns_other_properties=True",
+        "other_properties_net_value=25000.0",
+        "owns_starships=True",
+        "starships_net_value=100000.0",
+        "owns_speeders=True",
+        "speeders_net_value=15000.0",
+        "owns_other_vehicles=True",
+        "other_vehicles_net_value=20000.0",
+        "owns_luxury_property=True",
+        "luxury_property_net_value=150000.0",
+        "owns_galactic_stock=True",
+        "galactic_stock_net_value=40000.0",
+        "owns_business=True",
+        "business_net_value=125000.0",
+    ]
+
+    for attr in expected_attrs:
+        assert (
+            attr in repr_str
+        ), f"Expected attribute {attr} not found in repr: {repr_str}"
 
 
 def test_generate_net_worth_basic():

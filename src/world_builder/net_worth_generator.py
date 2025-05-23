@@ -20,26 +20,16 @@ class NetWorth:
     """
     Represents a character's net worth.
 
-    Attributes:
-        chain_code: The unique identifier for this net worth record
-        liquid_currency: The amount of liquid currency the character has
-        currency_type: The type of currency (e.g., "credits", "imperial_credits")
-        owns_primary_residence: Whether the character owns their primary residence
-        primary_residence_value: The value of the primary residence if owned, None otherwise
-        owns_other_properties: Whether the character owns other properties
-        other_properties_net_value: The value of other properties if owned, None otherwise
-        owns_starships: Whether the character owns starships
-        starships_net_value: The value of starships if owned, None otherwise
-        owns_speeders: Whether the character owns speeders
-        speeders_net_value: The value of speeders if owned, None otherwise
-        owns_other_vehicles: Whether the character owns other vehicles
-        other_vehicles_net_value: The value of other vehicles if owned, None otherwise
-        owns_luxury_property: Whether the character owns luxury property
-        luxury_property_net_value: The value of luxury property if owned, None otherwise
-        owns_galactic_stock: Whether the character owns galactic stock
-        galactic_stock_net_value: The value of galactic stock if owned, None otherwise
-        owns_business: Whether the character owns a business
-        business_net_value: The value of the business if owned, None otherwise
+    This class uses dynamic attribute assignment to store net worth information.
+    Required attributes:
+        - chain_code: The unique identifier for this net worth record
+        - liquid_currency: The amount of liquid currency the character has
+        - currency_type: The type of currency (e.g., "credits", "imperial_credits")
+
+    Optional attributes are dynamically generated based on asset types:
+        For each asset type (e.g. "primary_residence", "starships", etc.):
+        - owns_{asset_type}: Whether the character owns this type of asset
+        - {asset_type}_value: The value of the asset if owned (or {asset_type}_net_value for some types)
     """
 
     def __init__(
@@ -47,182 +37,100 @@ class NetWorth:
         chain_code: str,
         liquid_currency: float,
         currency_type: str,
-        owns_primary_residence: Optional[bool] = None,
-        primary_residence_value: Optional[float] = None,
-        owns_other_properties: Optional[bool] = None,
-        other_properties_net_value: Optional[float] = None,
-        owns_starships: Optional[bool] = None,
-        starships_net_value: Optional[float] = None,
-        owns_speeders: Optional[bool] = None,
-        speeders_net_value: Optional[float] = None,
-        owns_other_vehicles: Optional[bool] = None,
-        other_vehicles_net_value: Optional[float] = None,
-        owns_luxury_property: Optional[bool] = None,
-        luxury_property_net_value: Optional[float] = None,
-        owns_galactic_stock: Optional[bool] = None,
-        galactic_stock_net_value: Optional[float] = None,
-        owns_business: Optional[bool] = None,
-        business_net_value: Optional[float] = None,
+        **attributes: Any,
     ):
-        self._chain_code = chain_code
-        self._liquid_currency = liquid_currency
-        self._currency_type = currency_type
-        self._owns_primary_residence = owns_primary_residence
-        self._primary_residence_value = primary_residence_value
-        self._owns_other_properties = owns_other_properties
-        self._other_properties_net_value = other_properties_net_value
-        self._owns_starships = owns_starships
-        self._starships_net_value = starships_net_value
-        self._owns_speeders = owns_speeders
-        self._speeders_net_value = speeders_net_value
-        self._owns_other_vehicles = owns_other_vehicles
-        self._other_vehicles_net_value = other_vehicles_net_value
-        self._owns_luxury_property = owns_luxury_property
-        self._luxury_property_net_value = luxury_property_net_value
-        self._owns_galactic_stock = owns_galactic_stock
-        self._galactic_stock_net_value = galactic_stock_net_value
-        self._owns_business = owns_business
-        self._business_net_value = business_net_value
+        """
+        Initialize a NetWorth instance with required and optional attributes.
 
-    @property
-    def chain_code(self) -> str:
-        return self._chain_code
+        Args:
+            chain_code: The unique identifier for this net worth record
+            liquid_currency: The amount of liquid currency
+            currency_type: The type of currency
+            **attributes: Additional attributes to set (e.g. owns_primary_residence, primary_residence_value)
+        """
+        # Initialize flags and tracking
+        super().__setattr__("_initializing", True)
+        super().__setattr__("_attribute_names", set())
 
-    @property
-    def liquid_currency(self) -> float:
-        return self._liquid_currency
+        # Set required attributes
+        self._set_initial_attr("chain_code", chain_code)
+        self._set_initial_attr("liquid_currency", liquid_currency)
+        self._set_initial_attr("currency_type", currency_type)
 
-    @property
-    def currency_type(self) -> str:
-        return self._currency_type
+        # Set optional attributes dynamically
+        for name, value in attributes.items():
+            if not name.startswith("_"):  # Only set non-private attributes
+                self._set_initial_attr(name, value)
 
-    @property
-    def owns_primary_residence(self) -> Optional[bool]:
-        return self._owns_primary_residence
+        # Mark initialization as complete
+        super().__setattr__("_initializing", False)
 
-    @property
-    def primary_residence_value(self) -> Optional[float]:
-        return self._primary_residence_value
+    def _set_initial_attr(self, name: str, value: Any) -> None:
+        """Helper method for setting initial attributes during initialization."""
+        private_name = f"_{name}"
+        super().__setattr__(private_name, value)
+        self._attribute_names.add(name)
+        self._attribute_names.add(private_name)
 
-    @property
-    def owns_other_properties(self) -> Optional[bool]:
-        return self._owns_other_properties
+    def __getattr__(self, name: str) -> Any:
+        """
+        Provides access to attributes via properties.
+        This is called when an attribute is not found through normal lookup.
+        """
+        if name.startswith("_"):
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{name}'"
+            )
 
-    @property
-    def other_properties_net_value(self) -> Optional[float]:
-        return self._other_properties_net_value
+        private_name = f"_{name}"
+        if hasattr(self, private_name):
+            return getattr(self, private_name)
 
-    @property
-    def owns_starships(self) -> Optional[bool]:
-        return self._owns_starships
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
 
-    @property
-    def starships_net_value(self) -> Optional[float]:
-        return self._starships_net_value
+    def __setattr__(self, name: str, value: Any) -> None:
+        """
+        Prevents modification of attributes after initialization.
+        """
+        # Allow setting internal flags during initialization
+        if name in ("_attribute_names", "_initializing"):
+            super().__setattr__(name, value)
+            return
 
-    @property
-    def owns_speeders(self) -> Optional[bool]:
-        return self._owns_speeders
+        # If we're still initializing, allow setting through the proper method
+        if hasattr(self, "_initializing") and self._initializing:
+            # This should only happen through _set_initial_attr, but just in case
+            super().__setattr__(name, value)
+            return
 
-    @property
-    def speeders_net_value(self) -> Optional[float]:
-        return self._speeders_net_value
-
-    @property
-    def owns_other_vehicles(self) -> Optional[bool]:
-        return self._owns_other_vehicles
-
-    @property
-    def other_vehicles_net_value(self) -> Optional[float]:
-        return self._other_vehicles_net_value
-
-    @property
-    def owns_luxury_property(self) -> Optional[bool]:
-        return self._owns_luxury_property
-
-    @property
-    def luxury_property_net_value(self) -> Optional[float]:
-        return self._luxury_property_net_value
-
-    @property
-    def owns_galactic_stock(self) -> Optional[bool]:
-        return self._owns_galactic_stock
-
-    @property
-    def galactic_stock_net_value(self) -> Optional[float]:
-        return self._galactic_stock_net_value
-
-    @property
-    def owns_business(self) -> Optional[bool]:
-        return self._owns_business
-
-    @property
-    def business_net_value(self) -> Optional[float]:
-        return self._business_net_value
+        # After initialization, prevent all attribute modifications
+        raise AttributeError(
+            f"Can't set attribute '{name}' - NetWorth objects are immutable after initialization"
+        )
 
     def __repr__(self) -> str:
-        base_repr = f"NetWorth(chain_code={self.chain_code!r}, liquid_currency={self.liquid_currency}, currency_type={self.currency_type!r}"
-        if self.owns_primary_residence is not None:
-            base_repr += f", owns_primary_residence={self.owns_primary_residence!r}"
-        if self.primary_residence_value is not None:
-            base_repr += f", primary_residence_value={self.primary_residence_value!r}"
-        if self.owns_other_properties is not None:
-            base_repr += f", owns_other_properties={self.owns_other_properties!r}"
-        if self.other_properties_net_value is not None:
-            base_repr += (
-                f", other_properties_net_value={self.other_properties_net_value!r}"
-            )
-        if self.owns_starships is not None:
-            base_repr += f", owns_starships={self.owns_starships!r}"
-        if self.starships_net_value is not None:
-            base_repr += f", starships_net_value={self.starships_net_value!r}"
-        if self.owns_speeders is not None:
-            base_repr += f", owns_speeders={self.owns_speeders!r}"
-        if self.speeders_net_value is not None:
-            base_repr += f", speeders_net_value={self.speeders_net_value!r}"
-        if self.owns_other_vehicles is not None:
-            base_repr += f", owns_other_vehicles={self.owns_other_vehicles!r}"
-        if self.other_vehicles_net_value is not None:
-            base_repr += f", other_vehicles_net_value={self.other_vehicles_net_value!r}"
-        if self.owns_luxury_property is not None:
-            base_repr += f", owns_luxury_property={self.owns_luxury_property!r}"
-        if self.luxury_property_net_value is not None:
-            base_repr += (
-                f", luxury_property_net_value={self.luxury_property_net_value!r}"
-            )
-        if self.owns_galactic_stock is not None:
-            base_repr += f", owns_galactic_stock={self.owns_galactic_stock!r}"
-        if self.galactic_stock_net_value is not None:
-            base_repr += f", galactic_stock_net_value={self.galactic_stock_net_value!r}"
-        if self.owns_business is not None:
-            base_repr += f", owns_business={self.owns_business!r}"
-        if self.business_net_value is not None:
-            base_repr += f", business_net_value={self.business_net_value!r}"
-        return base_repr + ")"
+        """
+        Returns a string representation of the NetWorth instance.
+        """
+        attrs = []
+        for name in sorted(self._attribute_names):
+            if not name.startswith("_"):  # Only include public names in repr
+                value = getattr(self, name)
+                attrs.append(f"{name}={value!r}")
+        return f"NetWorth({', '.join(attrs)})"
 
     def __eq__(self, other: object) -> bool:
+        """
+        Compares two NetWorth instances for equality.
+        """
         if not isinstance(other, NetWorth):
             return NotImplemented
-        return (
-            self.chain_code == other.chain_code
-            and self.liquid_currency == other.liquid_currency
-            and self.currency_type == other.currency_type
-            and self.owns_primary_residence == other.owns_primary_residence
-            and self.primary_residence_value == other.primary_residence_value
-            and self.owns_other_properties == other.owns_other_properties
-            and self.other_properties_net_value == other.other_properties_net_value
-            and self.owns_starships == other.owns_starships
-            and self.starships_net_value == other.starships_net_value
-            and self.owns_speeders == other.owns_speeders
-            and self.speeders_net_value == other.speeders_net_value
-            and self.owns_other_vehicles == other.owns_other_vehicles
-            and self.other_vehicles_net_value == other.other_vehicles_net_value
-            and self.owns_luxury_property == other.owns_luxury_property
-            and self.luxury_property_net_value == other.luxury_property_net_value
-            and self.owns_galactic_stock == other.owns_galactic_stock
-            and self.galactic_stock_net_value == other.galactic_stock_net_value
-            and self.owns_business == other.owns_business
-            and self.business_net_value == other.business_net_value
+        return all(
+            getattr(self, name) == getattr(other, name)
+            for name in self._attribute_names
+            if not name.startswith("_")
         )
 
 
