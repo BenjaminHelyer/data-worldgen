@@ -1,0 +1,676 @@
+{
+    "profession_net_worth": {
+        "bounty hunter": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "exponential",
+                "params": { "base": 50, "rate": 0.08 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 1500, "intercept": 0 } }
+                }
+            }
+        },
+        "commando": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": { "a": -0.5, "b": 100, "c": 35 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 52, "intercept": 12 } }
+                }
+            }
+        },
+        "Jedi": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": { "value": 2134 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "constant", 
+                        "params": { "value": 371.2 } }
+                }
+            }
+        },
+        "medic": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 113.41, "intercept": 500 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 11.21, "intercept": 2.3 } }
+                }
+            }
+        },
+        "officer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 200, "intercept": 5000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 50, "intercept": 0 } }
+                }
+            }
+        },
+        "smuggler": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": { "a": -0.5, "b": 50.3, "c": 37.21 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 17.2, "intercept": 753 } }
+                }
+            }
+        },
+        "spy": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 150, "intercept": 1000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 25, "intercept": 3 } }
+                }
+            }
+        },
+        "trader": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "exponential",
+                "params": {
+                    "base": 500,
+                    "rate": 0.048
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "quadratic", 
+                        "params": 
+                        { "a": 0.5, "b": 1381.3, "c": 58.9 } 
+                    }
+                }
+            }
+        },
+        "entertainer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": {
+                    "a": -0.5,
+                    "b": 27,
+                    "c": 250
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 12.5, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "politician": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 5000,
+                    "intercept": 10000
+                }
+            },
+            "noise_function": {
+                "type": "lognormal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 2000, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "beast master": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": -8.28, "intercept": 1000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { "type": "linear", 
+                    "params": { "slope": 3.21, "intercept": 0 } }
+                }
+            }
+        },
+        "chronicler": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "exponential",
+                "params": {
+                    "base": 50000,
+                    "rate": -0.05
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 100, "intercept": 2000 }
+                    }
+                }
+            }
+        },
+        "pilot": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 67.3, "intercept": 83.3 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 7.92, "intercept": 2.81 } 
+                    }
+                }
+            }
+        },
+        "moisture farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 50,
+                    "intercept": 0
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 12.5, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 37.2,
+                    "intercept": 0
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 8.3, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "bantha herder": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 50,
+                    "intercept": 1000
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 15.28, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "unemployed": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": {
+                    "value": 56
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 15.28, "intercept": 1000 }
+                    }
+                }
+            }
+        },
+        "homeless": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": {
+                    "value": 0
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "constant",
+                        "params": { "value": 10 }
+                    }
+                }
+            }
+        },
+        "security guard": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": {
+                    "a": -0.48,
+                    "b": 45,
+                    "c": 500
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 1.5, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "construction worker": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 20,
+                    "intercept": 0
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 0.8, "intercept": 2.7 }
+                    }
+                }
+            }
+        },
+        "diner employee": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 27,
+                    "intercept": 31
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 2.3, "intercept": 4.72 }
+                    }
+                }
+            }
+        },
+        "bartender": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": {
+                    "slope": 38,
+                    "intercept": 59
+                }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 12.8, "intercept": 0 }
+                    }
+                }
+            }
+        },
+        "guildmaster": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 125, "intercept": 1000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 100, "intercept": 200 } }
+                }
+            }
+        },
+        "wealthy": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "exponential",
+                "params": { 
+                    "base": 10000, 
+                    "rate": 0.05 
+                }
+            },
+            "noise_function": {
+                "type": "truncated_normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 50000, "intercept": 100000 } 
+                    },
+                    "lower": 1000,
+                    "upper": 100000000
+                }
+            }
+        },
+        "crime lord": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": { "value": 10000000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "constant", 
+                        "params": { "value": 1000000 } 
+                    }
+                }
+            }
+        },
+        "majordomo": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": { "value": 251328 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 571, "intercept": 3213 } }
+                }
+            }
+        },
+        "skug boss": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 962, "intercept": 0 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "constant", 
+                        "params": { "value": 7621 } }
+                }
+            }
+        },
+        "enforcer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": { "a": -0.321, "b": -21, "c": 32 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                        "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 261, "intercept": 312 } }
+                }
+            }
+        },
+        "technician": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 104.91, "intercept": 75.9 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 8.1, "intercept": 5.23 } }
+                }
+            }
+        },
+        "engineer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 126.31, "intercept": 203.83 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 21.5, "intercept": 0 } }
+                }
+            }
+        },
+        "soldier": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 75.91, "intercept": 75.9 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 50.5, "intercept": 10.2 } }
+                }
+            }
+        },
+        "factory worker": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 40.5, "intercept": 10.2 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 10.5, "intercept": 2 } }
+                }
+            }
+        },
+        "salvager": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 10.52, "intercept": 2.3 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "constant", 
+                        "params": { "value": 100 } }
+                }
+            }
+        },
+        "rancher": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 60.52, "intercept": 223.3 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 10.5, "intercept": 2 } }
+                }
+            }
+        },
+        "city administrator": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 125.5, "intercept": 500 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 21.3, "intercept": 3.1 } }
+                }
+            }
+        },
+        "musician": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "quadratic",
+                "params": { "a": -0.5, "b": 25.1, "c": 232.1 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": -11.31, "intercept": 0 } }
+                }
+            }
+        },
+        "depot worker": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 34.21, "intercept": 10.82 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "linear", 
+                        "params": { "slope": 20.5, "intercept": 2 } }
+                }
+            }
+        },
+        "adult dependent": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "constant",
+                "params": { "value": 1000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": { 
+                        "type": "constant", 
+                        "params": { "value": 100 } }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+}

@@ -292,7 +292,11 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
     elif isinstance(dist, LogNormalDist):
-        return random.lognormvariate(dist.mean, dist.std)
+        # For lognormal, we need to adjust the parameters to prevent overflow
+        # Using the relationship between normal and lognormal parameters
+        mu = math.log(dist.mean**2 / math.sqrt(dist.std**2 + dist.mean**2))
+        sigma = math.sqrt(math.log(1 + (dist.std/dist.mean)**2))
+        return random.lognormvariate(mu, sigma)
     elif isinstance(dist, TruncatedNormalDist):
         a = (dist.lower - dist.mean) / dist.std
         b = (dist.upper - dist.mean) / dist.std
@@ -319,7 +323,11 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
                 scale_value = _evaluate_function(scale, field_value)
             else:
                 scale_value = scale
-            return mean_value + random.lognormvariate(0, scale_value)
+            
+            # For lognormal noise, we use a different parameterization to handle large values
+            # We want the noise to be multiplicative rather than additive for large values
+            noise_factor = math.exp(random.gauss(0, math.log1p(scale_value/mean_value)))
+            return mean_value * noise_factor
         elif dist.noise_function.type == "truncated_normal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
