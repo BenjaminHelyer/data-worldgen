@@ -286,19 +286,32 @@ def test_load_large_config():
 
 def test_load_config_with_primary_residence():
     """
-    Test loading a config file that includes the optional profession_primary_residence field.
+    Test loading a config file that includes the optional primary residence fields.
     """
     config_path = CONFIG_DIR / "nw_config_small.json"
     config = load_config(config_path)
 
     # Test basic structure
     assert isinstance(config, NetWorthConfig)
-    assert config.profession_primary_residence is not None
-    assert "farmer" in config.profession_primary_residence
+    assert config.profession_has_primary_residence is not None
+    assert config.profession_primary_residence_value is not None
+    assert "farmer" in config.profession_has_primary_residence
+    assert "farmer" in config.profession_primary_residence_value
 
-    # Test residence config structure
-    residence_config = config.profession_primary_residence["farmer"]
+    # Test residence ownership config structure
+    residence_config = config.profession_has_primary_residence["farmer"]
     assert residence_config.field_name == "age"
     assert residence_config.mean_function.type == "linear"
     assert residence_config.mean_function.params.slope == 0.02
     assert residence_config.mean_function.params.intercept == 0.1
+
+    # Test residence value config structure
+    value_config = config.profession_primary_residence_value["farmer"]
+    assert value_config.field_name == "age"
+    assert value_config.mean_function.type == "linear"
+    assert value_config.mean_function.params.slope == 1000
+    assert value_config.mean_function.params.intercept == 50000
+    assert value_config.noise_function.type == "normal"
+    assert value_config.noise_function.params["scale_factor"].type == "linear"
+    assert value_config.noise_function.params["scale_factor"].params.slope == 100
+    assert value_config.noise_function.params["scale_factor"].params.intercept == 5000

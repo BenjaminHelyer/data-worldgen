@@ -25,6 +25,7 @@ class NetWorth:
         liquid_currency: The amount of liquid currency the character has
         currency_type: The type of currency (e.g., "credits", "imperial_credits")
         owns_primary_residence: Whether the character owns their primary residence
+        primary_residence_value: The value of the primary residence if owned, None otherwise
     """
 
     def __init__(
@@ -33,11 +34,13 @@ class NetWorth:
         liquid_currency: float,
         currency_type: str,
         owns_primary_residence: Optional[bool] = None,
+        primary_residence_value: Optional[float] = None,
     ):
         self._chain_code = chain_code
         self._liquid_currency = liquid_currency
         self._currency_type = currency_type
         self._owns_primary_residence = owns_primary_residence
+        self._primary_residence_value = primary_residence_value
 
     @property
     def chain_code(self) -> str:
@@ -55,10 +58,16 @@ class NetWorth:
     def owns_primary_residence(self) -> Optional[bool]:
         return self._owns_primary_residence
 
+    @property
+    def primary_residence_value(self) -> Optional[float]:
+        return self._primary_residence_value
+
     def __repr__(self) -> str:
         base_repr = f"NetWorth(chain_code={self.chain_code!r}, liquid_currency={self.liquid_currency}, currency_type={self.currency_type!r}"
         if self.owns_primary_residence is not None:
             base_repr += f", owns_primary_residence={self.owns_primary_residence!r}"
+        if self.primary_residence_value is not None:
+            base_repr += f", primary_residence_value={self.primary_residence_value!r}"
         return base_repr + ")"
 
     def __eq__(self, other: object) -> bool:
@@ -69,6 +78,7 @@ class NetWorth:
             and self.liquid_currency == other.liquid_currency
             and self.currency_type == other.currency_type
             and self.owns_primary_residence == other.owns_primary_residence
+            and self.primary_residence_value == other.primary_residence_value
         )
 
 
@@ -137,20 +147,38 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
 
     # Generate primary residence ownership if configured
     owns_primary_residence = None
+    primary_residence_value = None
     if (
-        config.profession_primary_residence is not None
-        and character.profession in config.profession_primary_residence
+        config.profession_has_primary_residence is not None
+        and character.profession in config.profession_has_primary_residence
     ):
-        residence_config = config.profession_primary_residence[character.profession]
+        residence_config = config.profession_has_primary_residence[character.profession]
         field_value = getattr(character, residence_config.field_name)
         probability = evaluate_function(residence_config.mean_function, field_value)
         # Ensure probability is between 0 and 1
         probability = max(0.0, min(1.0, probability))
         owns_primary_residence = random.random() < probability
 
+        # If they own a residence, generate its value
+        if (
+            owns_primary_residence
+            and config.profession_primary_residence_value is not None
+        ):
+            if character.profession in config.profession_primary_residence_value:
+                value_config = config.profession_primary_residence_value[
+                    character.profession
+                ]
+                field_value = getattr(character, value_config.field_name)
+                config_dict = value_config.model_dump()
+                config_dict["type"] = "function_based"
+                primary_residence_value = sample_from_config(config_dict, field_value)
+                # Ensure the value is positive
+                primary_residence_value = max(0, primary_residence_value)
+
     return NetWorth(
         chain_code=character.chain_code,
         liquid_currency=liquid_currency,
         currency_type=currency_type,
         owns_primary_residence=owns_primary_residence,
+        primary_residence_value=primary_residence_value,
     )

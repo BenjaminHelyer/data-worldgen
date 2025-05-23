@@ -33,12 +33,18 @@ class MockCharacter:
 def test_networth_creation():
     """Test that NetWorth objects can be created with valid data."""
     net_worth = NetWorth(
-        chain_code="TEST123", liquid_currency=1000.0, currency_type="credits"
+        chain_code="TEST123",
+        liquid_currency=1000.0,
+        currency_type="credits",
+        owns_primary_residence=True,
+        primary_residence_value=50000.0,
     )
 
     assert net_worth.chain_code == "TEST123"
     assert net_worth.liquid_currency == 1000.0
     assert net_worth.currency_type == "credits"
+    assert net_worth.owns_primary_residence is True
+    assert net_worth.primary_residence_value == 50000.0
 
 
 def test_networth_immutability():
@@ -276,11 +282,11 @@ def test_generate_net_worth_constant():
 
 
 def test_generate_net_worth_with_primary_residence():
-    """Test net worth generation with primary residence probability."""
+    """Test net worth generation with primary residence probability and value."""
     # Create a mock character
     character = MockCharacter(chain_code="TEST123", profession="farmer", age=30)
 
-    # Create a config with primary residence probability
+    # Create a config with primary residence probability and value
     config = NetWorthConfig(
         profession_liquid_currency={
             "farmer": FunctionBasedDist(
@@ -299,11 +305,29 @@ def test_generate_net_worth_with_primary_residence():
                 ),
             )
         },
-        profession_primary_residence={
+        profession_has_primary_residence={
             "farmer": BernoulliBasedDist(
                 field_name="age",
                 mean_function=FunctionConfig(
                     type="linear", params=LinearParams(slope=0.02, intercept=0.1)
+                ),
+            )
+        },
+        profession_primary_residence_value={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=1000, intercept=50000)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear",
+                            params=LinearParams(slope=100, intercept=5000),
+                        ),
+                    },
                 ),
             )
         },
@@ -321,3 +345,13 @@ def test_generate_net_worth_with_primary_residence():
     # Check that the probability is roughly what we expect (within 5%)
     expected_probability = 0.02 * 30 + 0.1  # = 0.7
     assert abs(probability - expected_probability) < 0.05
+
+    # For those that own a residence, check the value distribution
+    residence_values = [
+        r.primary_residence_value for r in results if r.owns_primary_residence
+    ]
+    assert len(residence_values) > 0  # Make sure we have some values to test
+
+    # For age=30, mean should be 1000*30 + 50000 = 80000
+    mean_value = sum(residence_values) / len(residence_values)
+    assert 70000 <= mean_value <= 90000  # Allow for some variation due to noise

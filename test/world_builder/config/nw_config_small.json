@@ -18,12 +18,31 @@
             }
         }
     },
-    "profession_primary_residence": {
+    "profession_has_primary_residence": {
         "farmer": {
             "field_name": "age",
             "mean_function": {
                 "type": "linear",
                 "params": { "slope": 0.02, "intercept": 0.1 }
+            }
+        }
+    },
+    "profession_primary_residence_value": {
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 1000, "intercept": 50000 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 100, "intercept": 5000 }
+                    }
+                }
             }
         }
     },
