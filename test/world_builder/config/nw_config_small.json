@@ -1,0 +1,34 @@
+{
+    "profession_liquid_currency": {
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 5, "intercept": 100 }
+            },
+            "noise_function": {
+                "type": "normal",
+                "params": {
+                    "field_name": "age",
+                    "scale_factor": {
+                        "type": "linear",
+                        "params": { "slope": 0.1, "intercept": 0 }
+                    }
+                }
+            }
+        }
+    },
+    "profession_primary_residence": {
+        "farmer": {
+            "field_name": "age",
+            "mean_function": {
+                "type": "linear",
+                "params": { "slope": 0.02, "intercept": 0.1 }
+            }
+        }
+    },
+    "metadata": {
+        "currency": "credits",
+        "era": "Clone Wars"
+    }
+} 

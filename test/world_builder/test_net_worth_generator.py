@@ -16,6 +16,7 @@ from world_builder.distributions_config import (
     ExponentialParams,
     QuadraticParams,
     ConstantParams,
+    BernoulliBasedDist,
 )
 from world_builder.character import Character
 
@@ -272,3 +273,51 @@ def test_generate_net_worth_constant():
             net_worth.liquid_currency == 100000
         )  # Should be exactly 100000 with no noise
         assert net_worth.currency_type == "imperial_credits"
+
+
+def test_generate_net_worth_with_primary_residence():
+    """Test net worth generation with primary residence probability."""
+    # Create a mock character
+    character = MockCharacter(chain_code="TEST123", profession="farmer", age=30)
+
+    # Create a config with primary residence probability
+    config = NetWorthConfig(
+        profession_liquid_currency={
+            "farmer": FunctionBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=5, intercept=100)
+                ),
+                noise_function=NoiseFunctionConfig(
+                    type="normal",
+                    params={
+                        "field_name": "age",
+                        "scale_factor": FunctionConfig(
+                            type="linear", params=LinearParams(slope=0.1, intercept=0)
+                        ),
+                    },
+                ),
+            )
+        },
+        profession_primary_residence={
+            "farmer": BernoulliBasedDist(
+                field_name="age",
+                mean_function=FunctionConfig(
+                    type="linear", params=LinearParams(slope=0.02, intercept=0.1)
+                ),
+            )
+        },
+        metadata={"currency": "credits"},
+    )
+
+    # Generate net worth multiple times to test probability
+    results = [generate_net_worth(character, config) for _ in range(1000)]
+
+    # For age=30, probability should be 0.02*30 + 0.1 = 0.7
+    # Count how many times primary residence is True
+    true_count = sum(1 for r in results if r.owns_primary_residence)
+    probability = true_count / len(results)
+
+    # Check that the probability is roughly what we expect (within 5%)
+    expected_probability = 0.02 * 30 + 0.1  # = 0.7
+    assert abs(probability - expected_probability) < 0.05

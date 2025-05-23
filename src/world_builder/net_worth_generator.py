@@ -24,12 +24,20 @@ class NetWorth:
         chain_code: The unique identifier for this net worth record
         liquid_currency: The amount of liquid currency the character has
         currency_type: The type of currency (e.g., "credits", "imperial_credits")
+        owns_primary_residence: Whether the character owns their primary residence
     """
 
-    def __init__(self, chain_code: str, liquid_currency: float, currency_type: str):
+    def __init__(
+        self,
+        chain_code: str,
+        liquid_currency: float,
+        currency_type: str,
+        owns_primary_residence: Optional[bool] = None,
+    ):
         self._chain_code = chain_code
         self._liquid_currency = liquid_currency
         self._currency_type = currency_type
+        self._owns_primary_residence = owns_primary_residence
 
     @property
     def chain_code(self) -> str:
@@ -43,8 +51,15 @@ class NetWorth:
     def currency_type(self) -> str:
         return self._currency_type
 
+    @property
+    def owns_primary_residence(self) -> Optional[bool]:
+        return self._owns_primary_residence
+
     def __repr__(self) -> str:
-        return f"NetWorth(chain_code={self.chain_code!r}, liquid_currency={self.liquid_currency}, currency_type={self.currency_type!r})"
+        base_repr = f"NetWorth(chain_code={self.chain_code!r}, liquid_currency={self.liquid_currency}, currency_type={self.currency_type!r}"
+        if self.owns_primary_residence is not None:
+            base_repr += f", owns_primary_residence={self.owns_primary_residence!r}"
+        return base_repr + ")"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, NetWorth):
@@ -53,6 +68,7 @@ class NetWorth:
             self.chain_code == other.chain_code
             and self.liquid_currency == other.liquid_currency
             and self.currency_type == other.currency_type
+            and self.owns_primary_residence == other.owns_primary_residence
         )
 
 
@@ -119,8 +135,22 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     # Get currency type from metadata, defaulting to "credits" if not specified
     currency_type = config.metadata.get("currency", "credits")
 
+    # Generate primary residence ownership if configured
+    owns_primary_residence = None
+    if (
+        config.profession_primary_residence is not None
+        and character.profession in config.profession_primary_residence
+    ):
+        residence_config = config.profession_primary_residence[character.profession]
+        field_value = getattr(character, residence_config.field_name)
+        probability = evaluate_function(residence_config.mean_function, field_value)
+        # Ensure probability is between 0 and 1
+        probability = max(0.0, min(1.0, probability))
+        owns_primary_residence = random.random() < probability
+
     return NetWorth(
         chain_code=character.chain_code,
         liquid_currency=liquid_currency,
         currency_type=currency_type,
+        owns_primary_residence=owns_primary_residence,
     )

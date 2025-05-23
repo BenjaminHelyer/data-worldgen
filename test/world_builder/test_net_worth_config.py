@@ -282,3 +282,23 @@ def test_load_large_config():
         # Verify required parameters exist
         assert "field_name" in dist.noise_function.params
         assert "scale_factor" in dist.noise_function.params
+
+
+def test_load_config_with_primary_residence():
+    """
+    Test loading a config file that includes the optional profession_primary_residence field.
+    """
+    config_path = CONFIG_DIR / "nw_config_small.json"
+    config = load_config(config_path)
+
+    # Test basic structure
+    assert isinstance(config, NetWorthConfig)
+    assert config.profession_primary_residence is not None
+    assert "farmer" in config.profession_primary_residence
+
+    # Test residence config structure
+    residence_config = config.profession_primary_residence["farmer"]
+    assert residence_config.field_name == "age"
+    assert residence_config.mean_function.type == "linear"
+    assert residence_config.mean_function.params.slope == 0.02
+    assert residence_config.mean_function.params.intercept == 0.1

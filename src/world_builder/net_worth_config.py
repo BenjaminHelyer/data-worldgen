@@ -5,16 +5,22 @@ This helper function returns a Pydantic model, which automatically validates the
 
 The config is a JSON file that contains the following fields:
 - profession_liquid_currency: a dictionary mapping professions to their net worth distributions
+- profession_primary_residence: an optional dictionary mapping professions to their probability of owning a residence
 - metadata: optional metadata fields
 """
 
-from typing import Dict
+from typing import Dict, Optional
 import json
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from world_builder.distributions_config import Distribution, FunctionBasedDist
+from world_builder.distributions_config import (
+    Distribution,
+    FunctionBasedDist,
+    FunctionConfig,
+    BernoulliBasedDist,
+)
 
 
 class NetWorthConfig(BaseModel):
@@ -23,6 +29,7 @@ class NetWorthConfig(BaseModel):
 
     Attributes:
         profession_liquid_currency: Maps each profession to its net worth distribution
+        profession_primary_residence: Optional mapping of professions to their residence ownership probability
         metadata: Optional metadata fields
     """
 
@@ -31,6 +38,12 @@ class NetWorthConfig(BaseModel):
     # Maps each profession to its net worth distribution
     profession_liquid_currency: Dict[str, FunctionBasedDist] = Field(
         description="Required mapping of professions to their net worth distributions."
+    )
+
+    # Optional mapping of professions to their residence ownership probability
+    profession_primary_residence: Optional[Dict[str, BernoulliBasedDist]] = Field(
+        default=None,
+        description="Optional mapping of professions to their residence ownership probability.",
     )
 
     # catch-all dict for any miscellaneous, constant metadata fields
