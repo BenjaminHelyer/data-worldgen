@@ -35,12 +35,13 @@ logging.info(f"Using {NUM_CORES} cores")
 # Set up logging to file for CloudWatch Agent
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
+    format="%(asctime)s %(levelname)s %(message)s",
     handlers=[
-        logging.FileHandler('/var/log/world-builder/app.log'),
-    ]
+        logging.FileHandler("/var/log/world-builder/app.log"),
+    ],
 )
 logger = logging.getLogger(__name__)
+
 
 def get_metadata(path):
     """Fetch metadata from the EC2 metadata service using IMDSv2."""
@@ -49,13 +50,13 @@ def get_metadata(path):
         token = requests.put(
             "http://169.254.169.254/latest/api/token",
             headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
-            timeout=2
+            timeout=2,
         ).text
         # now get the actual metadata from the request, using the token
         response = requests.get(
             f"http://169.254.169.254/latest/meta-data/{path}",
             headers={"X-aws-ec2-metadata-token": token},
-            timeout=2
+            timeout=2,
         )
         response.raise_for_status()
         return response.text.strip()
@@ -69,7 +70,9 @@ if USE_S3_CONFIG:
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_config_file:
         try:
             download_from_s3(BUCKET_NAME, S3_CONFIG_KEY, tmp_config_file.name)
-            logger.info(f"Downloaded config from s3://{BUCKET_NAME}/{S3_CONFIG_KEY} to {tmp_config_file.name}")
+            logger.info(
+                f"Downloaded config from s3://{BUCKET_NAME}/{S3_CONFIG_KEY} to {tmp_config_file.name}"
+            )
             config = load_config(Path(tmp_config_file.name))
         except Exception as e:
             logger.error(f"Failed to download config from S3: {e}")
@@ -79,20 +82,26 @@ if USE_S3_CONFIG:
     with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as tmp_pop_size_file:
         try:
             download_from_s3(BUCKET_NAME, S3_POP_SIZE_KEY, tmp_pop_size_file.name)
-            logger.info(f"Downloaded pop size from s3://{BUCKET_NAME}/{S3_POP_SIZE_KEY} to {tmp_pop_size_file.name}")
+            logger.info(
+                f"Downloaded pop size from s3://{BUCKET_NAME}/{S3_POP_SIZE_KEY} to {tmp_pop_size_file.name}"
+            )
             with open(tmp_pop_size_file.name, "r") as f:
                 POP_SIZE = int(f.read().strip())
         except Exception as e:
-            logger.info(f"Failed to download pop size from S3: {e}, using default pop size of {POP_SIZE}")
+            logger.info(
+                f"Failed to download pop size from S3: {e}, using default pop size of {POP_SIZE}"
+            )
             # do not raise, just use the default pop size
 else:
     config = load_config(CONFIG_FILE)
+
 
 def _create_character_wrapper(args):
     seed = int(time.time() * 1000000) ^ os.getpid()
     random.seed(seed)
     config = args
     return create_character(config)
+
 
 # Create argument list (same config object, repeated N times)
 args = [config] * POP_SIZE
@@ -127,6 +136,7 @@ except Exception as e:
     logger.error(f"Failed to upload to S3: {e}")
     print(f"Failed to upload to S3: {e}")
 
+
 def terminate_instance():
     """Terminate this EC2 instance via AWS API."""
     try:
@@ -152,7 +162,7 @@ def terminate_instance():
         return
 
     try:
-        ec2 = boto3.client('ec2', region_name=region)
+        ec2 = boto3.client("ec2", region_name=region)
         logger.info(f"EC2 client created")
         print(f"EC2 client created")
     except Exception as e:
@@ -169,5 +179,6 @@ def terminate_instance():
     except Exception as e:
         logger.error(f"Failed to terminate instance: {e}")
         print(f"Failed to terminate instance: {e}")
+
 
 terminate_instance()
