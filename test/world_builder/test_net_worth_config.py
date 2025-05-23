@@ -315,3 +315,148 @@ def test_load_config_with_primary_residence():
     assert value_config.noise_function.params["scale_factor"].type == "linear"
     assert value_config.noise_function.params["scale_factor"].params.slope == 100
     assert value_config.noise_function.params["scale_factor"].params.intercept == 5000
+
+
+def test_load_config_with_all_assets():
+    """
+    Test loading a config file that includes all the optional asset fields.
+    """
+    config_path = CONFIG_DIR / "nw_config_small.json"
+    config = load_config(config_path)
+
+    # Test basic structure
+    assert isinstance(config, NetWorthConfig)
+    assert config.profession_has_primary_residence is not None
+    assert config.profession_primary_residence_value is not None
+    assert config.profession_has_other_properties is not None
+    assert config.profession_other_properties_net_value is not None
+    assert config.profession_has_starships is not None
+    assert config.profession_starships_net_value is not None
+    assert config.profession_has_speeders is not None
+    assert config.profession_speeders_net_value is not None
+    assert config.profession_has_other_vehicles is not None
+    assert config.profession_other_vehicles_net_value is not None
+    assert config.profession_has_luxury_property is not None
+    assert config.profession_luxury_property_net_value is not None
+    assert config.profession_has_galactic_stock is not None
+    assert config.profession_galactic_stock_net_value is not None
+    assert config.profession_has_business is not None
+    assert config.profession_business_net_value is not None
+
+    # Test that each asset type has the correct structure for "farmer" profession
+    asset_configs = [
+        (
+            "profession_has_primary_residence",
+            "profession_primary_residence_value",
+            0.02,
+            0.1,
+            1000,
+            50000,
+            100,
+            5000,
+        ),  # ownership_slope, ownership_intercept, value_slope, value_intercept, noise_slope, noise_intercept
+        (
+            "profession_has_other_properties",
+            "profession_other_properties_net_value",
+            0.01,
+            0.05,
+            500,
+            25000,
+            50,
+            2500,
+        ),
+        (
+            "profession_has_starships",
+            "profession_starships_net_value",
+            0.005,
+            0.01,
+            2000,
+            100000,
+            200,
+            10000,
+        ),
+        (
+            "profession_has_speeders",
+            "profession_speeders_net_value",
+            0.015,
+            0.05,
+            300,
+            15000,
+            30,
+            1500,
+        ),
+        (
+            "profession_has_other_vehicles",
+            "profession_other_vehicles_net_value",
+            0.01,
+            0.03,
+            400,
+            20000,
+            40,
+            2000,
+        ),
+        (
+            "profession_has_luxury_property",
+            "profession_luxury_property_net_value",
+            0.008,
+            0.02,
+            3000,
+            150000,
+            300,
+            15000,
+        ),
+        (
+            "profession_has_galactic_stock",
+            "profession_galactic_stock_net_value",
+            0.012,
+            0.04,
+            800,
+            40000,
+            80,
+            4000,
+        ),
+        (
+            "profession_has_business",
+            "profession_business_net_value",
+            0.01,
+            0.03,
+            2500,
+            125000,
+            250,
+            12500,
+        ),
+    ]
+
+    for (
+        has_field,
+        value_field,
+        ownership_slope,
+        ownership_intercept,
+        value_slope,
+        value_intercept,
+        noise_slope,
+        noise_intercept,
+    ) in asset_configs:
+        # Test ownership config
+        has_config = getattr(config, has_field)["farmer"]
+        assert has_config.field_name == "age"
+        assert has_config.mean_function.type == "linear"
+        assert has_config.mean_function.params.slope == ownership_slope
+        assert has_config.mean_function.params.intercept == ownership_intercept
+
+        # Test value config
+        value_config = getattr(config, value_field)["farmer"]
+        assert value_config.field_name == "age"
+        assert value_config.mean_function.type == "linear"
+        assert value_config.mean_function.params.slope == value_slope
+        assert value_config.mean_function.params.intercept == value_intercept
+        assert value_config.noise_function.type == "normal"
+        assert value_config.noise_function.params["scale_factor"].type == "linear"
+        assert (
+            value_config.noise_function.params["scale_factor"].params.slope
+            == noise_slope
+        )
+        assert (
+            value_config.noise_function.params["scale_factor"].params.intercept
+            == noise_intercept
+        )
