@@ -58,7 +58,7 @@ def test_large_config():
     POPULATION_SIZE = 1000
 
     # Load net worth config
-    NET_WORTH_CONFIG = config_dir / "nw_config_large.json"
+    NET_WORTH_CONFIG = config_dir / "nw_config_large.json" 
 
     # Load both configs
     population_config = load_config(POPULATION_CONFIG)
