@@ -2,7 +2,7 @@
 Holds the Pydantic BaseModels and distribution objects for various probaility distributions.
 """
 
-from typing import Literal, Union, Dict, Any, Protocol
+from typing import Literal, Union, Dict, Any, Protocol, List
 import random
 import math
 
@@ -30,6 +30,23 @@ class LinearParams(FunctionParams):
     intercept: float
 
 
+class MultiLinearParams(FunctionParams):
+    """Parameters for multi-linear function: sum(coefficients[field] * field_value) + intercept."""
+
+    fields: List[str] = Field(
+        description="List of field names this function depends on"
+    )
+    coefficients: Dict[str, float] = Field(description="Coefficient for each field")
+    intercept: float
+
+    @model_validator(mode="after")
+    def validate_coefficients(self) -> "MultiLinearParams":
+        """Validate that coefficients match the fields."""
+        if set(self.fields) != set(self.coefficients.keys()):
+            raise ValueError("Fields and coefficients keys must match exactly")
+        return self
+
+
 class ExponentialParams(FunctionParams):
     """Parameters for exponential function."""
 
@@ -50,8 +67,14 @@ class FunctionConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    type: Literal["constant", "linear", "exponential", "quadratic"]
-    params: Union[ConstantParams, LinearParams, ExponentialParams, QuadraticParams]
+    type: Literal["constant", "linear", "exponential", "quadratic", "multi_linear"]
+    params: Union[
+        ConstantParams,
+        LinearParams,
+        ExponentialParams,
+        QuadraticParams,
+        MultiLinearParams,
+    ]
 
     @model_validator(mode="after")
     def validate_params(self) -> "FunctionConfig":
@@ -66,7 +89,20 @@ class FunctionConfig(BaseModel):
             raise ValueError("Exponential function requires ExponentialParams")
         if self.type == "quadratic" and not isinstance(self.params, QuadraticParams):
             raise ValueError("Quadratic function requires QuadraticParams")
+        if self.type == "multi_linear" and not isinstance(
+            self.params, MultiLinearParams
+        ):
+            raise ValueError("Multi-linear function requires MultiLinearParams")
         return self
+
+    def get_required_fields(self) -> List[str]:
+        """Return the list of fields this function depends on."""
+        if self.type == "multi_linear":
+            return self.params.fields
+        else:
+            # Single-variable functions don't specify required fields here
+            # They depend on the field_name in the distribution configuration
+            return []
 
 
 class NoiseFunctionConfig(BaseModel):
@@ -310,6 +346,55 @@ def _parse(config: Any) -> Distribution:
     return model_cls(**config)
 
 
+def _evaluate_function(
+    func: FunctionConfig, field_values: Union[float, Dict[str, float]]
+) -> float:
+    """
+    Helper function to evaluate a function configuration.
+
+    Args:
+        func: The function configuration to evaluate
+        field_values: Either a single float for single-variable functions,
+                     or a dictionary of field_name -> value for multi-variable functions
+
+    Returns:
+        The evaluated function value
+    """
+    if func.type == "constant":
+        return func.params.value
+    elif func.type == "linear":
+        if not isinstance(field_values, (int, float)):
+            raise ValueError("Linear function requires a single numeric input")
+        return func.params.slope * field_values + func.params.intercept
+    elif func.type == "exponential":
+        if not isinstance(field_values, (int, float)):
+            raise ValueError("Exponential function requires a single numeric input")
+        return func.params.base * math.exp(func.params.rate * field_values)
+    elif func.type == "quadratic":
+        if not isinstance(field_values, (int, float)):
+            raise ValueError("Quadratic function requires a single numeric input")
+        return (
+            func.params.a * (field_values**2)
+            + func.params.b * field_values
+            + func.params.c
+        )
+    elif func.type == "multi_linear":
+        if not isinstance(field_values, dict):
+            raise ValueError(
+                "Multi-linear function requires a dictionary of field values"
+            )
+        result = func.params.intercept
+        for field in func.params.fields:
+            if field not in field_values:
+                raise ValueError(
+                    f"Missing required field '{field}' for multi-linear function"
+                )
+            result += func.params.coefficients[field] * field_values[field]
+        return result
+    else:
+        raise ValueError(f"Unsupported function type: {func.type}")
+
+
 def _sample(dist: Distribution, field_value: float = 0) -> float:
     """
     Draw a random sample from a distribution model instance.
@@ -386,21 +471,10 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
     elif isinstance(dist, BernoulliBasedDist):
         # For Bernoulli distribution, we use the probability parameter from the mean_function
         probability = _evaluate_function(dist.mean_function, field_value)
+        # Ensure probability is between 0 and 1
+        probability = max(0.0, min(1.0, probability))
         return random.random() < probability
-    raise ValueError(f"No sampler implemented for distribution type: {dist.type}")
-
-
-def _evaluate_function(func: FunctionConfig, x: float) -> float:
-    """Helper function to evaluate a function configuration."""
-    if func.type == "constant":
-        return func.params.value
-    elif func.type == "linear":
-        return func.params.slope * x + func.params.intercept
-    elif func.type == "exponential":
-        return func.params.base * math.exp(func.params.rate * x)
-    elif func.type == "quadratic":
-        return func.params.a * (x**2) + func.params.b * x + func.params.c
-    raise ValueError(f"Unsupported function type: {func.type}")
+    raise ValueError(f"No sampler implemented for distribution type: {type(dist)}")
 
 
 def sample_from_config(config: dict, field_value: float = 0) -> float:

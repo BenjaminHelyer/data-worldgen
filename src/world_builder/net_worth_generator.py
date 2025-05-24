@@ -3,7 +3,7 @@ Module for generating net worth values for characters based on their professions
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 import random
 import math
 
@@ -12,6 +12,7 @@ from world_builder.distributions_config import (
     FunctionConfig,
     FunctionBasedDist,
     sample_from_config,
+    _evaluate_function,
 )
 from world_builder.character import Character
 
@@ -134,31 +135,45 @@ class NetWorth:
         )
 
 
-def evaluate_function(func_config: FunctionConfig, x: float) -> float:
+def evaluate_function(
+    func_config: FunctionConfig, x: Union[float, Dict[str, float]]
+) -> float:
     """
     Evaluate a function configuration at a given x value.
 
     Args:
         func_config: The function configuration to evaluate
-        x: The input value
+        x: The input value or dictionary of values for multi-field functions
 
     Returns:
         The function value at x
     """
-    if func_config.type == "constant":
-        return func_config.params.value
-    elif func_config.type == "linear":
-        return func_config.params.slope * x + func_config.params.intercept
-    elif func_config.type == "exponential":
-        return func_config.params.base * math.exp(func_config.params.rate * x)
-    elif func_config.type == "quadratic":
-        return (
-            func_config.params.a * x * x
-            + func_config.params.b * x
-            + func_config.params.c
-        )
+    return _evaluate_function(func_config, x)
+
+
+def _prepare_function_inputs(
+    character: Character, func_config: FunctionConfig, primary_field: str
+) -> Union[float, Dict[str, float]]:
+    """
+    Prepare the appropriate inputs for function evaluation based on function type.
+
+    Args:
+        character: The character to get field values from
+        func_config: The function configuration
+        primary_field: The primary field name (for backwards compatibility)
+
+    Returns:
+        Either a single field value or a dictionary of field values
+    """
+    if func_config.type == "multi_linear":
+        # Multi-variable function: prepare dictionary of all required fields
+        field_values = {}
+        for field in func_config.params.fields:
+            field_values[field] = getattr(character, field)
+        return field_values
     else:
-        raise ValueError(f"Unknown function type: {func_config.type}")
+        # Single-variable function: use primary field
+        return getattr(character, primary_field)
 
 
 def _generate_asset_value(
@@ -190,8 +205,13 @@ def _generate_asset_value(
         and profession in has_config[asset_type]
     ):
         residence_config = has_config[asset_type][profession]
-        field_value = getattr(character, residence_config.field_name)
-        probability = evaluate_function(residence_config.mean_function, field_value)
+
+        # Prepare function inputs based on function type
+        function_inputs = _prepare_function_inputs(
+            character, residence_config.mean_function, residence_config.field_name
+        )
+
+        probability = evaluate_function(residence_config.mean_function, function_inputs)
         # Ensure probability is between 0 and 1
         probability = max(0.0, min(1.0, probability))
         owns_asset = random.random() < probability
@@ -200,10 +220,30 @@ def _generate_asset_value(
         if owns_asset and value_config is not None:
             if asset_type in value_config and profession in value_config[asset_type]:
                 value_config_data = value_config[asset_type][profession]
-                field_value = getattr(character, value_config_data.field_name)
+
+                # For value generation, prepare function inputs for the mean function
+                value_function_inputs = _prepare_function_inputs(
+                    character,
+                    value_config_data.mean_function,
+                    value_config_data.field_name,
+                )
+
                 config_dict = value_config_data.model_dump()
                 config_dict["type"] = "function_based"
-                asset_value = sample_from_config(config_dict, field_value)
+
+                # For FunctionBasedDist, we still pass single field value for backwards compatibility
+                # The _evaluate_function within will handle multi-variable functions appropriately
+                if value_config_data.mean_function.type == "multi_linear":
+                    # For multi-variable mean functions in FunctionBasedDist, we need to modify
+                    # the sampling approach. For now, use the primary field for compatibility.
+                    primary_field_value = getattr(
+                        character, value_config_data.field_name
+                    )
+                    asset_value = sample_from_config(config_dict, primary_field_value)
+                else:
+                    field_value = getattr(character, value_config_data.field_name)
+                    asset_value = sample_from_config(config_dict, field_value)
+
                 # Ensure the value is positive
                 asset_value = max(0, asset_value)
 
@@ -246,9 +286,26 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     # Get currency type from metadata, defaulting to "credits" if not specified
     currency_type = config.metadata.get("currency", "credits")
 
-    # Generate all asset ownership and values
+    # Create a temporary character with liquid_currency for multi-variable functions
+    # This is needed because some asset ownership functions may depend on liquid_currency
+    class CharacterWithLiquidCurrency:
+        """Temporary wrapper to add liquid_currency to character for multi-variable functions."""
+
+        def __init__(self, base_character: Character, liquid_currency: float):
+            self._base_character = base_character
+            self._liquid_currency = liquid_currency
+
+        def __getattr__(self, name: str):
+            if name == "liquid_currency":
+                return self._liquid_currency
+            return getattr(self._base_character, name)
+
+    # Create enhanced character for asset generation
+    enhanced_character = CharacterWithLiquidCurrency(character, liquid_currency)
+
+    # Generate all asset ownership and values using the enhanced character
     owns_primary_residence, primary_residence_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -256,7 +313,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_other_properties, other_properties_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -264,7 +321,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_starships, starships_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -272,7 +329,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_speeders, speeders_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -280,7 +337,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_other_vehicles, other_vehicles_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -288,7 +345,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_luxury_property, luxury_property_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -296,7 +353,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_galactic_stock, galactic_stock_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
@@ -304,7 +361,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     owns_business, business_net_value = _generate_asset_value(
-        character,
+        enhanced_character,
         config.profession_has,
         config.profession_value,
         character.profession,
