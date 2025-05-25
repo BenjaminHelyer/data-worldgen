@@ -231,18 +231,9 @@ def _generate_asset_value(
                 config_dict = value_config_data.model_dump()
                 config_dict["type"] = "function_based"
 
-                # For FunctionBasedDist, we still pass single field value for backwards compatibility
-                # The _evaluate_function within will handle multi-variable functions appropriately
-                if value_config_data.mean_function.type == "multi_linear":
-                    # For multi-variable mean functions in FunctionBasedDist, we need to modify
-                    # the sampling approach. For now, use the primary field for compatibility.
-                    primary_field_value = getattr(
-                        character, value_config_data.field_name
-                    )
-                    asset_value = sample_from_config(config_dict, primary_field_value)
-                else:
-                    field_value = getattr(character, value_config_data.field_name)
-                    asset_value = sample_from_config(config_dict, field_value)
+                # Use the already prepared value_function_inputs for sample_from_config
+                # This ensures that multi-linear functions receive the correct dictionary of inputs.
+                asset_value = sample_from_config(config_dict, value_function_inputs)
 
                 # Ensure the value is positive
                 asset_value = max(0, asset_value)

@@ -420,18 +420,32 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
         # First calculate the mean value
         mean_value = _evaluate_function(dist.mean_function, field_value)
 
+        # For noise function evaluation, we need to handle the case where
+        # field_value is a dictionary (for multi-linear mean functions)
+        # but the noise function's scale factor expects a single field value
+        if isinstance(field_value, dict) and dist.field_name in field_value:
+            # Use the primary field value for noise function evaluation
+            noise_field_value = field_value[dist.field_name]
+        elif isinstance(field_value, (int, float)):
+            # Use the single field value directly
+            noise_field_value = field_value
+        else:
+            # Fallback: if we can't determine the appropriate field value,
+            # try to use the field_value as-is and let the noise function handle it
+            noise_field_value = field_value
+
         # Then add the noise
         if dist.noise_function.type == "normal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
-                scale_value = _evaluate_function(scale, field_value)
+                scale_value = _evaluate_function(scale, noise_field_value)
             else:
                 scale_value = scale
             return mean_value + random.gauss(0, scale_value)
         elif dist.noise_function.type == "lognormal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
-                scale_value = _evaluate_function(scale, field_value)
+                scale_value = _evaluate_function(scale, noise_field_value)
             else:
                 scale_value = scale
 
@@ -444,7 +458,7 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
         elif dist.noise_function.type == "truncated_normal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
-                scale_value = _evaluate_function(scale, field_value)
+                scale_value = _evaluate_function(scale, noise_field_value)
             else:
                 scale_value = scale
             lower = dist.noise_function.params["lower"]
