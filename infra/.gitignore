@@ -7,6 +7,12 @@
 .terraform.lock.hcl
 crash.log
 
+# Packer specific
+*.auto.pkvars
+*.auto.pkvars.json
+*.auto.pkrvars.hcl
+packer_cache/
+
 # Credentials and secrets
 *.pem
 credentials.json
@@ -28,3 +34,6 @@ aws.json
 *.log
 *.bak
 *~ 
+
+# installed plugins
+*.deb

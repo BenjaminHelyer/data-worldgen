@@ -1,0 +1,14 @@
+# Infrastructure Configuration
+aws_region = "us-east-2"
+vpc_id     = "vpc-123"
+subnet_id  = "subnet-456"
+
+# Security
+security_group_id = "sg-123"
+
+# Instance Configuration
+instance_type = "t3.micro"
+
+# Project Configuration
+project_name = "world-builder"
+environment  = "dev" 
