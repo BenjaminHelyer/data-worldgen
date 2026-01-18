@@ -6,8 +6,8 @@ import pytest
 from dataclasses import dataclass
 from pathlib import Path
 
-from world_builder.net_worth_generator import NetWorth, generate_net_worth
-from world_builder.net_worth_config import NetWorthConfig, load_config
+from world_builder.population.net_worth_generator import NetWorth, generate_net_worth
+from world_builder.population.net_worth_config import NetWorthConfig, load_config
 from world_builder.distributions_config import (
     FunctionBasedDist,
     FunctionConfig,
@@ -18,14 +18,14 @@ from world_builder.distributions_config import (
     ConstantParams,
     BernoulliBasedDist,
 )
-from world_builder.character import Character
+from world_builder.population.character import Character
 
 
 @dataclass
 class MockCharacter:
     """Mock Character class for testing."""
 
-    chain_code: str
+    character_id: str
     profession: str
     age: int = 30  # Default age for testing
 
@@ -33,7 +33,7 @@ class MockCharacter:
 def test_networth_creation():
     """Test that NetWorth objects can be created with valid data."""
     net_worth = NetWorth(
-        chain_code="TEST123",
+        character_id="TEST123",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -54,7 +54,7 @@ def test_networth_creation():
         business_net_value=125000.0,
     )
 
-    assert net_worth.chain_code == "TEST123"
+    assert net_worth.character_id == "TEST123"
     assert net_worth.liquid_currency == 1000.0
     assert net_worth.currency_type == "credits"
     assert net_worth.owns_primary_residence is True
@@ -78,7 +78,7 @@ def test_networth_creation():
 def test_networth_immutability():
     """Test that NetWorth objects are immutable through properties."""
     net_worth = NetWorth(
-        chain_code="TEST123",
+        character_id="TEST123",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -87,7 +87,7 @@ def test_networth_immutability():
 
     # Test that we can't set attributes directly
     with pytest.raises(AttributeError):
-        net_worth.chain_code = "NEW123"
+        net_worth.character_id = "NEW123"
     with pytest.raises(AttributeError):
         net_worth.liquid_currency = 2000.0
     with pytest.raises(AttributeError):
@@ -109,7 +109,7 @@ def test_networth_immutability():
 def test_networth_equality():
     """Test that NetWorth objects can be compared for equality."""
     net_worth1 = NetWorth(
-        chain_code="TEST123",
+        character_id="TEST123",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -131,7 +131,7 @@ def test_networth_equality():
     )
 
     net_worth2 = NetWorth(
-        chain_code="TEST123",
+        character_id="TEST123",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -153,7 +153,7 @@ def test_networth_equality():
     )
 
     net_worth3 = NetWorth(
-        chain_code="TEST456",
+        character_id="TEST456",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -182,7 +182,7 @@ def test_networth_equality():
 def test_networth_repr():
     """Test the string representation of NetWorth objects."""
     net_worth = NetWorth(
-        chain_code="TEST123",
+        character_id="TEST123",
         liquid_currency=1000.0,
         currency_type="credits",
         owns_primary_residence=True,
@@ -211,7 +211,7 @@ def test_networth_repr():
 
     # Check that all expected attributes are present in the repr
     expected_attrs = [
-        "chain_code='TEST123'",
+        "character_id='TEST123'",
         "liquid_currency=1000.0",
         "currency_type='credits'",
         "owns_primary_residence=True",
@@ -241,7 +241,7 @@ def test_networth_repr():
 def test_generate_net_worth_basic():
     """Test basic net worth generation with a simple function-based distribution."""
     # Create a mock character
-    character = MockCharacter(chain_code="TEST123", profession="farmer", age=30)
+    character = MockCharacter(character_id="TEST123", profession="farmer", age=30)
 
     # Create a simple config with one profession
     config = NetWorthConfig(
@@ -269,7 +269,7 @@ def test_generate_net_worth_basic():
     net_worth = generate_net_worth(character, config)
 
     # Verify the result
-    assert net_worth.chain_code == "TEST123"
+    assert net_worth.character_id == "TEST123"
     assert isinstance(net_worth.liquid_currency, float)
     assert net_worth.currency_type == "credits"
     # For age=30, mean should be 5*30 + 100 = 250
@@ -278,7 +278,7 @@ def test_generate_net_worth_basic():
 
 def test_generate_net_worth_unknown_profession():
     """Test that generating net worth for an unknown profession raises an error."""
-    character = MockCharacter(chain_code="TEST123", profession="unknown_profession")
+    character = MockCharacter(character_id="TEST123", profession="unknown_profession")
 
     config = NetWorthConfig(
         profession_liquid_currency={
@@ -310,7 +310,7 @@ def test_generate_net_worth_unknown_profession():
 
 def test_generate_net_worth_default_currency():
     """Test that net worth generation uses default currency when not specified in config."""
-    character = MockCharacter(chain_code="TEST123", profession="farmer")
+    character = MockCharacter(character_id="TEST123", profession="farmer")
 
     config = NetWorthConfig(
         profession_liquid_currency={
@@ -339,7 +339,7 @@ def test_generate_net_worth_default_currency():
 
 def test_generate_net_worth_custom_currency():
     """Test that net worth generation uses custom currency from config."""
-    character = MockCharacter(chain_code="TEST123", profession="farmer")
+    character = MockCharacter(character_id="TEST123", profession="farmer")
 
     config = NetWorthConfig(
         profession_liquid_currency={
@@ -373,7 +373,7 @@ def test_generate_net_worth_from_file():
         species="human",
         age=30,
         profession="farmer",
-        chain_code="TEST123",
+        character_id="TEST123",
     )
 
     # Load config from file
@@ -384,7 +384,7 @@ def test_generate_net_worth_from_file():
     net_worth = generate_net_worth(character, config)
 
     # Verify the result
-    assert net_worth.chain_code == "TEST123"
+    assert net_worth.character_id == "TEST123"
     assert isinstance(net_worth.liquid_currency, float)
     assert net_worth.currency_type == "credits"
 
@@ -417,11 +417,11 @@ def test_generate_net_worth_constant():
 
     # Generate net worth for each age
     for age in ages:
-        character = MockCharacter(chain_code="TEST123", profession="Sith", age=age)
+        character = MockCharacter(character_id="TEST123", profession="Sith", age=age)
         net_worth = generate_net_worth(character, config)
 
         # Verify the result
-        assert net_worth.chain_code == "TEST123"
+        assert net_worth.character_id == "TEST123"
         assert (
             net_worth.liquid_currency == 100000
         )  # Should be exactly 100000 with no noise
@@ -431,7 +431,7 @@ def test_generate_net_worth_constant():
 def test_generate_net_worth_with_all_assets():
     """Test net worth generation with all asset types."""
     # Create a mock character
-    character = MockCharacter(chain_code="TEST123", profession="farmer", age=30)
+    character = MockCharacter(character_id="TEST123", profession="farmer", age=30)
 
     # Create a config with all asset types
     config = NetWorthConfig(

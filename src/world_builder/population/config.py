@@ -316,7 +316,7 @@ def load_config(config_filepath: Path) -> PopulationConfig:
     """
     Loads the JSON configuration file and validates each distribution.
     """
-    with open(config_filepath, "r") as f:
+    with open(config_filepath, "r", encoding="utf-8") as f:
         try:
             config_json = json.load(f)
         except json.JSONDecodeError as e:

@@ -2,18 +2,16 @@
 Module for generating net worth values for characters based on their professions.
 """
 
-from dataclasses import dataclass
 from typing import Optional, Dict, Any
 import random
 import math
 
-from world_builder.net_worth_config import NetWorthConfig
+from world_builder.population.net_worth_config import NetWorthConfig
 from world_builder.distributions_config import (
     FunctionConfig,
-    FunctionBasedDist,
     sample_from_config,
 )
-from world_builder.character import Character
+from world_builder.population.character import Character
 
 
 class NetWorth:
@@ -22,7 +20,7 @@ class NetWorth:
 
     This class uses dynamic attribute assignment to store net worth information.
     Required attributes:
-        - chain_code: The unique identifier for this net worth record
+        - character_id: The unique identifier for this net worth record
         - liquid_currency: The amount of liquid currency the character has
         - currency_type: The type of currency (e.g., "credits", "imperial_credits")
 
@@ -34,7 +32,7 @@ class NetWorth:
 
     def __init__(
         self,
-        chain_code: str,
+        character_id: str,
         liquid_currency: float,
         currency_type: str,
         **attributes: Any,
@@ -43,26 +41,22 @@ class NetWorth:
         Initialize a NetWorth instance with required and optional attributes.
 
         Args:
-            chain_code: The unique identifier for this net worth record
+            character_id: The unique identifier for this net worth record
             liquid_currency: The amount of liquid currency
             currency_type: The type of currency
             **attributes: Additional attributes to set (e.g. owns_primary_residence, primary_residence_value)
         """
-        # Initialize flags and tracking
         super().__setattr__("_initializing", True)
         super().__setattr__("_attribute_names", set())
 
-        # Set required attributes
-        self._set_initial_attr("chain_code", chain_code)
+        self._set_initial_attr("character_id", character_id)
         self._set_initial_attr("liquid_currency", liquid_currency)
         self._set_initial_attr("currency_type", currency_type)
 
-        # Set optional attributes dynamically
         for name, value in attributes.items():
-            if not name.startswith("_"):  # Only set non-private attributes
+            if not name.startswith("_"):
                 self._set_initial_attr(name, value)
 
-        # Mark initialization as complete
         super().__setattr__("_initializing", False)
 
     def _set_initial_attr(self, name: str, value: Any) -> None:
@@ -94,18 +88,14 @@ class NetWorth:
         """
         Prevents modification of attributes after initialization.
         """
-        # Allow setting internal flags during initialization
         if name in ("_attribute_names", "_initializing"):
             super().__setattr__(name, value)
             return
 
-        # If we're still initializing, allow setting through the proper method
         if hasattr(self, "_initializing") and self._initializing:
-            # This should only happen through _set_initial_attr, but just in case
             super().__setattr__(name, value)
             return
 
-        # After initialization, prevent all attribute modifications
         raise AttributeError(
             f"Can't set attribute '{name}' - NetWorth objects are immutable after initialization"
         )
@@ -116,7 +106,7 @@ class NetWorth:
         """
         attrs = []
         for name in sorted(self._attribute_names):
-            if not name.startswith("_"):  # Only include public names in repr
+            if not name.startswith("_"):
                 value = getattr(self, name)
                 attrs.append(f"{name}={value!r}")
         return f"NetWorth({', '.join(attrs)})"
@@ -147,18 +137,17 @@ def evaluate_function(func_config: FunctionConfig, x: float) -> float:
     """
     if func_config.type == "constant":
         return func_config.params.value
-    elif func_config.type == "linear":
+    if func_config.type == "linear":
         return func_config.params.slope * x + func_config.params.intercept
-    elif func_config.type == "exponential":
+    if func_config.type == "exponential":
         return func_config.params.base * math.exp(func_config.params.rate * x)
-    elif func_config.type == "quadratic":
+    if func_config.type == "quadratic":
         return (
             func_config.params.a * x * x
             + func_config.params.b * x
             + func_config.params.c
         )
-    else:
-        raise ValueError(f"Unknown function type: {func_config.type}")
+    raise ValueError(f"Unknown function type: {func_config.type}")
 
 
 def _generate_asset_value(
@@ -229,24 +218,18 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
             f"Character profession '{character.profession}' not found in net worth config"
         )
 
-    # Get the configuration for this profession
     prof_config = config.profession_liquid_currency[character.profession]
 
-    # Get the field value (e.g., age) from the character
     field_value = getattr(character, prof_config.field_name)
 
-    # Generate the net worth using the distribution
     config_dict = prof_config.model_dump()
-    config_dict["type"] = "function_based"  # Add the type field
+    config_dict["type"] = "function_based"
     liquid_currency = sample_from_config(config_dict, field_value)
 
-    # Ensure the value is positive
     liquid_currency = max(0, liquid_currency)
 
-    # Get currency type from metadata, defaulting to "credits" if not specified
     currency_type = config.metadata.get("currency", "credits")
 
-    # Generate all asset ownership and values
     owns_primary_residence, primary_residence_value = _generate_asset_value(
         character,
         config.profession_has,
@@ -312,7 +295,7 @@ def generate_net_worth(character: Character, config: NetWorthConfig) -> NetWorth
     )
 
     return NetWorth(
-        chain_code=character.chain_code,
+        character_id=character.character_id,
         liquid_currency=liquid_currency,
         currency_type=currency_type,
         owns_primary_residence=owns_primary_residence,

@@ -1,8 +1,10 @@
 from pathlib import Path
 
 from world_builder import load_config, create_character
-from world_builder.net_worth_config import load_config as load_net_worth_config
-from world_builder.net_worth_generator import generate_net_worth
+from world_builder.population.net_worth_config import (
+    load_config as load_net_worth_config,
+)
+from world_builder.population.net_worth_generator import generate_net_worth
 
 
 def test_micro_config():

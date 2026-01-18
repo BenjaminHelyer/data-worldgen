@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from world_builder.population_config import load_config, PopulationConfig
+from world_builder.population.config import load_config, PopulationConfig
 from world_builder.distributions_config import (
     Distribution,
     DistributionTransformOperation,

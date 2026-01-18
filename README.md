@@ -45,7 +45,7 @@ The population configuration is a JSON-based system that defines the demographic
 
 ### Character Generation
 
-The character generation system creates unique individuals by sampling from the population configuration in a structured way. It first samples finite categorical fields (like species and profession), respecting dependencies, then handles distribution-based attributes (like age) with potential overrides based on the character's traits. Each character is assigned a unique chain code identifier and procedurally generated names that match their species and gender.
+The character generation system creates unique individuals by sampling from the population configuration in a structured way. It first samples finite categorical fields (like species and profession), respecting dependencies, then handles distribution-based attributes (like age) with potential overrides based on the character's traits. Each character is assigned a unique character_id identifier and procedurally generated names that match their species and gender.
 
 ## Namegen
 

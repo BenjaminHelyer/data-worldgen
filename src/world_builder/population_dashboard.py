@@ -18,7 +18,9 @@ def load_data(path: str = "population.parquet") -> pd.DataFrame:
 def get_filter_columns(df: pd.DataFrame) -> List[str]:
     """Determine which columns should have filters."""
     return [
-        col for col in df.columns if col not in ["first_name", "surname", "chain_code"]
+        col
+        for col in df.columns
+        if col not in ["first_name", "surname", "character_id"]
     ]
 
 
@@ -95,7 +97,7 @@ def plot_distributions(df: pd.DataFrame, col: str):
 
 
 def render_dashboard(
-    df: pd.DataFrame, filtered_df: pd.DataFrame, filter_columns: List[str]
+    _df: pd.DataFrame, filtered_df: pd.DataFrame, filter_columns: List[str]
 ):
     """Render Streamlit UI elements."""
     st.title("Population Dashboard")

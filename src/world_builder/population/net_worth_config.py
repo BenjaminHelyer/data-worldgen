@@ -17,9 +17,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from world_builder.distributions_config import (
-    Distribution,
     FunctionBasedDist,
-    FunctionConfig,
     BernoulliBasedDist,
 )
 
@@ -37,18 +35,18 @@ class NetWorthConfig(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    # Required mapping of professions to their net worth distributions
+    # required mapping of professions to their net worth distributions
     profession_liquid_currency: Dict[str, FunctionBasedDist] = Field(
         description="Required mapping of professions to their net worth distributions."
     )
 
-    # Optional mapping of asset types to profession ownership probabilities
+    # optional mapping of asset types to profession ownership probabilities
     profession_has: Optional[Dict[str, Dict[str, BernoulliBasedDist]]] = Field(
         default=None,
         description="Optional mapping of asset types to profession ownership probabilities.",
     )
 
-    # Optional mapping of asset types to profession value distributions
+    # optional mapping of asset types to profession value distributions
     profession_value: Optional[Dict[str, Dict[str, FunctionBasedDist]]] = Field(
         default=None,
         description="Optional mapping of asset types to profession value distributions.",
@@ -75,6 +73,6 @@ def load_config(config_path: Path) -> NetWorthConfig:
         json.JSONDecodeError: If the config file isn't valid JSON
         ValidationError: If the config doesn't match the expected schema
     """
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         config_data = json.load(f)
     return NetWorthConfig(**config_data)
