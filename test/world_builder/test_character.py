@@ -6,18 +6,20 @@ from collections import Counter
 import pytest
 import numpy as np
 
-from world_builder.character import (
+from world_builder.population.character import (
     _assign_names,
-    _assign_chain_code,
+    _assign_character_id,
     _assign_metadata,
-    _sample_finite_fields,
-    _sample_distribution_fields_with_overrides,
+)
+from world_builder.core.sampling import (
+    sample_finite_fields as _sample_finite_fields,
+    sample_distribution_fields_with_overrides as _sample_distribution_fields_with_overrides,
 )
 from world_builder.distributions_config import (
     NormalDist,
     DistributionTransformOperation,
 )
-from world_builder.population_config import PopulationConfig
+from world_builder.population.config import PopulationConfig
 
 
 @pytest.mark.parametrize(
@@ -49,7 +51,7 @@ def test_assign_metadata_adds_expected_keys(metadata, expected_keys):
         ("", ""),  # both missing gender and missing species should still generate
     ],
 )
-def test_assign_chain_code_format(species, gender_prefix):
+def test_assign_character_id_format(species, gender_prefix):
     gender = (
         "female" if gender_prefix == "F" else "male" if gender_prefix == "M" else None
     )
@@ -57,20 +59,20 @@ def test_assign_chain_code_format(species, gender_prefix):
     if gender:
         sampled["gender"] = gender
 
-    _assign_chain_code(sampled)
+    _assign_character_id(sampled)
 
-    chain_code = sampled.get("chain_code")
-    assert chain_code is not None
-    assert chain_code.startswith("CC-")
+    character_id = sampled.get("character_id")
+    assert character_id is not None
+    assert character_id.startswith("CC-")
 
     # Validate UUID portion
-    parts = chain_code.split("-")
+    parts = character_id.split("-")
     assert len(parts) >= 6  # CC-SPECIES-G-UUID
     uuid_part = "-".join(parts[-5:])
     try:
         UUID(uuid_part)
     except ValueError:
-        pytest.fail(f"Invalid UUID portion in chain code: {uuid_part}")
+        pytest.fail(f"Invalid UUID portion in character_id: {uuid_part}")
 
 
 @pytest.mark.parametrize(

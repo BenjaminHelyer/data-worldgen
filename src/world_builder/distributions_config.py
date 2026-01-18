@@ -134,7 +134,7 @@ class TransformableDistribution(Protocol):
         Returns:
             A new distribution with the transformation applied
         """
-        ...
+        raise NotImplementedError
 
 
 class NormalDist(BaseModel):
@@ -303,7 +303,8 @@ def _parse(config: Any) -> Distribution:
 
     if dist_type == "function_based":
         return FunctionBasedDist(**config)
-    elif dist_type not in DISTRIBUTION_REGISTRY:
+
+    if dist_type not in DISTRIBUTION_REGISTRY:
         raise ValueError(f"Unsupported distribution type: {dist_type}")
 
     model_cls = DISTRIBUTION_REGISTRY[dist_type]
@@ -317,13 +318,15 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
     """
     if isinstance(dist, NormalDist):
         return random.gauss(dist.mean, dist.std)
-    elif isinstance(dist, LogNormalDist):
+
+    if isinstance(dist, LogNormalDist):
         # For lognormal, we need to adjust the parameters to prevent overflow
         # Using the relationship between normal and lognormal parameters
         mu = math.log(dist.mean**2 / math.sqrt(dist.std**2 + dist.mean**2))
         sigma = math.sqrt(math.log(1 + (dist.std / dist.mean) ** 2))
         return random.lognormvariate(mu, sigma)
-    elif isinstance(dist, TruncatedNormalDist):
+
+    if isinstance(dist, TruncatedNormalDist):
         a = (dist.lower - dist.mean) / dist.std
         b = (dist.upper - dist.mean) / dist.std
         # Use Python's random module to generate uniform random numbers for scipy
@@ -331,7 +334,8 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
         return float(
             truncnorm.rvs(a, b, loc=dist.mean, scale=dist.std, random_state=rng)
         )
-    elif isinstance(dist, FunctionBasedDist):
+
+    if isinstance(dist, FunctionBasedDist):
         # First calculate the mean value
         mean_value = _evaluate_function(dist.mean_function, field_value)
 
@@ -343,7 +347,8 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
             else:
                 scale_value = scale
             return mean_value + random.gauss(0, scale_value)
-        elif dist.noise_function.type == "lognormal":
+
+        if dist.noise_function.type == "lognormal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
                 scale_value = _evaluate_function(scale, field_value)
@@ -356,7 +361,8 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
                 random.gauss(0, math.log1p(scale_value / mean_value))
             )
             return mean_value * noise_factor
-        elif dist.noise_function.type == "truncated_normal":
+
+        if dist.noise_function.type == "truncated_normal":
             scale = dist.noise_function.params["scale_factor"]
             if isinstance(scale, FunctionConfig):
                 scale_value = _evaluate_function(scale, field_value)
@@ -383,7 +389,8 @@ def _sample(dist: Distribution, field_value: float = 0) -> float:
         raise NotImplementedError(
             f"FunctionBasedDist sampling not implemented for noise type: {dist.noise_function.type}"
         )
-    elif isinstance(dist, BernoulliBasedDist):
+
+    if isinstance(dist, BernoulliBasedDist):
         # For Bernoulli distribution, we use the probability parameter from the mean_function
         probability = _evaluate_function(dist.mean_function, field_value)
         return random.random() < probability
@@ -394,12 +401,16 @@ def _evaluate_function(func: FunctionConfig, x: float) -> float:
     """Helper function to evaluate a function configuration."""
     if func.type == "constant":
         return func.params.value
-    elif func.type == "linear":
+
+    if func.type == "linear":
         return func.params.slope * x + func.params.intercept
-    elif func.type == "exponential":
+
+    if func.type == "exponential":
         return func.params.base * math.exp(func.params.rate * x)
-    elif func.type == "quadratic":
+
+    if func.type == "quadratic":
         return func.params.a * (x**2) + func.params.b * x + func.params.c
+
     raise ValueError(f"Unsupported function type: {func.type}")
 
 

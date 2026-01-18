@@ -17,7 +17,7 @@ def example_dataframe(tmp_path):
             "gender": ["female", "female", "male"],
             "age": [17, 27, 35],
             "allegiance": ["Rebel", "Republic", "Jedi"],
-            "chain_code": ["abc", "def", "ghi"],
+            "character_id": ["abc", "def", "ghi"],
         }
     )
     parquet_path = tmp_path / "population.parquet"
