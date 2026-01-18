@@ -3,7 +3,7 @@ import pandas as pd
 
 from unittest.mock import patch
 
-from world_builder import population_dashboard
+from world_builder.population import dashboard as population_dashboard
 
 
 @pytest.fixture

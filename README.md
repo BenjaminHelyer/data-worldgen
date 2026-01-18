@@ -18,10 +18,17 @@ pip install -e .
 To run the world builder with a config file, use the example script:
 
 ```
-python examples/world_builder/ecosystem_example.py
+cd examples/world_builder
+python ecosystem_example.py
 ```
 
 This uses the config at `examples/world_builder/ecosystem_config.json` and generates 100 characters, saving them to a Parquet file.
+
+Then, you can visualize the results of your generation by running the dashboard script:
+
+```
+streamlit run ../../src/world_builder/ecosystem/dashboard.py 
+```
 
 ### Population Configuration
 
