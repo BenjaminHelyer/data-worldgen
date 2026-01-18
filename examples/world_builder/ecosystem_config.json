@@ -1,0 +1,112 @@
+{
+    "base_probabilities_finite": {
+        "species": {
+            "fox": 0.25,
+            "rabbit": 0.35,
+            "hawk": 0.15,
+            "deer": 0.15,
+            "bear": 0.05,
+            "wolf": 0.05
+        },
+        "habitat": {
+            "forest": 0.40,
+            "grassland": 0.30,
+            "wetland": 0.15,
+            "mountain": 0.10,
+            "tundra": 0.05
+        },
+        "trophic_level": {
+            "herbivore": 0.50,
+            "carnivore": 0.30,
+            "omnivore": 0.20
+        }
+    },
+    "base_probabilities_distributions": {
+        "age": {
+            "type": "truncated_normal",
+            "mean": 5,
+            "std": 3,
+            "lower": 0
+        }
+    },
+    "factors": {
+        "habitat": {
+            "species": {
+                "forest": {
+                    "fox": 2.0,
+                    "deer": 1.5,
+                    "bear": 1.8
+                },
+                "grassland": {
+                    "rabbit": 2.5,
+                    "hawk": 1.5
+                },
+                "wetland": {
+                    "rabbit": 1.2,
+                    "hawk": 2.0
+                },
+                "mountain": {
+                    "wolf": 2.0,
+                    "hawk": 1.5
+                },
+                "tundra": {
+                    "wolf": 1.5,
+                    "bear": 1.2
+                }
+            },
+            "trophic_level": {
+                "forest": {
+                    "herbivore": 1.2,
+                    "omnivore": 1.1
+                },
+                "grassland": {
+                    "herbivore": 1.5
+                },
+                "wetland": {
+                    "carnivore": 1.3
+                }
+            }
+        },
+        "species": {
+            "trophic_level": {
+                "rabbit": {
+                    "herbivore": 10.0
+                },
+                "deer": {
+                    "herbivore": 10.0
+                },
+                "fox": {
+                    "carnivore": 5.0,
+                    "omnivore": 2.0
+                },
+                "wolf": {
+                    "carnivore": 10.0
+                },
+                "hawk": {
+                    "carnivore": 10.0
+                },
+                "bear": {
+                    "omnivore": 8.0
+                }
+            }
+        }
+    },
+    "transform_distributions": {
+        "age": {
+            "species": {
+                "rabbit": {
+                    "mean_shift": -2.0,
+                    "std_mult": 0.7
+                },
+                "bear": {
+                    "mean_shift": 3.0,
+                    "std_mult": 1.2
+                }
+            }
+        }
+    },
+    "metadata": {
+        "ecosystem": "Northwood Reserve",
+        "region": "Northern Forest"
+    }
+}
