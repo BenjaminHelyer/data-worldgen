@@ -8,12 +8,13 @@ as well as animals and ecosystems, based on probabilistic configurations.
 from .population.config import load_config, PopulationConfig
 from .population.character_id import generate_character_id
 from .population.character import create_character, Character
-from . import population_dashboard
+from .population import dashboard as population_dashboard
 
 # Ecosystem module exports
 from .ecosystem.config import load_config as load_ecosystem_config, EcosystemConfig
 from .ecosystem.animal_id import generate_animal_id
 from .ecosystem.animal import create_animal, Animal
+from .ecosystem import dashboard as ecosystem_dashboard
 
 __all__ = [
     # Population exports
@@ -29,4 +30,5 @@ __all__ = [
     "generate_animal_id",
     "create_animal",
     "Animal",
+    "ecosystem_dashboard",
 ]
