@@ -58,13 +58,13 @@ class SamplingConfig(Protocol):
             Structure:
                 ``distribution_field -> trait_field -> trait_value -> transform``.
             Example:
-                ``{"population_size": {"habitat": {"wetland": 
+                ``{"population_size": {"habitat": {"wetland":
                 DistributionTransformOperation(mean_shift=-30.0)}}}``
             shifts the mean of population_size by -30 when habitat is wetland.
             Can be empty dict if no transformations are needed.
 
         metadata: Optional dictionary of constant string key-value pairs that are
-            copied directly to sampled entities. 
+            copied directly to sampled entities.
             Example: ``{"ecosystem_name": "Northwood Reserve"}``.
             Can be empty dict if no metadata is needed.
     """
