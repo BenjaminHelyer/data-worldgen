@@ -2,12 +2,13 @@
 Population domain module for character generation.
 
 This module contains population-specific functionality including character
-generation, population configuration, character IDs, and net worth calculations.
+generation, population configuration, character IDs, net worth calculations, and dashboard visualization.
 """
 
 from .config import PopulationConfig, load_config
 from .character import Character, create_character
 from .character_id import generate_character_id, generate_uuidv7
+from . import dashboard
 
 __all__ = [
     "PopulationConfig",
@@ -16,4 +17,5 @@ __all__ = [
     "create_character",
     "generate_character_id",
     "generate_uuidv7",
+    "dashboard",
 ]
