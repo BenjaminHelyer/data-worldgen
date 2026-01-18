@@ -84,7 +84,9 @@ bad_configs = [
             "species": {"fox": 1.0},
         },
         "base_probabilities_distributions": {},
-        "factors": {"biome": {"species": {"tundra": {"fox": 2.0}}}},  # biome not defined
+        "factors": {
+            "biome": {"species": {"tundra": {"fox": 2.0}}}
+        },  # biome not defined
     },
 ]
 
@@ -130,15 +132,18 @@ def test_ecosystemconfig_invalid(config_data):
                 {
                     "condition": {"species": "fox"},
                     "field": "age",
-                    "distribution": {"type": "truncated_normal", "mean": 3.0, "std": 0.5, "lower": 0},
+                    "distribution": {
+                        "type": "truncated_normal",
+                        "mean": 3.0,
+                        "std": 0.5,
+                        "lower": 0,
+                    },
                 }
             ],
         },
         # Case 2: Habitat -> Population size override
         {
-            "base_probabilities_finite": {
-                "habitat": {"forest": 0.6, "grassland": 0.4}
-            },
+            "base_probabilities_finite": {"habitat": {"forest": 0.6, "grassland": 0.4}},
             "base_probabilities_distributions": {
                 "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0}
             },
@@ -146,7 +151,12 @@ def test_ecosystemconfig_invalid(config_data):
                 {
                     "condition": {"habitat": "forest"},
                     "field": "age",
-                    "distribution": {"type": "truncated_normal", "mean": 7, "std": 2, "lower": 0},
+                    "distribution": {
+                        "type": "truncated_normal",
+                        "mean": 7,
+                        "std": 2,
+                        "lower": 0,
+                    },
                 }
             ],
         },
@@ -170,7 +180,12 @@ def test_valid_override_distributions(config_json):
                 {
                     "condition": {"biome": "tundra"},
                     "field": "age",
-                    "distribution": {"type": "truncated_normal", "mean": 3.0, "std": 0.5, "lower": 0},
+                    "distribution": {
+                        "type": "truncated_normal",
+                        "mean": 3.0,
+                        "std": 0.5,
+                        "lower": 0,
+                    },
                 }
             ],
         },

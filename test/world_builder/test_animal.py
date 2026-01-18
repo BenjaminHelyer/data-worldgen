@@ -27,7 +27,10 @@ from world_builder.ecosystem.config import EcosystemConfig
     "metadata, expected_keys",
     [
         ({"ecosystem": "Northwood Reserve"}, ["ecosystem"]),
-        ({"ecosystem": "Northwood Reserve", "region": "Northern Forest"}, ["ecosystem", "region"]),
+        (
+            {"ecosystem": "Northwood Reserve", "region": "Northern Forest"},
+            ["ecosystem", "region"],
+        ),
         ({}, []),  # no metadata
     ],
 )
@@ -53,7 +56,10 @@ def test_assign_metadata_adds_expected_keys(metadata, expected_keys):
     ],
 )
 def test_assign_animal_id_format(species, habitat_prefix):
-    sampled = {"species": species, "habitat": habitat_prefix.lower() if habitat_prefix else ""}
+    sampled = {
+        "species": species,
+        "habitat": habitat_prefix.lower() if habitat_prefix else "",
+    }
     _assign_animal_id(sampled)
     assert "animal_id" in sampled
     assert isinstance(sampled["animal_id"], str)
@@ -108,25 +114,21 @@ def test_create_animal_with_factors():
         "base_probabilities_distributions": {
             "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0}
         },
-        "factors": {
-            "habitat": {
-                "species": {
-                    "forest": {"fox": 2.0}
-                }
-            }
-        },
+        "factors": {"habitat": {"species": {"forest": {"fox": 2.0}}}},
         "metadata": {},
     }
     config = EcosystemConfig(**config_data)
-    
+
     # Generate many animals and check that factors are working
     animals = [create_animal(config) for _ in range(100)]
     forest_animals = [a for a in animals if a.habitat == "forest"]
     forest_foxes = [a for a in forest_animals if a.species == "fox"]
-    
+
     # With factor of 2.0, we should see more foxes in forest
     fox_ratio = len(forest_foxes) / len(forest_animals) if forest_animals else 0
-    assert fox_ratio > 0.5, f"Expected more foxes in forest due to factor, got {fox_ratio}"
+    assert (
+        fox_ratio > 0.5
+    ), f"Expected more foxes in forest due to factor, got {fox_ratio}"
 
 
 def test_create_animal_with_transforms():
@@ -142,10 +144,10 @@ def test_create_animal_with_transforms():
         "metadata": {},
     }
     config = EcosystemConfig(**config_data)
-    
+
     animals = [create_animal(config) for _ in range(100)]
     ages = [a.age for a in animals]
-    
+
     # Check that values are reasonable
     # Ages should be positive (using truncated_normal with lower=0)
     assert all(age >= 0 for age in ages), "Ages should be non-negative"
