@@ -18,26 +18,10 @@ pip install -e .
 To run the world builder with a config file, use the example script:
 
 ```
-python examples/world_builder/wb_example.py
+python examples/world_builder/ecosystem_example.py
 ```
 
-This uses the config at `examples/world_builder/wb_config.json` and generates 100 characters, saving them to a Parquet file.
-
-To use your own config file, create a Python script:
-
-```python
-from pathlib import Path
-import pandas as pd
-from world_builder import load_config, create_character
-
-CONFIG_FILE = Path("path/to/your/config.json")
-config = load_config(CONFIG_FILE)
-population = [create_character(config) for _ in range(100)]
-
-population_data = [char.__dict__ for char in population]
-df = pd.DataFrame(population_data)
-df.to_parquet("population.parquet", index=False)
-```
+This uses the config at `examples/world_builder/ecosystem_config.json` and generates 100 characters, saving them to a Parquet file.
 
 ### Population Configuration
 

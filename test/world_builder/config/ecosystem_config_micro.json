@@ -1,0 +1,24 @@
+{
+    "base_probabilities_finite": {
+        "species": {
+            "fox": 1.0
+        },
+        "habitat": {
+            "forest": 1.0
+        },
+        "trophic_level": {
+            "carnivore": 1.0
+        }
+    },
+    "base_probabilities_distributions": {
+        "age": {
+            "type": "truncated_normal",
+            "mean": 5,
+            "std": 2,
+            "lower": 0
+        }
+    },
+    "metadata": {
+        "ecosystem": "Test Reserve"
+    }
+}
