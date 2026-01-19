@@ -29,7 +29,6 @@ df = pd.read_parquet(parquet_file)
 # Top row takes more space, bottom has 2 rows x 3 cols
 fig = plt.figure(figsize=(14, 12))
 gs = GridSpec(3, 3, figure=fig, height_ratios=[2, 1, 1], hspace=0.5, wspace=0.3)
-fig.suptitle("Ecosystem Species and Age Distributions", fontsize=16, fontweight="bold")
 
 # Top plot: Species distribution (spans all 3 columns)
 ax1 = fig.add_subplot(gs[0, :])
