@@ -4,7 +4,7 @@
 
 # data-worldgen
 
-Synthetic data generation pipeline which uses a factor-graph approach. Two use-cases are currently supported:
+Synthetic data generation pipeline which uses a factor-based approach. Two use-cases are currently supported:
 
 1. Ecosystem generation - generates hypothetical organisms of various species in a given ecosystem
 
@@ -14,7 +14,7 @@ Synthetic data generation pipeline which uses a factor-graph approach. Two use-c
 
 Module that creates synthetic records for entities from a specific context, such as ecosystems or populations.
 
-Has a Pydantic model for the config. Samples static or slowly-changing dimensions related to entities based on a factor-graph approach.
+Has a Pydantic model for the config. Samples static or slowly-changing dimensions related to entities based on a factor-based approach.
 
 ## Get Started Quickly
 
