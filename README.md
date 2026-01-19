@@ -1,4 +1,9 @@
+<div align="center">
+  <img src="simple_pdf_circle_logo_preview.png" alt="data-worldgen logo" width="200">
+</div>
+
 # data-worldgen
+
 Synthetic data generation pipeline which uses a factor-graph approach. Two use-cases are currently supported:
 
 1. Ecosystem generation - generates hypothetical organisms of various species in a given ecosystem
