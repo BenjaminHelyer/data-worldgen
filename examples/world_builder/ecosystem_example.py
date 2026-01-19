@@ -15,7 +15,7 @@ ECOSYSTEM_CONFIG_FILE = current_dir / "ecosystem_config.json"
 ecosystem_config = load_ecosystem_config(ECOSYSTEM_CONFIG_FILE)
 
 # Create a population of 100 random animals
-animals = [create_animal(ecosystem_config) for _ in range(100)]
+animals = [create_animal(ecosystem_config) for _ in range(1000)]
 
 # Optionally, print some animals
 for animal in animals[:5]:
