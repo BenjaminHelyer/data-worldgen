@@ -25,9 +25,14 @@ def test_ecosystem_micro_config():
     # Verify animal properties
     for animal in animals:
         assert isinstance(animal.species, str)
-        assert isinstance(animal.habitat, str)
+        assert isinstance(animal.color, str)
+        assert isinstance(animal.health_state, str)
         assert isinstance(animal.age, (int, float))
         assert animal.age >= 0, "Age should be non-negative"
+        assert isinstance(animal.height, (int, float))
+        assert animal.height >= 5, "Height should be >= 5"
+        assert isinstance(animal.weight, (int, float))
+        assert animal.weight >= 1, "Weight should be >= 1"
         assert isinstance(animal.animal_id, str)
         assert animal.animal_id.startswith("AN-")
         assert animal.ecosystem == "Test Reserve"

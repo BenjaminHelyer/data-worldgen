@@ -3,11 +3,11 @@
         "species": {
             "fox": 1.0
         },
-        "habitat": {
-            "forest": 1.0
+        "color": {
+            "brown": 1.0
         },
-        "trophic_level": {
-            "carnivore": 1.0
+        "health_state": {
+            "healthy": 1.0
         }
     },
     "base_probabilities_distributions": {
@@ -16,6 +16,18 @@
             "mean": 5,
             "std": 2,
             "lower": 0
+        },
+        "height": {
+            "type": "truncated_normal",
+            "mean": 50,
+            "std": 10,
+            "lower": 5
+        },
+        "weight": {
+            "type": "truncated_normal",
+            "mean": 30,
+            "std": 8,
+            "lower": 1
         }
     },
     "metadata": {

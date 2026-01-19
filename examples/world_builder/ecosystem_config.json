@@ -8,17 +8,18 @@
             "bear": 0.05,
             "wolf": 0.05
         },
-        "habitat": {
-            "forest": 0.40,
-            "grassland": 0.30,
-            "wetland": 0.15,
-            "mountain": 0.10,
-            "tundra": 0.05
+        "color": {
+            "brown": 0.30,
+            "gray": 0.25,
+            "white": 0.20,
+            "black": 0.15,
+            "red": 0.10
         },
-        "trophic_level": {
-            "herbivore": 0.50,
-            "carnivore": 0.30,
-            "omnivore": 0.20
+        "health_state": {
+            "healthy": 0.70,
+            "injured": 0.20,
+            "sick": 0.08,
+            "critical": 0.02
         }
     },
     "base_probabilities_distributions": {
@@ -27,66 +28,70 @@
             "mean": 5,
             "std": 3,
             "lower": 0
+        },
+        "height": {
+            "type": "truncated_normal",
+            "mean": 50,
+            "std": 15,
+            "lower": 5
+        },
+        "weight": {
+            "type": "truncated_normal",
+            "mean": 30,
+            "std": 12,
+            "lower": 1
         }
     },
     "factors": {
-        "habitat": {
-            "species": {
-                "forest": {
-                    "fox": 2.0,
-                    "deer": 1.5,
-                    "bear": 1.8
+        "species": {
+            "color": {
+                "fox": {
+                    "red": 2.5,
+                    "brown": 1.5
                 },
-                "grassland": {
-                    "rabbit": 2.5,
-                    "hawk": 1.5
+                "rabbit": {
+                    "white": 2.0,
+                    "brown": 1.3
                 },
-                "wetland": {
-                    "rabbit": 1.2,
-                    "hawk": 2.0
+                "hawk": {
+                    "brown": 1.8,
+                    "black": 1.5
                 },
-                "mountain": {
-                    "wolf": 2.0,
-                    "hawk": 1.5
+                "deer": {
+                    "brown": 2.0,
+                    "gray": 1.2
                 },
-                "tundra": {
-                    "wolf": 1.5,
-                    "bear": 1.2
+                "bear": {
+                    "black": 2.5,
+                    "brown": 1.5
+                },
+                "wolf": {
+                    "gray": 2.0,
+                    "white": 1.5
                 }
             },
-            "trophic_level": {
-                "forest": {
-                    "herbivore": 1.2,
-                    "omnivore": 1.1
+            "health_state": {
+                "rabbit": {
+                    "healthy": 1.2,
+                    "injured": 0.8
                 },
-                "grassland": {
-                    "herbivore": 1.5
+                "bear": {
+                    "healthy": 1.3,
+                    "critical": 0.5
                 },
-                "wetland": {
-                    "carnivore": 1.3
+                "hawk": {
+                    "healthy": 1.1,
+                    "injured": 1.0
                 }
             }
         },
-        "species": {
-            "trophic_level": {
-                "rabbit": {
-                    "herbivore": 10.0
+        "color": {
+            "health_state": {
+                "white": {
+                    "healthy": 1.1
                 },
-                "deer": {
-                    "herbivore": 10.0
-                },
-                "fox": {
-                    "carnivore": 5.0,
-                    "omnivore": 2.0
-                },
-                "wolf": {
-                    "carnivore": 10.0
-                },
-                "hawk": {
-                    "carnivore": 10.0
-                },
-                "bear": {
-                    "omnivore": 8.0
+                "black": {
+                    "healthy": 1.0
                 }
             }
         }
@@ -101,6 +106,30 @@
                 "bear": {
                     "mean_shift": 3.0,
                     "std_mult": 1.2
+                }
+            }
+        },
+        "height": {
+            "species": {
+                "rabbit": {
+                    "mean_shift": -30,
+                    "std_mult": 0.5
+                },
+                "bear": {
+                    "mean_shift": 40,
+                    "std_mult": 1.3
+                }
+            }
+        },
+        "weight": {
+            "species": {
+                "rabbit": {
+                    "mean_shift": -20,
+                    "std_mult": 0.4
+                },
+                "bear": {
+                    "mean_shift": 50,
+                    "std_mult": 1.5
                 }
             }
         }

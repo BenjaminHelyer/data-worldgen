@@ -36,26 +36,30 @@ good_configs = [
     # test for data without factors
     {
         "base_probabilities_finite": {
-            "habitat": {"forest": 1.0},
             "species": {"fox": 1.0},
-            "trophic_level": {"carnivore": 1.0},
+            "color": {"brown": 1.0},
+            "health_state": {"healthy": 1.0},
         },
         "base_probabilities_distributions": {
-            "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0}
+            "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0},
+            "height": {"type": "truncated_normal", "mean": 50, "std": 10, "lower": 5},
+            "weight": {"type": "truncated_normal", "mean": 30, "std": 8, "lower": 1}
         },
         "metadata": {"ecosystem": "Test Reserve"},
     },
     # test for data with factors
     {
         "base_probabilities_finite": {
-            "habitat": {"forest": 1.0},
             "species": {"fox": 1.0},
-            "trophic_level": {"carnivore": 1.0},
+            "color": {"brown": 0.5, "red": 0.5},
+            "health_state": {"healthy": 1.0},
         },
         "base_probabilities_distributions": {
-            "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0}
+            "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0},
+            "height": {"type": "truncated_normal", "mean": 50, "std": 10, "lower": 5},
+            "weight": {"type": "truncated_normal", "mean": 30, "std": 8, "lower": 1}
         },
-        "factors": {"habitat": {"species": {"forest": {"fox": 2.0}}}},
+        "factors": {"species": {"color": {"fox": {"red": 2.0}}}},
         "metadata": {"ecosystem": "Test Reserve"},
     },
 ]
@@ -72,11 +76,11 @@ bad_configs = [
     # negative factor
     {
         "base_probabilities_finite": {
-            "habitat": {"forest": 1.0},
             "species": {"fox": 1.0},
+            "color": {"brown": 1.0},
         },
         "base_probabilities_distributions": {},
-        "factors": {"habitat": {"species": {"forest": {"fox": -1.0}}}},
+        "factors": {"species": {"color": {"fox": {"red": -1.0}}}},
     },
     # factor references non-existent field
     {
@@ -141,21 +145,21 @@ def test_ecosystemconfig_invalid(config_data):
                 }
             ],
         },
-        # Case 2: Habitat -> Population size override
+        # Case 2: Species -> Height override
         {
-            "base_probabilities_finite": {"habitat": {"forest": 0.6, "grassland": 0.4}},
+            "base_probabilities_finite": {"species": {"fox": 0.6, "rabbit": 0.4}},
             "base_probabilities_distributions": {
-                "age": {"type": "truncated_normal", "mean": 5, "std": 2, "lower": 0}
+                "height": {"type": "truncated_normal", "mean": 50, "std": 10, "lower": 5}
             },
             "override_distributions": [
                 {
-                    "condition": {"habitat": "forest"},
-                    "field": "age",
+                    "condition": {"species": "fox"},
+                    "field": "height",
                     "distribution": {
                         "type": "truncated_normal",
-                        "mean": 7,
-                        "std": 2,
-                        "lower": 0,
+                        "mean": 60,
+                        "std": 8,
+                        "lower": 5,
                     },
                 }
             ],
