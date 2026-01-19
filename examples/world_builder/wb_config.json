@@ -73,9 +73,10 @@
     },
     "base_probabilities_distributions": {
         "age": {
-            "type": "normal",
+            "type": "truncated_normal",
             "mean": 30,
-            "std": 20
+            "std": 20,
+            "lower": 0
         }
     },
     "factors": {
