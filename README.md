@@ -33,3 +33,11 @@ Then, you can visualize the results of your generation by running the dashboard 
 ```
 streamlit run ../../src/world_builder/ecosystem/dashboard.py 
 ```
+
+Or, you can plot them simply via the plotting functionality:
+
+```
+python plot_ecosystem.py
+```
+
+![Ecosystem Species and Age Distributions](readme_example_plot.png)
