@@ -26,6 +26,10 @@ dependencies = [
     "botocore"
 ]
 
+[project.scripts]
+worldgen-batch = "world_builder.batch_s3:main"
+worldgen-batch-local = "world_builder.batch_local:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
