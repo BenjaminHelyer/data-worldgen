@@ -194,3 +194,4 @@ eda_1m_pop.ipynb
 .vscode/
 
 eda_10m_pop.ipynb
+out/*
