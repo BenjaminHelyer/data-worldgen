@@ -9,7 +9,6 @@ from pydantic import ValidationError
 
 from world_builder.population.net_worth_config import load_config, NetWorthConfig
 from world_builder.distributions_config import (
-    Distribution,
     NormalDist,
     LogNormalDist,
     TruncatedNormalDist,

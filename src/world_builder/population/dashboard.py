@@ -7,6 +7,7 @@ from typing import List
 import streamlit as st
 import pandas as pd
 import altair as alt
+from pandas.api.types import is_numeric_dtype
 
 
 @st.cache
@@ -30,13 +31,7 @@ def apply_filters(df: pd.DataFrame, filter_columns: List[str]) -> pd.DataFrame:
     filtered_df = df.copy()
 
     for col in filter_columns:
-        if df[col].dtype == "object":
-            unique_vals = df[col].dropna().unique().tolist()
-            selected_vals = st.sidebar.multiselect(
-                f"Select {col}", options=unique_vals, default=unique_vals
-            )
-            filtered_df = filtered_df[filtered_df[col].isin(selected_vals)]
-        else:
+        if is_numeric_dtype(df[col]):
             min_val = int(df[col].min())
             max_val = int(df[col].max())
             selected_range = st.sidebar.slider(
@@ -49,6 +44,12 @@ def apply_filters(df: pd.DataFrame, filter_columns: List[str]) -> pd.DataFrame:
                 (filtered_df[col] >= selected_range[0])
                 & (filtered_df[col] <= selected_range[1])
             ]
+        else:
+            unique_vals = df[col].dropna().unique().tolist()
+            selected_vals = st.sidebar.multiselect(
+                f"Select {col}", options=unique_vals, default=unique_vals
+            )
+            filtered_df = filtered_df[filtered_df[col].isin(selected_vals)]
 
     return filtered_df
 
@@ -57,7 +58,7 @@ def plot_distributions(df: pd.DataFrame, col: str):
     """Display bar and pie charts for categorical and numeric data side-by-side if applicable."""
     st.subheader(f"Distribution of {col}")
 
-    if df[col].dtype == "object":
+    if not is_numeric_dtype(df[col]):
         counts = df[col].value_counts().reset_index()
         counts.columns = [col, "count"]
 

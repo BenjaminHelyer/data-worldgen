@@ -46,3 +46,39 @@ python plot_ecosystem.py
 ```
 
 ![Ecosystem Species and Age Distributions](readme_example_plot.png)
+
+## Docker
+
+The repository includes a **generation-only** image (no Streamlit). It installs the package from `pyproject.toml` via `uv` and exposes two entry modules:
+
+| Module | Purpose |
+|--------|---------|
+| `world_builder.batch_s3` | One-shot job: config and output on **S3** (intended for Fargate or any environment with AWS credentials). **Default** when you run the container with no extra arguments. |
+| `world_builder.batch_local` | Same generation logic using **local paths** only (no boto3 calls in that code path). Pass CLI flags after the module name. |
+
+Build the image from the repository root:
+
+```
+docker build -t data-worldgen-batch .
+```
+
+### Local batch (override module)
+
+Override the default module and pass arguments to `batch_local`:
+
+```
+docker run --rm \
+  -v /path/to/configs:/data:ro \
+  -v /path/to/out:/out \
+  data-worldgen-batch world_builder.batch_local \
+  --mode ecosystem \
+  --config /data/ecosystem_config.json \
+  --out /out/generated.parquet \
+  --count 1000
+```
+
+Optional: `--workers` caps the multiprocessing pool (default is the host CPU count).
+
+### Installed CLI (non-Docker)
+
+After `pip install -e .`, console scripts `worldgen-batch` and `worldgen-batch-local` call the same entrypoints as `python -m world_builder.batch_s3` and `python -m world_builder.batch_local`.
