@@ -8,7 +8,7 @@ ecosystem modeling, or any other probabilistic sampling use case.
 import random
 from typing import Any, Dict
 
-from world_builder.distributions_config import Distribution, sample_from_config
+from world_builder.distributions_config import is_distribution, sample_from_config
 
 from .config_protocol import SamplingConfig
 
@@ -133,7 +133,7 @@ def sample_distribution_fields_with_overrides(
                 transform = value_map[trait_value]
                 final_dist = final_dist.with_transform(transform)
 
-        if not isinstance(final_dist, Distribution):
+        if not is_distribution(final_dist):
             raise TypeError(
                 f"Expected Distribution for '{category}', got {type(final_dist)}"
             )

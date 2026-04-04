@@ -2,7 +2,7 @@
 Holds the Pydantic BaseModels and distribution objects for various probaility distributions.
 """
 
-from typing import Literal, Union, Dict, Any, Protocol
+from typing import Any, Dict, Literal, Optional, Protocol, Union
 import random
 import math
 
@@ -115,8 +115,8 @@ class DistributionTransformOperation(BaseModel):
         std_mult: Optional amount to multiply the standard deviation by
     """
 
-    mean_shift: float | None = None
-    std_mult: float | None = None
+    mean_shift: Optional[float] = None
+    std_mult: Optional[float] = None
 
 
 class TransformableDistribution(Protocol):
@@ -278,6 +278,21 @@ Distribution = Union[
     FunctionBasedDist,
     BernoulliBasedDist,
 ]
+
+# Tuple for isinstance(); typing.Union cannot be used with isinstance on Python < 3.10.
+DISTRIBUTION_TYPE_CLASSES = (
+    NormalDist,
+    LogNormalDist,
+    TruncatedNormalDist,
+    FunctionBasedDist,
+    BernoulliBasedDist,
+)
+
+
+def is_distribution(obj: object) -> bool:
+    """Return True if obj is a concrete Distribution model (Python 3.9-safe)."""
+    return isinstance(obj, DISTRIBUTION_TYPE_CLASSES)
+
 
 DISTRIBUTION_REGISTRY: Dict[str, BaseModel] = {
     "normal": NormalDist,

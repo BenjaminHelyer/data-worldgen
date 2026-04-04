@@ -5,9 +5,9 @@ from pydantic import ValidationError
 
 from world_builder.ecosystem.config import load_config, EcosystemConfig
 from world_builder.distributions_config import (
-    Distribution,
     DistributionTransformOperation,
     NormalDist,
+    is_distribution,
 )
 
 parent_dir = Path(__file__).resolve().parent
@@ -109,7 +109,7 @@ def test_ecosystemconfig_valid(config_data):
         config_data["base_probabilities_distributions"].keys()
     )
     for key, dist in config.base_probabilities_distributions.items():
-        assert isinstance(dist, Distribution)
+            assert is_distribution(dist)
     if "metadata" in config_data and "ecosystem" in config_data["metadata"]:
         assert config.metadata["ecosystem"] == config_data["metadata"]["ecosystem"]
 
