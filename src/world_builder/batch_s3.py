@@ -37,7 +37,8 @@ from world_builder import (
     load_ecosystem_config,
 )
 from world_builder.ecosystem.config import EcosystemConfig
-from world_builder.population.character import create_characters_vectorized
+from world_builder.population.character import create_character, create_characters_vectorized
+from world_builder.population.config import PopulationConfig
 
 logger = logging.getLogger(__name__)
 

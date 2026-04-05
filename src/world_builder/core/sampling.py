@@ -7,6 +7,7 @@ ecosystem modeling, or any other probabilistic sampling use case.
 
 from __future__ import annotations
 
+import random
 import weakref
 from typing import Any, Dict, List
 
@@ -28,6 +29,16 @@ from .config_protocol import SamplingConfig
 from .finite_pmf import FiniteSamplingTables, build_finite_sampling_tables
 
 _tables_by_id: Dict[int, tuple[weakref.ref, FiniteSamplingTables]] = {}
+
+
+def _numpy_rng_from_python_random() -> np.random.Generator:
+    """
+    Build a NumPy Generator seeded from stdlib ``random``.
+
+    Ensures ``random.seed(k)`` before ``create_character`` controls finite and
+    distribution draws (used by chunked seed-range workers).
+    """
+    return np.random.default_rng(int.from_bytes(random.randbytes(16), "big"))
 
 
 def _get_cached_finite_tables(config: SamplingConfig) -> FiniteSamplingTables:
@@ -121,7 +132,7 @@ def sample_finite_fields(
         sampled: Dictionary to populate with sampled values (modified in place)
     """
     tables = _get_cached_finite_tables(config)
-    rng = np.random.default_rng()
+    rng = _numpy_rng_from_python_random()
 
     for field in tables.ordered_finite_fields:
         if field in sampled:
@@ -396,7 +407,7 @@ def sample_distribution_fields_with_overrides(
     Raises:
         TypeError: If a distribution is not a valid Distribution instance
     """
-    rng = np.random.default_rng()
+    rng = _numpy_rng_from_python_random()
     str_arrays = {
         k: np.asarray([sampled[k]], dtype=object)
         for k in config.base_probabilities_finite
