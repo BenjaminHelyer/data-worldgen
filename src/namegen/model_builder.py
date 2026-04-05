@@ -8,9 +8,11 @@ These models are simply JSON under the hood, nothing too fancy.
 """
 
 from collections import defaultdict, Counter
+from functools import lru_cache
 import random
 import json
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Union
 
 import pandas as pd
 
@@ -101,9 +103,18 @@ def save_markov_model_to_json(
         json.dump(model, f, indent=2)
 
 
-def load_markov_model_from_json(filepath: str) -> Dict[str, Dict[str, float]]:
+@lru_cache(maxsize=32)
+def _load_markov_model_from_json_cached(resolved_path: str) -> Dict[str, Dict[str, float]]:
+    with open(resolved_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_markov_model_from_json(filepath: Union[str, Path]) -> Dict[str, Dict[str, float]]:
     """
     Loads a Markov model from a JSON file.
+
+    Models are cached by resolved path so repeated name generation does not
+    re-read and re-parse the same file.
 
     Args:
         filepath: Path to the JSON file containing the model
@@ -111,5 +122,5 @@ def load_markov_model_from_json(filepath: str) -> Dict[str, Dict[str, float]]:
     Returns:
         The Markov model as a dict of dicts (prefix → next_char → probability)
     """
-    with open(filepath, "r", encoding="utf-8") as f:
-        return json.load(f)
+    resolved = str(Path(filepath).resolve())
+    return _load_markov_model_from_json_cached(resolved)

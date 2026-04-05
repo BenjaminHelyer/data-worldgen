@@ -6,7 +6,7 @@ generation, population configuration, character IDs, net worth calculations, and
 """
 
 from .config import PopulationConfig, load_config
-from .character import Character, create_character
+from .character import Character, create_character, create_characters_vectorized
 from .character_id import generate_character_id, generate_uuidv7
 from . import dashboard
 
@@ -15,6 +15,7 @@ __all__ = [
     "load_config",
     "Character",
     "create_character",
+    "create_characters_vectorized",
     "generate_character_id",
     "generate_uuidv7",
     "dashboard",
