@@ -136,6 +136,7 @@ ENV/
 env.bak/
 venv.bak/
 .venv-data-worldgen
+.venv-test
 
 # Spyder project settings
 .spyderproject
@@ -195,3 +196,5 @@ eda_1m_pop.ipynb
 
 eda_10m_pop.ipynb
 out/*
+
+.venv-diagrams/*
