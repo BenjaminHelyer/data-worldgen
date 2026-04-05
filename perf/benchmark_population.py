@@ -51,8 +51,8 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--count",
         type=int,
-        default=10_000,
-        help="Number of characters per run (default: 10000)",
+        default=100_000,
+        help="Number of characters per run (default: 100000)",
     )
     p.add_argument(
         "--runs",
