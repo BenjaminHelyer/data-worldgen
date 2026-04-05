@@ -1,0 +1,22 @@
+# Tier 3: LocalStack for S3, SNS, SQS, Lambda (community edition; some features vary by image).
+#
+#   docker compose -f docker-compose.localstack.yml up -d
+#   export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
+#   export LOCALSTACK_ENDPOINT=http://localhost:4566
+#   pytest test/integration/test_localstack_sns_sqs.py -v
+#
+# Full Lambda + container parity is optional; see test/integration/README.md.
+
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sns,sqs,lambda
+      - DEBUG=0
+    volumes:
+      - localstack-data:/var/lib/localstack
+
+volumes:
+  localstack-data:
