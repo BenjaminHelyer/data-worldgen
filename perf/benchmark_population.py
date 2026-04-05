@@ -1,8 +1,8 @@
 """
 Population generation benchmarks using the same JSON configs as test/world_builder/config.
 
-Times end-to-end local batch generation (multiprocessing pool, DataFrame build, Parquet write),
-matching world_builder.batch_local.run_local.
+Times end-to-end local batch generation (vectorized sampling, pooled name assignment,
+DataFrame build, Parquet write), matching world_builder.batch_local.run_local.
 
 Usage (from repository root):
 

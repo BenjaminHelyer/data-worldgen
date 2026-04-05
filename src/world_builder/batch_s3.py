@@ -10,7 +10,7 @@ Required:
 
 Optional:
   ENTITY_COUNT: number of rows to generate (default 100)
-  NUM_WORKERS: multiprocessing pool size cap (default: host CPU count, capped by ENTITY_COUNT)
+  NUM_WORKERS: pool size cap for ecosystem (full entity) or population (name/ID post-process) mode
 """
 
 from __future__ import annotations
@@ -30,12 +30,11 @@ import pandas as pd
 from data_export.s3_upload import download_from_s3, upload_to_s3
 from world_builder import (
     create_animal,
-    create_character,
     load_config,
     load_ecosystem_config,
 )
 from world_builder.ecosystem.config import EcosystemConfig
-from world_builder.population.config import PopulationConfig
+from world_builder.population.character import create_characters_vectorized
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +88,6 @@ def _effective_worker_count(entity_count: int, requested: int) -> int:
     return max(1, min(requested, cpus, entity_count))
 
 
-def _create_character_worker(_config: PopulationConfig) -> object:
-    seed = int(time.time() * 1_000_000) ^ os.getpid()
-    random.seed(seed)
-    return create_character(_config)
-
-
 def _create_animal_worker(_config: EcosystemConfig) -> object:
     seed = int(time.time() * 1_000_000) ^ os.getpid()
     random.seed(seed)
@@ -119,18 +112,31 @@ def run_batch() -> None:
     entity_count = _env_positive_int("ENTITY_COUNT", 100)
     default_workers = max(1, cpu_count())
     requested_workers = _env_positive_int("NUM_WORKERS", default_workers)
-    workers = _effective_worker_count(entity_count, requested_workers)
 
-    logger.info(
-        "Starting batch: mode=%s entities=%s workers=%s config=s3://%s/%s output=s3://%s/%s",
-        mode,
-        entity_count,
-        workers,
-        config_bucket,
-        config_key,
-        output_bucket,
-        output_key,
-    )
+    if mode == "population":
+        workers_pop = _effective_worker_count(entity_count, requested_workers)
+        logger.info(
+            "Starting batch: mode=%s entities=%s name_workers=%s config=s3://%s/%s output=s3://%s/%s",
+            mode,
+            entity_count,
+            workers_pop,
+            config_bucket,
+            config_key,
+            output_bucket,
+            output_key,
+        )
+    else:
+        workers = _effective_worker_count(entity_count, requested_workers)
+        logger.info(
+            "Starting batch: mode=%s entities=%s workers=%s config=s3://%s/%s output=s3://%s/%s",
+            mode,
+            entity_count,
+            workers,
+            config_bucket,
+            config_key,
+            output_bucket,
+            output_key,
+        )
 
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp_cfg:
         config_path = Path(tmp_cfg.name)
@@ -140,10 +146,16 @@ def run_batch() -> None:
 
         if mode == "population":
             pop_config = load_config(config_path)
-            with Pool(processes=workers) as pool:
-                rows = pool.map(_create_character_worker, [pop_config] * entity_count)
+            seed = int(time.time() * 1_000_000) ^ os.getpid()
+            rows = create_characters_vectorized(
+                pop_config,
+                entity_count,
+                seed=seed,
+                name_workers=workers_pop,
+            )
         else:
             eco_config = load_ecosystem_config(config_path)
+            workers = _effective_worker_count(entity_count, requested_workers)
             with Pool(processes=workers) as pool:
                 rows = pool.map(_create_animal_worker, [eco_config] * entity_count)
 

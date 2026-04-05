@@ -2,7 +2,8 @@
 Local batch: read JSON config from disk, generate entities, write Parquet.
 
 No S3; kept separate from world_builder.batch_s3 so either entrypoint can evolve
-independently. Same generation pattern as the examples / batch_s3 (multiprocessing pool).
+independently. Population mode uses vectorized sampling plus a process pool for
+name/ID assignment; ecosystem mode uses a pool for full entity creation.
 
 Example:
   python -m world_builder.batch_local --mode ecosystem \\
@@ -24,12 +25,11 @@ import pandas as pd
 
 from world_builder import (
     create_animal,
-    create_character,
     load_config,
     load_ecosystem_config,
 )
 from world_builder.ecosystem.config import EcosystemConfig
-from world_builder.population.config import PopulationConfig
+from world_builder.population.character import create_characters_vectorized
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +37,6 @@ logger = logging.getLogger(__name__)
 def _effective_worker_count(entity_count: int, requested: int) -> int:
     cpus = max(1, cpu_count())
     return max(1, min(requested, cpus, entity_count))
-
-
-def _create_character_worker(_config: PopulationConfig) -> object:
-    seed = int(time.time() * 1_000_000) ^ os.getpid()
-    random.seed(seed)
-    return create_character(_config)
 
 
 def _create_animal_worker(_config: EcosystemConfig) -> object:
@@ -58,20 +52,31 @@ def run_local(
     entity_count: int,
     workers: int,
 ) -> None:
-    workers_eff = _effective_worker_count(entity_count, workers)
-    logger.info(
-        "Local batch: mode=%s count=%s workers=%s config=%s out=%s",
-        mode,
-        entity_count,
-        workers_eff,
-        config_path,
-        out_path,
-    )
     if mode == "population":
+        workers_eff = _effective_worker_count(entity_count, workers)
+        logger.info(
+            "Local batch: mode=%s count=%s name_workers=%s config=%s out=%s (vectorized)",
+            mode,
+            entity_count,
+            workers_eff,
+            config_path,
+            out_path,
+        )
         cfg = load_config(config_path)
-        with Pool(processes=workers_eff) as pool:
-            rows = pool.map(_create_character_worker, [cfg] * entity_count)
+        seed = int(time.time() * 1_000_000) ^ os.getpid()
+        rows = create_characters_vectorized(
+            cfg, entity_count, seed=seed, name_workers=workers_eff
+        )
     else:
+        workers_eff = _effective_worker_count(entity_count, workers)
+        logger.info(
+            "Local batch: mode=%s count=%s workers=%s config=%s out=%s",
+            mode,
+            entity_count,
+            workers_eff,
+            config_path,
+            out_path,
+        )
         cfg = load_ecosystem_config(config_path)
         with Pool(processes=workers_eff) as pool:
             rows = pool.map(_create_animal_worker, [cfg] * entity_count)

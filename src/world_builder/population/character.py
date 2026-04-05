@@ -5,11 +5,20 @@ This module provides character creation using the generic sampling functions
 from core.sampling, along with population-specific post-processing (names, character IDs).
 """
 
-from typing import Any, Dict
+import os
+import time
+from multiprocessing import Pool, cpu_count
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 from world_builder.core.sampling import (
-    sample_finite_fields,
+    distribution_sample_to_python,
+    get_finite_sampling_tables,
+    sample_distribution_fields_batch,
     sample_distribution_fields_with_overrides,
+    sample_finite_fields,
+    sample_finite_fields_batch,
 )
 from world_builder.population.config import PopulationConfig
 from world_builder.population.character_id import generate_character_id
@@ -113,6 +122,80 @@ def _assign_names(sampled: Dict[str, Any]) -> None:
         generate_female_first_name() if is_female else generate_male_first_name()
     )
     sampled["surname"] = generate_surname(species=species)
+
+
+def _init_character_name_worker() -> None:
+    import random
+
+    random.seed((os.getpid() << 20) ^ int(time.time_ns() & 0xFFFF_FFFF))
+
+
+def _postprocess_character_row(
+    payload: Tuple[Dict[str, Any], Dict[str, str]],
+) -> Dict[str, Any]:
+    """
+    Picklable worker: assign character_id, names, and metadata to one row dict.
+    """
+    sampled, metadata = payload
+    out = dict(sampled)
+    _assign_character_id(out)
+    _assign_names(out)
+    for field_name, field_value in metadata.items():
+        out[field_name] = field_value
+    return out
+
+
+def create_characters_vectorized(
+    config: PopulationConfig,
+    n: int,
+    seed: Optional[int] = None,
+    name_workers: int = 1,
+) -> List[Character]:
+    """
+    Sample n characters with vectorized finite and distribution fields.
+
+    Tables for finite fields are built lazily (cached per config object) unless
+    you call ``build_finite_sampling_tables(config)`` after loading the config.
+    Names and IDs are drawn per row (Python RNG), matching create_character.
+    With ``name_workers`` > 1, ID/name/metadata assignment runs in a process pool.
+    """
+    if n < 1:
+        raise ValueError("n must be >= 1")
+    if name_workers < 1:
+        raise ValueError("name_workers must be >= 1")
+    rng = np.random.default_rng(seed)
+    idx_arrays = sample_finite_fields_batch(config, n, rng)
+    tables = get_finite_sampling_tables(config)
+    cat_arrays = {
+        f: np.asarray(tables.categories[f], dtype=object) for f in idx_arrays
+    }
+    str_arrays = {f: np.take(cat_arrays[f], idx_arrays[f]) for f in idx_arrays}
+    cont_arrays = sample_distribution_fields_batch(config, str_arrays, n, rng)
+
+    metadata = dict(config.metadata)
+    row_dicts: List[Dict[str, Any]] = []
+    for i in range(n):
+        row: Dict[str, Any] = {f: str(str_arrays[f][i]) for f in str_arrays}
+        for k, arr in cont_arrays.items():
+            row[k] = distribution_sample_to_python(arr[i])
+        row_dicts.append(row)
+
+    workers_eff = min(name_workers, n, max(1, cpu_count()))
+    if workers_eff <= 1:
+        rows = [
+            Character(**_postprocess_character_row((r, metadata))) for r in row_dicts
+        ]
+    else:
+        chunksize = max(1, n // (workers_eff * 8))
+        with Pool(
+            processes=workers_eff,
+            initializer=_init_character_name_worker,
+        ) as pool:
+            payloads = [(r, metadata) for r in row_dicts]
+            finished = pool.map(_postprocess_character_row, payloads, chunksize=chunksize)
+        rows = [Character(**d) for d in finished]
+
+    return rows
 
 
 def create_character(config: PopulationConfig) -> Character:
