@@ -223,12 +223,14 @@ def _load_preprocessed_markov_model_from_json_cached(
     return preprocess(raw)
 
 
+@lru_cache(maxsize=32)
 def load_markov_model_from_json(filepath: Union[str, Path]) -> Dict[str, Dict[str, float]]:
     """
     Loads a Markov model from a JSON file.
 
-    Models are cached by resolved path so repeated name generation does not
-    re-read and re-parse the same file.
+    Models are cached by filepath argument (and by resolved path inside nested
+    caches) so repeated name generation does not re-resolve, re-read, or
+    re-parse the same file.
 
     Args:
         filepath: Path to the JSON file containing the model
@@ -240,6 +242,7 @@ def load_markov_model_from_json(filepath: Union[str, Path]) -> Dict[str, Dict[st
     return _load_markov_model_from_json_cached(resolved)
 
 
+@lru_cache(maxsize=32)
 def load_preprocessed_markov_model_from_json(
     filepath: Union[str, Path],
 ) -> PreprocessedTable:

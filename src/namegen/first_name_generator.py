@@ -25,6 +25,10 @@ from namegen.model_builder import (
     load_preprocessed_markov_model_from_json,
 )
 
+_DEFAULT_MODEL_DIR = Path(__file__).resolve().parent
+_DEFAULT_MALE_MODEL = _DEFAULT_MODEL_DIR / "first_name_markov_model_M.json"
+_DEFAULT_FEMALE_MODEL = _DEFAULT_MODEL_DIR / "first_name_markov_model_F.json"
+
 
 def generate_male_first_name(
     filepath: Path = None, n: int = 3, max_len: int = 12
@@ -41,7 +45,7 @@ def generate_male_first_name(
         A male first name string.
     """
     if filepath is None:
-        filepath = Path(__file__).parent / "first_name_markov_model_M.json"
+        filepath = _DEFAULT_MALE_MODEL
     table = load_preprocessed_markov_model_from_json(filepath)
     start = "~" * (n - 1)
     return generate_name(table, start=start, stop="$", max_len=max_len)
@@ -62,7 +66,7 @@ def generate_female_first_name(
         A female first name string.
     """
     if filepath is None:
-        filepath = Path(__file__).parent / "first_name_markov_model_F.json"
+        filepath = _DEFAULT_FEMALE_MODEL
     table = load_preprocessed_markov_model_from_json(filepath)
     start = "~" * (n - 1)
     return generate_name(table, start=start, stop="$", max_len=max_len)
