@@ -18,7 +18,7 @@ Throughput (characters per second, from benchmark summaries) moved from roughly 
 
 ### 100,000 characters per run (baseline for later versions)
 
-At **100,000** characters per run, the same CSV files list v0.2.0 means of **0.906 s** (large), **0.855 s** (medium), and **0.838 s** (small). **v0.3.0** improves on that batch size by roughly **8–10%** wall time; see **`benchmark_v0.3.0.csv`** and **`PERFORMANCE_v0.3.0.md`** for paired 0.2 vs 0.3 numbers.
+At **100,000** characters per run, the same CSV files list v0.2.0 means of **0.906 s** (large), **0.855 s** (medium), and **0.838 s** (small). **v0.3.0** improves on that batch size by roughly **8–10%** wall time; see **`benchmark_v0.3.0.csv`** and **`PERFORMANCE_v0.3.0.md`** for paired 0.2 vs 0.3 numbers. **v0.4.0** improves further on the 100k batch versus 0.3.0 (loader caching and stable default model paths); see **`benchmark_v0.4.0.csv`** and **`PERFORMANCE_v0.4.0.md`**.
 
 ## 1. Vectorized categorical (finite) sampling
 
@@ -80,7 +80,7 @@ From `world_builder.core` (see `src/world_builder/core/__init__.py`):
 | Vectorized character batch | `src/world_builder/population/character.py` |
 | Markov JSON cache | `src/namegen/model_builder.py` |
 | Local / S3 batch | `src/world_builder/batch_local.py`, `src/world_builder/batch_s3.py` |
-| Benchmark artifacts | `perf/benchmark_population.py`, `perf/benchmark_v0.2.0.csv`, `perf/benchmark_v0.3.0.csv` |
+| Benchmark artifacts | `perf/benchmark_population.py`, `perf/benchmark_v0.2.0.csv`, `perf/benchmark_v0.3.0.csv`, `perf/benchmark_v0.4.0.csv` |
 
 Ecosystem (`create_animal`) still uses the shared finite/distribution sampling improvements where applicable; batch animal generation remains pool-based per entity.
 
