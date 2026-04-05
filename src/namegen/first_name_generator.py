@@ -19,7 +19,11 @@ You may also provide a custom file path for the model:
 """
 
 from pathlib import Path
-from namegen import load_markov_model_from_json, generate_name
+
+from namegen.model_builder import (
+    generate_name,
+    load_preprocessed_markov_model_from_json,
+)
 
 
 def generate_male_first_name(
@@ -38,8 +42,9 @@ def generate_male_first_name(
     """
     if filepath is None:
         filepath = Path(__file__).parent / "first_name_markov_model_M.json"
-    model = load_markov_model_from_json(filepath)
-    return generate_name(model, n=n, max_len=max_len)
+    table = load_preprocessed_markov_model_from_json(filepath)
+    start = "~" * (n - 1)
+    return generate_name(table, start=start, stop="$", max_len=max_len)
 
 
 def generate_female_first_name(
@@ -58,5 +63,6 @@ def generate_female_first_name(
     """
     if filepath is None:
         filepath = Path(__file__).parent / "first_name_markov_model_F.json"
-    model = load_markov_model_from_json(filepath)
-    return generate_name(model, n=n, max_len=max_len)
+    table = load_preprocessed_markov_model_from_json(filepath)
+    start = "~" * (n - 1)
+    return generate_name(table, start=start, stop="$", max_len=max_len)

@@ -6,6 +6,7 @@ from namegen import (
     build_weighted_markov_chain,
     generate_name,
     load_markov_model_from_json,
+    preprocess,
     save_markov_model_to_json,
 )
 import tempfile
@@ -25,8 +26,9 @@ def test_markov_chain_deterministic_single_name_can_generate(name):
     df = pd.DataFrame({"Name": [name], "Count": [1]})
     model = build_weighted_markov_chain(df, n=3)
 
+    table = preprocess(model)
     for _ in range(10):
-        generated = generate_name(model, n=3)
+        generated = generate_name(table, start="~~", stop="$", max_len=12)
         assert generated == name
 
 

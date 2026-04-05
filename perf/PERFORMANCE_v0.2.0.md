@@ -4,7 +4,9 @@ This document summarizes the population-generation performance work shipped in *
 
 ## Measured impact (local batch benchmark)
 
-End-to-end timing from `perf/benchmark_population.py` (10,000 characters, worker cap 24, five runs per config, test configs under `test/world_builder/config/`). See `benchmark_v0.1.0.csv` and `benchmark_v0.2.0.csv` for raw numbers.
+End-to-end timing from `perf/benchmark_population.py` (worker cap 24, five runs per config, test configs under `test/world_builder/config/`). See `benchmark_v0.1.0.csv` and `benchmark_v0.2.0.csv` for raw numbers.
+
+### 10,000 characters per run (vs v0.1.0)
 
 | Config | v0.1.0 mean (s) | v0.2.0 mean (s) | Approx. speedup |
 |--------|-----------------|-----------------|-----------------|
@@ -13,6 +15,10 @@ End-to-end timing from `perf/benchmark_population.py` (10,000 characters, worker
 | small  | 1.236           | 0.138           | ~9.0x           |
 
 Throughput (characters per second, from benchmark summaries) moved from roughly **7.4k–8.5k** to roughly **65k–73k** on the same workload class.
+
+### 100,000 characters per run (baseline for later versions)
+
+At **100,000** characters per run, the same CSV files list v0.2.0 means of **0.906 s** (large), **0.855 s** (medium), and **0.838 s** (small). **v0.3.0** improves on that batch size by roughly **8–10%** wall time; see **`benchmark_v0.3.0.csv`** and **`PERFORMANCE_v0.3.0.md`** for paired 0.2 vs 0.3 numbers.
 
 ## 1. Vectorized categorical (finite) sampling
 
@@ -74,7 +80,7 @@ From `world_builder.core` (see `src/world_builder/core/__init__.py`):
 | Vectorized character batch | `src/world_builder/population/character.py` |
 | Markov JSON cache | `src/namegen/model_builder.py` |
 | Local / S3 batch | `src/world_builder/batch_local.py`, `src/world_builder/batch_s3.py` |
-| Benchmark artifacts | `perf/benchmark_population.py`, `perf/benchmark_v0.2.0.csv` |
+| Benchmark artifacts | `perf/benchmark_population.py`, `perf/benchmark_v0.2.0.csv`, `perf/benchmark_v0.3.0.csv` |
 
 Ecosystem (`create_animal`) still uses the shared finite/distribution sampling improvements where applicable; batch animal generation remains pool-based per entity.
 

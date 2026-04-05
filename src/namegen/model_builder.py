@@ -9,12 +9,15 @@ These models are simply JSON under the hood, nothing too fancy.
 
 from collections import defaultdict, Counter
 from functools import lru_cache
-import random
+import bisect
 import json
+import random
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, List, Tuple, Union
 
 import pandas as pd
+
+PreprocessedTable = Dict[str, Tuple[List[str], List[float]]]
 
 
 def build_weighted_markov_chain(
@@ -52,41 +55,144 @@ def build_weighted_markov_chain(
     return model
 
 
-def generate_name(
-    markov_model: dict,
-    n: int = 3,
-    max_len: int = 12,
-    start_padding: str = "~",
-    end_padding: str = "$",
-) -> str:
+def preprocess(raw: Dict[str, Dict[str, float]]) -> PreprocessedTable:
     """
-    Samples a name from the weighted Markov model.
+    Build a lookup table with sorted character lists and cumulative probabilities.
+
+    Each state's transition map is converted to (chars, cumprobs) where chars is
+    sorted and cumprobs[i] is the sum of probabilities for chars[0] through
+    chars[i]. The input dict is not modified.
 
     Args:
-        markov_model: The prefix-to-next-char distribution
-        n: Order of the n-gram model
-        max_len: Maximum length of generated name
-        start_padding: Character used to pad the beginning
-        end_padding: Character used to signal name ending
+        raw: State keys mapping to next-character probability dicts.
 
     Returns:
-        A generated name string
+        Mapping from state to (sorted next characters, cumulative probabilities).
+
+    Raises:
+        ValueError: If any state's probabilities sum outside [0.999, 1.001].
     """
-    prefix = start_padding * (n - 1)
-    name = ""
+    out: PreprocessedTable = {}
+    for state, trans in raw.items():
+        items = sorted(trans.items(), key=lambda kv: kv[0])
+        chars = [c for c, _ in items]
+        probs = [float(p) for _, p in items]
+        total = sum(probs)
+        if not (0.999 <= total <= 1.001):
+            raise ValueError(
+                f"probabilities for state {state!r} sum to {total}, expected ~1.0"
+            )
+        cumprobs: List[float] = []
+        acc = 0.0
+        for p in probs:
+            acc += p
+            cumprobs.append(acc)
+        out[state] = (chars, cumprobs)
+    return out
 
+
+def sample(table: PreprocessedTable, state: str) -> str:
+    """
+    Draw one next character for the given state using inverse CDF sampling.
+
+    Args:
+        table: Preprocessed table from preprocess().
+        state: Current n-gram state key.
+
+    Returns:
+        The sampled next character (single-character string).
+
+    Raises:
+        KeyError: If state is not present in table.
+    """
+    chars, cumprobs = table[state]
+    u = random.random()
+    idx = bisect.bisect_left(cumprobs, u)
+    if idx >= len(chars):
+        idx = len(chars) - 1
+    return chars[idx]
+
+
+def generate_name(
+    table: PreprocessedTable,
+    start: str = "~~",
+    stop: str = "$",
+    max_len: int = 12,
+) -> str:
+    """
+    Walk the bigram (or fixed-width) chain until the stop token is sampled.
+
+    The stop character is never appended to the returned string. The result is
+    capitalized for display (same convention as training, which uses lowercase).
+
+    Args:
+        table: Preprocessed transition table.
+        start: Initial state (length matches model prefix width, e.g. \"~~\").
+        stop: Terminal next-character symbol (default \"$\" matches shipped JSON).
+        max_len: Maximum number of characters before stopping.
+
+    Returns:
+        Generated name string.
+    """
+    state = start
+    name_chars: List[str] = []
     while True:
-        probs = markov_model.get(prefix)
-        if not probs:
+        if state not in table:
             break
-        chars, weights = zip(*probs.items())
-        next_char = random.choices(chars, weights=weights)[0]
-        if next_char == end_padding or len(name) >= max_len:
+        ch = sample(table, state)
+        if ch == stop or len(name_chars) >= max_len:
             break
-        name += next_char
-        prefix = prefix[1:] + next_char
+        name_chars.append(ch)
+        state = state[1:] + ch
+    return "".join(name_chars).capitalize()
 
-    return name.capitalize()
+
+def generate_batch(
+    table: PreprocessedTable,
+    n: int,
+    start: str = "~~",
+    stop: str = "$",
+    max_len: int = 12,
+) -> list[str]:
+    """
+    Generate n names in parallel, advancing all active chains each step.
+
+    Finished chains (stop sampled, max length, or missing state) are removed
+    from the active set. Returned list index i corresponds to the i-th chain.
+
+    Args:
+        table: Preprocessed transition table.
+        n: Number of names to generate.
+        start: Initial state for every chain.
+        stop: Terminal next-character symbol.
+        max_len: Maximum characters per name before stopping.
+
+    Returns:
+        List of n generated names, capitalized.
+    """
+    if n <= 0:
+        return []
+    states = [start] * n
+    names: List[List[str]] = [[] for _ in range(n)]
+    active = set(range(n))
+
+    while active:
+        finished: List[int] = []
+        for i in active:
+            st = states[i]
+            if st not in table:
+                finished.append(i)
+                continue
+            ch = sample(table, st)
+            if ch == stop or len(names[i]) >= max_len:
+                finished.append(i)
+                continue
+            names[i].append(ch)
+            states[i] = st[1:] + ch
+        for i in finished:
+            active.discard(i)
+
+    return ["".join(parts).capitalize() for parts in names]
 
 
 def save_markov_model_to_json(
@@ -109,6 +215,14 @@ def _load_markov_model_from_json_cached(resolved_path: str) -> Dict[str, Dict[st
         return json.load(f)
 
 
+@lru_cache(maxsize=32)
+def _load_preprocessed_markov_model_from_json_cached(
+    resolved_path: str,
+) -> PreprocessedTable:
+    raw = _load_markov_model_from_json_cached(resolved_path)
+    return preprocess(raw)
+
+
 def load_markov_model_from_json(filepath: Union[str, Path]) -> Dict[str, Dict[str, float]]:
     """
     Loads a Markov model from a JSON file.
@@ -124,3 +238,21 @@ def load_markov_model_from_json(filepath: Union[str, Path]) -> Dict[str, Dict[st
     """
     resolved = str(Path(filepath).resolve())
     return _load_markov_model_from_json_cached(resolved)
+
+
+def load_preprocessed_markov_model_from_json(
+    filepath: Union[str, Path],
+) -> PreprocessedTable:
+    """
+    Load a Markov model from JSON and preprocess it for fast sampling.
+
+    Both raw JSON load and preprocess are cached by resolved path.
+
+    Args:
+        filepath: Path to the JSON model file.
+
+    Returns:
+        Preprocessed table suitable for sample(), generate_name(), generate_batch().
+    """
+    resolved = str(Path(filepath).resolve())
+    return _load_preprocessed_markov_model_from_json_cached(resolved)
