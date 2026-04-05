@@ -1,0 +1,26 @@
+# Copy to terraform.tfvars (not committed). Uncomment and set values before apply.
+
+# aws_region    = "..."
+# project_name  = "..."
+# environment   = "..."
+
+# Required after you build and push the Lambda container image:
+# lambda_image_uri = "<account-id>.dkr.ecr.<region>.amazonaws.com/<repository>:<tag>"
+# ecr_repository_arn = "arn:aws:ecr:<region>:<account-id>:repository/<repository-name>"
+
+# Optional tuning:
+# lambda_timeout                        = 900
+# lambda_memory_size                    = 3008
+# lambda_architectures                  = ["x86_64"]
+# lambda_reserved_concurrency           = 10
+# config_object_prefix                  = "configs/"
+# config_object_suffix                  = ".json"
+# output_object_prefix                  = "outputs/"
+# default_worldgen_mode                 = "population"
+# default_entity_count                  = 100
+# sqs_batch_size                        = 1
+# sqs_max_receive_count                 = 5
+# log_retention_days                    = 14
+# seeds_per_chunk                       = 25000
+# dispatcher_lambda_timeout             = 300
+# dispatcher_lambda_memory_size         = 256

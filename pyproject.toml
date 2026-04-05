@@ -23,7 +23,13 @@ dependencies = [
     "pytest",
     "pylint",
     "boto3",
-    "botocore"
+    "botocore",
+    "moto[s3,sqs]>=5.0.0"
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: optional tests requiring LocalStack or manual setup (set LOCALSTACK_ENDPOINT)",
 ]
 
 [project.scripts]

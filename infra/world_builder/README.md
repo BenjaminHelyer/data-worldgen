@@ -1,31 +1,40 @@
 # World Builder Infrastructure
 
-This directory contains the infrastructure as code (IaC) for deploying the World Builder application to AWS EC2.
+This directory contains infrastructure as code (IaC) for the World Builder on AWS: an **EC2 benchmark stack** and an **event-driven Lambda pipeline** (S3 to SNS to SQS to Lambda container).
 
 ## Prerequisites
 
 - AWS CLI configured with appropriate credentials
 - Terraform >= 1.0.0
-- An SSH key pair registered in AWS EC2
-- Access to the specified VPC and subnet
+- For EC2: an SSH key pair, VPC, subnet, and security group
+- For the event pipeline: an ECR image URI that implements the **Lambda container interface** (Runtime Interface Client); the image must parse SQS messages and drive `world_builder.batch_s3` (application code is not wired in this repo yet)
 
 ## Directory Structure
 
 ```
 infra/
 └── world_builder/
-    └── terraform/
-        ├── main.tf          # Main Terraform configuration
-        ├── variables.tf     # Variable definitions
-        ├── outputs.tf       # Output definitions
-        ├── user_data.sh     # EC2 instance initialization script
-        └── terraform.tfvars # Variable values (not in git)
+    ├── terraform/                 # EC2 benchmark instances
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   ├── outputs.tf
+    │   ├── user_data.sh
+    │   └── terraform.tfvars       # not in git
+    ├── terraform_event_pipeline/  # S3 -> SNS -> SQS -> Lambda (container)
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   ├── outputs.tf
+    │   ├── versions.tf
+    │   └── terraform.tfvars.example
+    ├── docs/
+    └── PRD-serverless-event-pipeline.md
 ```
 
-## Configuration
+## Configuration (EC2 stack)
 
 1. Copy the example tfvars file:
    ```bash
+   cd terraform
    cp terraform.tfvars.example terraform.tfvars
    ```
 
@@ -36,7 +45,7 @@ infra/
    - SSH key name
    - Instance type and AMI ID
 
-## Usage
+## Usage (EC2 stack)
 
 1. Initialize Terraform:
    ```bash
@@ -58,6 +67,30 @@ infra/
    ```bash
    terraform destroy
    ```
+
+## Event pipeline (Lambda)
+
+Flow: **S3 config upload → SNS → dispatcher Lambda (zip) → SQS chunked jobs → worker Lambda (container)**. See `PRD-serverless-event-pipeline.md` and `docs/architecture_serverless_pipeline.png`.
+
+1. Build and push the **worker** image from the repo root (implements `lambda_synthetic_worker.lambda_handler`):
+
+   ```bash
+   docker build -f Dockerfile.synthetic_generator_lambda -t <account>.dkr.ecr.<region>.amazonaws.com/<repo>:<tag> .
+   docker push ...
+   ```
+
+2. In `terraform_event_pipeline`, copy tfvars and set `lambda_image_uri` and `ecr_repository_arn`:
+
+   ```bash
+   cd terraform_event_pipeline
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. Run `terraform init` (pulls `hashicorp/archive` for the dispatcher zip), `terraform plan`, and `terraform apply`.
+
+4. Optional: set `seeds_per_chunk` (default 25000), `dispatcher_lambda_timeout`, and `dispatcher_lambda_memory_size` in `terraform.tfvars`.
+
+5. Outputs include bucket IDs, `synthetic_generator_dispatcher_lambda_*`, `worldgen_synthetic_generator_job_queue_url`, `worldgen_synthetic_generator_lambda_function_name`, and related ARNs. Upload a JSON config under the configured prefix (default `configs/`); include top-level `entity_count` (or rely on `default_entity_count`). Parquet chunks appear under `{output_object_prefix}/<config_stem>/chunk_XXXX.parquet`.
 
 ## Security Notes
 

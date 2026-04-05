@@ -8,6 +8,10 @@ name/ID assignment; ecosystem mode uses a pool for full entity creation.
 Example:
   python -m world_builder.batch_local --mode ecosystem \\
     --config /data/ecosystem_config.json --out /data/out.parquet --count 1000
+
+Seed range (same path as Lambda worker; deterministic random.seed(i) per index):
+  python -m world_builder.batch_local --mode population \\
+    --config ./config.json --out ./chunk.parquet --seed-start 0 --seed-end 99 --workers 2
 """
 
 from __future__ import annotations
@@ -23,6 +27,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from world_builder.batch_s3 import run_seed_range_to_local_parquet
 from world_builder import (
     create_animal,
     load_config,
@@ -98,13 +103,31 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True, help="Output Parquet path")
     parser.add_argument("--count", type=int, default=100, help="Number of entities (default 100)")
     parser.add_argument(
+        "--seed-start",
+        type=int,
+        default=None,
+        help="Inclusive global seed index (with --seed-end); Lambda worker path",
+    )
+    parser.add_argument(
+        "--seed-end",
+        type=int,
+        default=None,
+        help="Inclusive global seed index (with --seed-start)",
+    )
+    parser.add_argument(
         "--workers",
         type=int,
         default=max(1, cpu_count()),
         help="Multiprocessing pool size cap (default: CPU count)",
     )
     args = parser.parse_args()
-    if args.count < 1:
+    seed_mode = args.seed_start is not None or args.seed_end is not None
+    if seed_mode:
+        if args.seed_start is None or args.seed_end is None:
+            parser.error("Both --seed-start and --seed-end are required together")
+        if args.seed_start < 0 or args.seed_end < args.seed_start:
+            parser.error("Invalid --seed-start/--seed-end range")
+    elif args.count < 1:
         parser.error("--count must be >= 1")
     if args.workers < 1:
         parser.error("--workers must be >= 1")
@@ -112,13 +135,23 @@ def main() -> int:
         logger.error("Config file not found: %s", args.config)
         return 1
     try:
-        run_local(
-            args.mode,
-            args.config,
-            args.out,
-            args.count,
-            args.workers,
-        )
+        if seed_mode:
+            run_seed_range_to_local_parquet(
+                args.mode,
+                args.config,
+                args.out,
+                args.seed_start,
+                args.seed_end,
+                num_workers=args.workers,
+            )
+        else:
+            run_local(
+                args.mode,
+                args.config,
+                args.out,
+                args.count,
+                args.workers,
+            )
     except Exception as exc:
         logger.error("%s", exc, exc_info=True)
         return 1
