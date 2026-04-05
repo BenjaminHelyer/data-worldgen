@@ -29,7 +29,7 @@ To run the world builder with a config file, use the example script:
 ```
 cd examples/world_builder
 python ecosystem_example.py
-```
+``` 
 
 This uses the config at `examples/world_builder/ecosystem_config.json` and generates 100 entities (in this case, organisms), saving them to a Parquet file.
 
