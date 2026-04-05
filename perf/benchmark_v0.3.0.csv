@@ -1,0 +1,4 @@
+version,config,config_file,mode,characters,workers_cap,n_runs,run1_s,run2_s,run3_s,run4_s,run5_s,mean_s,stdev_s,characters_per_s
+0.3.0,large,wb_config_large.json,population,100000,24,5,0.855,0.811,0.847,0.834,0.840,0.837,0.017,119426
+0.3.0,medium,wb_config_medium.json,population,100000,24,5,0.764,0.803,0.764,0.817,0.754,0.780,0.028,128153
+0.3.0,small,wb_config_small.json,population,100000,24,5,0.911,0.721,0.757,0.736,0.761,0.777,0.076,128675
