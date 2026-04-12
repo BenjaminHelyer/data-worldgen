@@ -47,6 +47,28 @@ python plot_ecosystem.py
 
 ![Ecosystem Species and Age Distributions](readme_example_plot.png)
 
+
+## Spatial data generation (experimental)
+
+A generalized spatial abstraction is available under `src/spatial_data_generation` following:
+
+- `Layer = (Domain, Features, Network)`
+- `World = (Layers, Portals)`
+
+Included reference scenarios:
+
+- Galaxy layer (topology-heavy graph over planar coordinates)
+- Planet layer (sphere/geodesic domain with city points)
+- City layer (flat 2D districts + street network)
+
+Try the multiscale example:
+
+```
+python examples/spatial_data_generation/multiscale_world_example.py
+```
+
+This writes `galaxy.png`, `planet_0.png`, and `city_0_0.png` locally.
+
 ## Docker
 
 The repository includes a **generation-only** image (no Streamlit). It installs the package from `pyproject.toml` via `uv` and exposes two entry modules:
