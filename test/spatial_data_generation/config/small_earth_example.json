@@ -1,0 +1,132 @@
+{
+  "layers": [
+    {
+      "id": "earth_surface_layer",
+      "domain": {
+        "type": "sphere",
+        "metric": "geodesic",
+        "radius": 6371.0,
+        "coordinate_system": "lat_lon_degrees"
+      },
+      "features": [
+        {
+          "id": "north_america",
+          "kind": "continent",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [
+              [
+                72.0,
+                -170.0
+              ],
+              [
+                72.0,
+                -50.0
+              ],
+              [
+                10.0,
+                -50.0
+              ],
+              [
+                10.0,
+                -170.0
+              ],
+              [
+                72.0,
+                -170.0
+              ]
+            ],
+            "holes": []
+          },
+          "properties": {
+            "name": "North America"
+          }
+        },
+        {
+          "id": "austin_tx",
+          "kind": "city",
+          "geometry_type": "point",
+          "geometry": {
+            "coordinates": [
+              30.2672,
+              -97.7431
+            ]
+          },
+          "properties": {
+            "name": "Austin"
+          }
+        },
+        {
+          "id": "london_uk",
+          "kind": "city",
+          "geometry_type": "point",
+          "geometry": {
+            "coordinates": [
+              51.5074,
+              -0.1278
+            ]
+          },
+          "properties": {
+            "name": "London"
+          }
+        },
+        {
+          "id": "equator",
+          "kind": "reference_line",
+          "geometry_type": "path",
+          "geometry": {
+            "coordinates": [
+              [
+                0.0,
+                -180.0
+              ],
+              [
+                0.0,
+                -90.0
+              ],
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                90.0
+              ],
+              [
+                0.0,
+                180.0
+              ]
+            ]
+          },
+          "properties": {
+            "name": "Equator"
+          }
+        }
+      ],
+      "network": {
+        "nodes": [
+          {
+            "id": "n_austin",
+            "feature_id": "austin_tx"
+          },
+          {
+            "id": "n_london",
+            "feature_id": "london_uk"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e_austin_london",
+            "source": "n_austin",
+            "target": "n_london",
+            "directed": false,
+            "weights": {
+              "travel_time": 9.0
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "portals": []
+}

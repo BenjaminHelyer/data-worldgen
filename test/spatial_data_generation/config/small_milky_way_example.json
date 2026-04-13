@@ -1,0 +1,132 @@
+{
+  "layers": [
+    {
+      "id": "milky_way_layer",
+      "domain": {
+        "type": "plane",
+        "metric": "euclidean",
+        "bounds": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1000.0,
+            1000.0
+          ]
+        ]
+      },
+      "features": [
+        {
+          "id": "solar_system",
+          "kind": "star_system",
+          "geometry_type": "point",
+          "geometry": {
+            "coordinates": [
+              540.0,
+              420.0
+            ]
+          },
+          "properties": {
+            "name": "Solar System"
+          }
+        },
+        {
+          "id": "alpha_centauri",
+          "kind": "star_system",
+          "geometry_type": "point",
+          "geometry": {
+            "coordinates": [
+              560.0,
+              430.0
+            ]
+          },
+          "properties": {
+            "name": "Alpha Centauri"
+          }
+        },
+        {
+          "id": "orion_arm",
+          "kind": "galactic_region",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [
+              [
+                450.0,
+                300.0
+              ],
+              [
+                700.0,
+                300.0
+              ],
+              [
+                700.0,
+                550.0
+              ],
+              [
+                450.0,
+                550.0
+              ],
+              [
+                450.0,
+                300.0
+              ]
+            ],
+            "holes": []
+          },
+          "properties": {
+            "name": "Orion Arm"
+          }
+        },
+        {
+          "id": "local_route",
+          "kind": "route",
+          "geometry_type": "path",
+          "geometry": {
+            "coordinates": [
+              [
+                540.0,
+                420.0
+              ],
+              [
+                550.0,
+                425.0
+              ],
+              [
+                560.0,
+                430.0
+              ]
+            ]
+          },
+          "properties": {
+            "name": "Local Interstellar Route"
+          }
+        }
+      ],
+      "network": {
+        "nodes": [
+          {
+            "id": "n_solar",
+            "feature_id": "solar_system"
+          },
+          {
+            "id": "n_alpha_centauri",
+            "feature_id": "alpha_centauri"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e_solar_alpha_centauri",
+            "source": "n_solar",
+            "target": "n_alpha_centauri",
+            "directed": false,
+            "weights": {
+              "travel_time": 4.3
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "portals": []
+}
