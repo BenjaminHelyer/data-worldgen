@@ -1,0 +1,176 @@
+{
+  "layers": [
+    {
+      "id": "austin_layer",
+      "domain": {
+        "type": "plane",
+        "metric": "euclidean",
+        "bounds": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            100.0,
+            100.0
+          ]
+        ]
+      },
+      "features": [
+        {
+          "id": "downtown",
+          "kind": "district",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [
+              [
+                10.0,
+                60.0
+              ],
+              [
+                35.0,
+                60.0
+              ],
+              [
+                35.0,
+                90.0
+              ],
+              [
+                10.0,
+                90.0
+              ],
+              [
+                10.0,
+                60.0
+              ]
+            ],
+            "holes": []
+          },
+          "properties": {
+            "name": "Downtown Austin"
+          }
+        },
+        {
+          "id": "zilker",
+          "kind": "park",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [
+              [
+                20.0,
+                20.0
+              ],
+              [
+                45.0,
+                20.0
+              ],
+              [
+                45.0,
+                45.0
+              ],
+              [
+                20.0,
+                45.0
+              ],
+              [
+                20.0,
+                20.0
+              ]
+            ],
+            "holes": []
+          },
+          "properties": {
+            "name": "Zilker Park"
+          }
+        },
+        {
+          "id": "capitol",
+          "kind": "landmark",
+          "geometry_type": "point",
+          "geometry": {
+            "coordinates": [
+              22.0,
+              78.0
+            ]
+          },
+          "properties": {
+            "name": "Texas State Capitol"
+          }
+        },
+        {
+          "id": "lady_bird_lake",
+          "kind": "water",
+          "geometry_type": "path",
+          "geometry": {
+            "coordinates": [
+              [
+                0.0,
+                52.0
+              ],
+              [
+                20.0,
+                50.0
+              ],
+              [
+                40.0,
+                48.0
+              ],
+              [
+                60.0,
+                49.0
+              ],
+              [
+                80.0,
+                47.0
+              ],
+              [
+                100.0,
+                45.0
+              ]
+            ]
+          },
+          "properties": {
+            "name": "Lady Bird Lake"
+          }
+        }
+      ],
+      "network": {
+        "nodes": [
+          {
+            "id": "n_downtown",
+            "feature_id": "downtown"
+          },
+          {
+            "id": "n_zilker",
+            "feature_id": "zilker"
+          },
+          {
+            "id": "n_capitol",
+            "feature_id": "capitol"
+          }
+        ],
+        "edges": [
+          {
+            "id": "e_downtown_capitol",
+            "source": "n_downtown",
+            "target": "n_capitol",
+            "directed": false,
+            "weights": {
+              "travel_time": 5.0
+            }
+          },
+          {
+            "id": "e_downtown_zilker",
+            "source": "n_downtown",
+            "target": "n_zilker",
+            "directed": false,
+            "weights": {
+              "travel_time": 10.0
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "portals": []
+}

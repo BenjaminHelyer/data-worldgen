@@ -24,6 +24,23 @@ First, clone the repository then install dependencies:
 pip install -e .
 ```
 
+## Spatial data generation (multi-scale worlds)
+
+This repo also includes an experimental `spatial_data_generation` module implementing a generic spatial world abstraction:
+
+- **Layer** = (Domain, Features, optional Network)
+- **World** = layers connected by **Portals** (a DAG over layers)
+
+Try the examples:
+
+```bash
+python examples/spatial_data_generation/render_example.py examples/spatial_data_generation/galaxy_world_medium.json
+python examples/spatial_data_generation/render_example.py examples/spatial_data_generation/austin_small.json
+python examples/spatial_data_generation/render_example.py examples/spatial_data_generation/earth_small.json
+```
+
+These load JSON configs, validate invariants, and render each layer to a PNG.
+
 To run the world builder with a config file, use the example script:
 
 ```

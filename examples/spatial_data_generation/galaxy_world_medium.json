@@ -1,0 +1,334 @@
+{
+  "layers": [
+    {
+      "id": "galaxy_layer",
+      "domain": {
+        "type": "plane",
+        "metric": "euclidean",
+        "bounds": [[0.0, 0.0], [1000.0, 1000.0]]
+      },
+      "features": [
+        {
+          "id": "planet_corellia",
+          "kind": "planet",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [150.0, 700.0] },
+          "properties": { "name": "Corellia" },
+          "style": { "color": "blue" }
+        },
+        {
+          "id": "planet_tatooine",
+          "kind": "planet",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [400.0, 500.0] },
+          "properties": { "name": "Tatooine" },
+          "style": { "color": "gold" }
+        },
+        {
+          "id": "planet_hoth",
+          "kind": "planet",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [700.0, 850.0] },
+          "properties": { "name": "Hoth" },
+          "style": { "color": "lightblue" }
+        },
+        {
+          "id": "planet_coruscant",
+          "kind": "planet",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [850.0, 300.0] },
+          "properties": { "name": "Coruscant" },
+          "style": { "color": "gray" }
+        }
+      ],
+      "network": {
+        "nodes": [
+          { "id": "n_corellia", "feature_id": "planet_corellia" },
+          { "id": "n_tatooine", "feature_id": "planet_tatooine" },
+          { "id": "n_hoth", "feature_id": "planet_hoth" },
+          { "id": "n_coruscant", "feature_id": "planet_coruscant" }
+        ],
+        "edges": [
+          {
+            "id": "e_corellia_tatooine",
+            "source": "n_corellia",
+            "target": "n_tatooine",
+            "directed": false,
+            "weights": { "travel_time": 8.0 }
+          },
+          {
+            "id": "e_tatooine_hoth",
+            "source": "n_tatooine",
+            "target": "n_hoth",
+            "directed": false,
+            "weights": { "travel_time": 12.0 }
+          },
+          {
+            "id": "e_tatooine_coruscant",
+            "source": "n_tatooine",
+            "target": "n_coruscant",
+            "directed": false,
+            "weights": { "travel_time": 15.0 }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tatooine_surface_layer",
+      "domain": {
+        "type": "sphere",
+        "metric": "geodesic",
+        "radius": 6371.0,
+        "coordinate_system": "lat_lon_degrees"
+      },
+      "features": [
+        {
+          "id": "city_mos_eisley",
+          "kind": "settlement.city",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [10.0, 25.0] },
+          "properties": { "name": "Mos Eisley" },
+          "style": { "color": "orange" }
+        },
+        {
+          "id": "city_mos_espa",
+          "kind": "settlement.city",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [12.0, 40.0] },
+          "properties": { "name": "Mos Espa" },
+          "style": { "color": "orange" }
+        },
+        {
+          "id": "city_anchorhead",
+          "kind": "settlement.city",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [5.0, 18.0] },
+          "properties": { "name": "Anchorhead" },
+          "style": { "color": "orange" }
+        },
+        {
+          "id": "city_bespin",
+          "kind": "settlement.city",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [-8.0, 70.0] },
+          "properties": { "name": "Bespin" },
+          "style": { "color": "orange" }
+        }
+      ],
+      "network": {
+        "nodes": [
+          { "id": "n_mos_eisley", "feature_id": "city_mos_eisley" },
+          { "id": "n_mos_espa", "feature_id": "city_mos_espa" },
+          { "id": "n_anchorhead", "feature_id": "city_anchorhead" },
+          { "id": "n_bespin", "feature_id": "city_bespin" }
+        ],
+        "edges": [
+          {
+            "id": "e_mos_eisley_mos_espa",
+            "source": "n_mos_eisley",
+            "target": "n_mos_espa",
+            "directed": false,
+            "weights": { "travel_time": 3.0 }
+          },
+          {
+            "id": "e_mos_eisley_anchorhead",
+            "source": "n_mos_eisley",
+            "target": "n_anchorhead",
+            "directed": false,
+            "weights": { "travel_time": 2.0 }
+          },
+          {
+            "id": "e_mos_eisley_bespin",
+            "source": "n_mos_eisley",
+            "target": "n_bespin",
+            "directed": false,
+            "weights": { "travel_time": 7.0 }
+          }
+        ]
+      }
+    },
+    {
+      "id": "mos_eisley_layer",
+      "domain": {
+        "type": "plane",
+        "metric": "euclidean",
+        "bounds": [[0.0, 0.0], [200.0, 200.0]]
+      },
+      "features": [
+        {
+          "id": "building_cantina",
+          "kind": "building",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [[20.0, 20.0], [60.0, 20.0], [60.0, 50.0], [20.0, 50.0], [20.0, 20.0]],
+            "holes": []
+          },
+          "properties": { "name": "Mos Eisley Cantina" },
+          "style": { "fill_color": "brown" }
+        },
+        {
+          "id": "building_spaceport",
+          "kind": "building",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [[100.0, 120.0], [170.0, 120.0], [170.0, 170.0], [100.0, 170.0], [100.0, 120.0]],
+            "holes": []
+          },
+          "properties": { "name": "Mos Eisley Spaceport" },
+          "style": { "fill_color": "gray" }
+        },
+        {
+          "id": "building_home_1",
+          "kind": "building.house",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [[80.0, 40.0], [100.0, 40.0], [100.0, 65.0], [80.0, 65.0], [80.0, 40.0]],
+            "holes": []
+          },
+          "properties": { "name": "Mos Eisley Home 1" },
+          "style": { "fill_color": "tan" }
+        },
+        {
+          "id": "building_home_2",
+          "kind": "building.house",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [[130.0, 50.0], [155.0, 50.0], [155.0, 75.0], [130.0, 75.0], [130.0, 50.0]],
+            "holes": []
+          },
+          "properties": { "name": "Mos Eisley Home 2" },
+          "style": { "fill_color": "tan" }
+        }
+      ],
+      "network": {
+        "nodes": [
+          { "id": "n_cantina", "feature_id": "building_cantina" },
+          { "id": "n_spaceport", "feature_id": "building_spaceport" },
+          { "id": "n_home_1", "feature_id": "building_home_1" },
+          { "id": "n_home_2", "feature_id": "building_home_2" }
+        ],
+        "edges": [
+          {
+            "id": "e_cantina_spaceport",
+            "source": "n_cantina",
+            "target": "n_spaceport",
+            "directed": false,
+            "weights": { "walking_time": 5.0 }
+          },
+          {
+            "id": "e_cantina_home_1",
+            "source": "n_cantina",
+            "target": "n_home_1",
+            "directed": false,
+            "weights": { "walking_time": 2.0 }
+          },
+          {
+            "id": "e_cantina_home_2",
+            "source": "n_cantina",
+            "target": "n_home_2",
+            "directed": false,
+            "weights": { "walking_time": 3.0 }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cantina_interior_layer",
+      "domain": {
+        "type": "plane",
+        "metric": "euclidean",
+        "bounds": [[20.0, 20.0], [60.0, 50.0]]
+      },
+      "features": [
+        {
+          "id": "f_table",
+          "kind": "furniture.table",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [32.0, 32.0] },
+          "properties": { "name": "Table" },
+          "style": { "marker": "circle" }
+        },
+        {
+          "id": "f_chair_1",
+          "kind": "furniture.chair",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [30.0, 30.0] },
+          "properties": { "name": "Chair 1" }
+        },
+        {
+          "id": "f_chair_2",
+          "kind": "furniture.chair",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [34.0, 30.0] },
+          "properties": { "name": "Chair 2" }
+        },
+        {
+          "id": "f_chair_3",
+          "kind": "furniture.chair",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [30.0, 34.0] },
+          "properties": { "name": "Chair 3" }
+        },
+        {
+          "id": "f_chair_4",
+          "kind": "furniture.chair",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [34.0, 34.0] },
+          "properties": { "name": "Chair 4" }
+        },
+        {
+          "id": "f_bar",
+          "kind": "furniture.bar",
+          "geometry_type": "region",
+          "geometry": {
+            "shell": [[48.0, 24.0], [56.0, 24.0], [56.0, 44.0], [48.0, 44.0], [48.0, 24.0]],
+            "holes": []
+          },
+          "properties": { "name": "Bar" }
+        }
+      ],
+      "network": {
+        "nodes": [
+          { "id": "n_table", "feature_id": "f_table" },
+          { "id": "n_bar", "feature_id": "f_bar" }
+        ],
+        "edges": [
+          {
+            "id": "e_table_bar",
+            "source": "n_table",
+            "target": "n_bar",
+            "directed": false,
+            "weights": { "walking_time": 1.0 }
+          }
+        ]
+      }
+    }
+  ],
+  "portals": [
+    {
+      "id": "portal_tatooine_surface",
+      "source_layer_id": "galaxy_layer",
+      "target_layer_id": "tatooine_surface_layer",
+      "source_selector": { "feature_id": "planet_tatooine" },
+      "target_selector": { "layer_entry": true },
+      "mapping": { "type": "feature_to_layer" }
+    },
+    {
+      "id": "portal_mos_eisley_city",
+      "source_layer_id": "tatooine_surface_layer",
+      "target_layer_id": "mos_eisley_layer",
+      "source_selector": { "feature_id": "city_mos_eisley" },
+      "target_selector": { "layer_entry": true },
+      "mapping": { "type": "feature_to_layer" }
+    },
+    {
+      "id": "portal_cantina_interior",
+      "source_layer_id": "mos_eisley_layer",
+      "target_layer_id": "cantina_interior_layer",
+      "source_selector": { "feature_id": "building_cantina" },
+      "target_selector": { "layer_entry": true },
+      "mapping": { "type": "feature_to_layer" }
+    }
+  ]
+}
+
