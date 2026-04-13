@@ -1,0 +1,37 @@
+{
+  "layers": [
+    {
+      "id": "earth_surface_layer",
+      "domain": {
+        "type": "sphere",
+        "metric": "geodesic",
+        "radius": 6371.0,
+        "coordinate_system": "lat_lon_degrees"
+      },
+      "features": [
+        {
+          "id": "austin_tx",
+          "kind": "city",
+          "geometry_type": "point",
+          "geometry": { "coordinates": [30.2672, -97.7431] },
+          "properties": { "name": "Austin" }
+        },
+        {
+          "id": "equator",
+          "kind": "reference_line",
+          "geometry_type": "path",
+          "geometry": {
+            "coordinates": [[0.0, -180.0], [0.0, -90.0], [0.0, 0.0], [0.0, 90.0], [0.0, 180.0]]
+          },
+          "properties": { "name": "Equator" }
+        }
+      ],
+      "network": {
+        "nodes": [{ "id": "n_austin", "feature_id": "austin_tx" }],
+        "edges": []
+      }
+    }
+  ],
+  "portals": []
+}
+
