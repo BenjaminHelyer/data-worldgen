@@ -17,3 +17,18 @@ This example models **synthetic adult workers**, not the entire population. The 
 `config.json` uses the existing population configuration and sampler: `state` influences `profession` through factor multipliers. Each multiplier changes a relative weight, after which the sampler normalizes all professions for that state. The config also uses the existing truncated-normal age distribution. No core changes are needed. `states.json` supplies FIPS codes for joining map geometry, along with the approximate weights represented in the config. The seed controls sampled fields and name randomness, but generated character IDs include time/randomness and are not reproducible byte-for-byte.
 
 The map geometry comes from the public [us-atlas](https://github.com/topojson/us-atlas) TopoJSON via jsDelivr, fetched by the browser when the dashboard renders. An internet connection to that CDN is required for the map; the state tables and character samples still work without it.
+
+## Richer appearance example
+
+The richer example adds appearance using `appearance_adult_human.json`, copied from the November 14 Worldgen proposal's `examples/current_dialect/appearance_adult_human.json`. It uses the existing sampler, binding the generated person's species and age band before drawing appearance. Ages 65 and above are assigned `older_adult`; the threshold is an illustrative integration choice, not a threshold supplied by the source. It adds eye color, frame, hair coverage, stature, BMI and a derived mass (`BMI × height in meters squared`). These distributions are synthetic illustrative assumptions, not demographic estimates, and are not conditioned on gender. They describe adult workers only; no lifecycle, household finances, or event simulation is implemented here.
+
+```bash
+python examples/world_builder/us_population/generate_rich.py --count 20000 --seed 42
+WORLDGEN_US_POPULATION=examples/world_builder/us_population/rich_population.parquet streamlit run examples/world_builder/us_population/dashboard.py
+```
+
+As with the basic example, IDs are not reproducible. Appearance uses Python's seeded random stream; categorical and numeric draws use the current core sampler. The population and appearance distributions are not calibrated jointly.
+
+The rich example also draws 20 compatible adult-human appearance dimensions from the proposal's `appearance_options.json` and a detailed job from `occupation_types.json`. The existing broad profession determines the eligible job sectors; this crosswalk is illustrative, and Energy has no matching catalog jobs, so occupation fields are empty for those workers. The job's wage and hours distributions, education band, remote compatibility and night-shift probability provide additional fields. Wages are gross annual values in a fictional USD-like currency, not measured US income. The appearance catalog contains marginal priors, so these traits do not form a calibrated joint distribution. Hairstyle and other traits requiring additional compatibility rules are excluded.
+
+The product, dwelling, activity and transaction catalogs require household context or event and accounting rules; they are not sampled in this individual snapshot. None of the rich example produces household net worth or a running economy.

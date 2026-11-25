@@ -1,0 +1,90 @@
+{
+  "base_probabilities_finite": {
+    "species": {
+      "human": 1.0
+    },
+    "age_band": {
+      "adult": 0.82,
+      "older_adult": 0.18
+    },
+    "frame": {
+      "narrow": 0.25,
+      "medium": 0.55,
+      "broad": 0.2
+    },
+    "hair_coverage": {
+      "full": 0.82,
+      "thinning": 0.14,
+      "bald": 0.04
+    },
+    "eye_color": {
+      "brown": 0.63,
+      "hazel": 0.16,
+      "blue": 0.13,
+      "green": 0.05,
+      "gray": 0.03
+    }
+  },
+  "base_probabilities_distributions": {
+    "stature_cm": {
+      "type": "truncated_normal",
+      "mean": 170,
+      "std": 9,
+      "lower": 140,
+      "upper": 205
+    },
+    "bmi": {
+      "type": "truncated_normal",
+      "mean": 25,
+      "std": 4,
+      "lower": 16,
+      "upper": 45
+    }
+  },
+  "factors": {
+    "species": {},
+    "age_band": {
+      "hair_coverage": {
+        "older_adult": {
+          "thinning": 2.8,
+          "bald": 4.0,
+          "full": 0.55
+        }
+      }
+    },
+    "frame": {}
+  },
+  "override_distributions": [
+    {
+      "field": "stature_cm",
+      "condition": {
+        "age_band": "older_adult"
+      },
+      "distribution": {
+        "type": "truncated_normal",
+        "mean": 168,
+        "std": 9,
+        "lower": 138,
+        "upper": 202
+      }
+    }
+  ],
+  "transform_distributions": {
+    "bmi": {
+      "frame": {
+        "narrow": {
+          "mean_shift": -1.5,
+          "std_mult": 0.9
+        },
+        "broad": {
+          "mean_shift": 1.5,
+          "std_mult": 1.05
+        }
+      }
+    }
+  },
+  "metadata": {
+    "proposal_domain": "appearance",
+    "probability_basis": "synthetic_illustrative"
+  }
+}
