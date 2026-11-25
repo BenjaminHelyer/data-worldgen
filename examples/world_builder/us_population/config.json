@@ -1,0 +1,187 @@
+{
+  "base_probabilities_finite": {
+    "state": {
+      "Alabama": 0.015266718553553256,
+      "Alaska": 0.0021852361851164466,
+      "Arizona": 0.022151709273783158,
+      "Arkansas": 0.00927977010117943,
+      "California": 0.11674549482128961,
+      "Colorado": 0.01766149793450279,
+      "Connecticut": 0.010776507214272887,
+      "Delaware": 0.002993474226186913,
+      "Florida": 0.06765251751182425,
+      "Georgia": 0.03292821648805604,
+      "Hawaii": 0.004190863916661678,
+      "Idaho": 0.005986948452373826,
+      "Illinois": 0.03741842782733641,
+      "Indiana": 0.020654972160689702,
+      "Iowa": 0.009579117523798123,
+      "Kansas": 0.008681075255942047,
+      "Kentucky": 0.01347063401784111,
+      "Louisiana": 0.0137699814404598,
+      "Maine": 0.004190863916661678,
+      "Maryland": 0.01855954020235886,
+      "Massachusetts": 0.02095431958330839,
+      "Michigan": 0.02993474226186913,
+      "Minnesota": 0.017062803089265405,
+      "Mississippi": 0.008681075255942047,
+      "Missouri": 0.01855954020235886,
+      "Montana": 0.0032928216488056048,
+      "Nebraska": 0.005986948452373826,
+      "Nevada": 0.009579117523798123,
+      "New Hampshire": 0.004190863916661678,
+      "New Jersey": 0.027839310303538294,
+      "New Mexico": 0.006286295874992518,
+      "New York": 0.0586720948332635,
+      "North Carolina": 0.03232952164281866,
+      "North Dakota": 0.002334909896425792,
+      "Ohio": 0.03532299586900558,
+      "Oklahoma": 0.012273244327366341,
+      "Oregon": 0.012572591749985035,
+      "Pennsylvania": 0.03891516494042987,
+      "Rhode Island": 0.0032928216488056048,
+      "South Carolina": 0.01616476082140933,
+      "South Dakota": 0.00275399628809196,
+      "Tennessee": 0.021253667005927082,
+      "Texas": 0.09130096389870085,
+      "Utah": 0.010177812369035503,
+      "Vermont": 0.0019457582470214934,
+      "Virginia": 0.026043225767826143,
+      "Washington": 0.023349098964257922,
+      "West Virginia": 0.0053882536071364435,
+      "Wisconsin": 0.01766149793450279,
+      "Wyoming": 0.0017362150511884094
+    },
+    "species": {
+      "human": 1.0
+    },
+    "gender": {
+      "female": 0.5,
+      "male": 0.5
+    },
+    "profession": {
+      "Healthcare": 0.15,
+      "Education": 0.1,
+      "Technology": 0.09,
+      "Agriculture": 0.05,
+      "Manufacturing": 0.11,
+      "Energy": 0.05,
+      "Hospitality": 0.12,
+      "Retail": 0.13,
+      "Public service": 0.1,
+      "Other": 0.1
+    }
+  },
+  "base_probabilities_distributions": {
+    "age": {
+      "type": "truncated_normal",
+      "mean": 40,
+      "std": 14,
+      "lower": 18,
+      "upper": 85
+    }
+  },
+  "factors": {
+    "state": {
+      "profession": {
+        "Alabama": {
+          "Manufacturing": 2.1
+        },
+        "Alaska": {
+          "Energy": 2.4
+        },
+        "California": {
+          "Technology": 2.5
+        },
+        "Colorado": {
+          "Technology": 2.5
+        },
+        "Florida": {
+          "Hospitality": 2.2
+        },
+        "Hawaii": {
+          "Hospitality": 2.2
+        },
+        "Idaho": {
+          "Agriculture": 3.5
+        },
+        "Indiana": {
+          "Manufacturing": 2.1
+        },
+        "Iowa": {
+          "Agriculture": 3.5
+        },
+        "Kansas": {
+          "Agriculture": 3.5
+        },
+        "Louisiana": {
+          "Energy": 2.4
+        },
+        "Maine": {
+          "Hospitality": 2.2
+        },
+        "Maryland": {
+          "Technology": 2.5
+        },
+        "Massachusetts": {
+          "Technology": 2.5,
+          "Healthcare": 1.5
+        },
+        "Michigan": {
+          "Manufacturing": 2.1
+        },
+        "Minnesota": {
+          "Healthcare": 1.5
+        },
+        "Montana": {
+          "Agriculture": 3.5
+        },
+        "Nebraska": {
+          "Agriculture": 3.5
+        },
+        "Nevada": {
+          "Hospitality": 2.2
+        },
+        "North Dakota": {
+          "Agriculture": 3.5
+        },
+        "Ohio": {
+          "Manufacturing": 2.1
+        },
+        "Oklahoma": {
+          "Energy": 2.4
+        },
+        "Pennsylvania": {
+          "Healthcare": 1.5
+        },
+        "South Dakota": {
+          "Agriculture": 3.5
+        },
+        "Texas": {
+          "Energy": 2.4
+        },
+        "Utah": {
+          "Technology": 2.5
+        },
+        "Virginia": {
+          "Technology": 2.5
+        },
+        "Washington": {
+          "Technology": 2.5
+        },
+        "West Virginia": {
+          "Energy": 2.4
+        },
+        "Wisconsin": {
+          "Manufacturing": 2.1
+        },
+        "Wyoming": {
+          "Energy": 2.4
+        }
+      }
+    }
+  },
+  "metadata": {
+    "population": "Synthetic US workers"
+  }
+}

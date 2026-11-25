@@ -64,6 +64,19 @@ python plot_ecosystem.py
 
 ![Ecosystem Species and Age Distributions](readme_example_plot.png)
 
+## Synthetic US population map
+
+Generate and explore a 50-state synthetic working population with the existing
+factor-based sampler and a Streamlit map:
+
+```bash
+python3 examples/world_builder/us_population/generate.py --count 20000 --seed 42
+streamlit run examples/world_builder/us_population/dashboard.py
+```
+
+See the [example guide](examples/world_builder/us_population/README.md) for
+configuration details, interpretation, and the map's internet requirement.
+
 ## Docker
 
 The repository includes a **generation-only** image (no Streamlit). It installs the package from `pyproject.toml` via `uv` and exposes two entry modules:
