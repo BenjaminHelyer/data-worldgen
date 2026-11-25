@@ -1,0 +1,302 @@
+[
+  {
+    "name": "Alabama",
+    "abbr": "AL",
+    "fips": 1,
+    "weight": 5.1
+  },
+  {
+    "name": "Alaska",
+    "abbr": "AK",
+    "fips": 2,
+    "weight": 0.73
+  },
+  {
+    "name": "Arizona",
+    "abbr": "AZ",
+    "fips": 4,
+    "weight": 7.4
+  },
+  {
+    "name": "Arkansas",
+    "abbr": "AR",
+    "fips": 5,
+    "weight": 3.1
+  },
+  {
+    "name": "California",
+    "abbr": "CA",
+    "fips": 6,
+    "weight": 39.0
+  },
+  {
+    "name": "Colorado",
+    "abbr": "CO",
+    "fips": 8,
+    "weight": 5.9
+  },
+  {
+    "name": "Connecticut",
+    "abbr": "CT",
+    "fips": 9,
+    "weight": 3.6
+  },
+  {
+    "name": "Delaware",
+    "abbr": "DE",
+    "fips": 10,
+    "weight": 1.0
+  },
+  {
+    "name": "Florida",
+    "abbr": "FL",
+    "fips": 12,
+    "weight": 22.6
+  },
+  {
+    "name": "Georgia",
+    "abbr": "GA",
+    "fips": 13,
+    "weight": 11.0
+  },
+  {
+    "name": "Hawaii",
+    "abbr": "HI",
+    "fips": 15,
+    "weight": 1.4
+  },
+  {
+    "name": "Idaho",
+    "abbr": "ID",
+    "fips": 16,
+    "weight": 2.0
+  },
+  {
+    "name": "Illinois",
+    "abbr": "IL",
+    "fips": 17,
+    "weight": 12.5
+  },
+  {
+    "name": "Indiana",
+    "abbr": "IN",
+    "fips": 18,
+    "weight": 6.9
+  },
+  {
+    "name": "Iowa",
+    "abbr": "IA",
+    "fips": 19,
+    "weight": 3.2
+  },
+  {
+    "name": "Kansas",
+    "abbr": "KS",
+    "fips": 20,
+    "weight": 2.9
+  },
+  {
+    "name": "Kentucky",
+    "abbr": "KY",
+    "fips": 21,
+    "weight": 4.5
+  },
+  {
+    "name": "Louisiana",
+    "abbr": "LA",
+    "fips": 22,
+    "weight": 4.6
+  },
+  {
+    "name": "Maine",
+    "abbr": "ME",
+    "fips": 23,
+    "weight": 1.4
+  },
+  {
+    "name": "Maryland",
+    "abbr": "MD",
+    "fips": 24,
+    "weight": 6.2
+  },
+  {
+    "name": "Massachusetts",
+    "abbr": "MA",
+    "fips": 25,
+    "weight": 7.0
+  },
+  {
+    "name": "Michigan",
+    "abbr": "MI",
+    "fips": 26,
+    "weight": 10.0
+  },
+  {
+    "name": "Minnesota",
+    "abbr": "MN",
+    "fips": 27,
+    "weight": 5.7
+  },
+  {
+    "name": "Mississippi",
+    "abbr": "MS",
+    "fips": 28,
+    "weight": 2.9
+  },
+  {
+    "name": "Missouri",
+    "abbr": "MO",
+    "fips": 29,
+    "weight": 6.2
+  },
+  {
+    "name": "Montana",
+    "abbr": "MT",
+    "fips": 30,
+    "weight": 1.1
+  },
+  {
+    "name": "Nebraska",
+    "abbr": "NE",
+    "fips": 31,
+    "weight": 2.0
+  },
+  {
+    "name": "Nevada",
+    "abbr": "NV",
+    "fips": 32,
+    "weight": 3.2
+  },
+  {
+    "name": "New Hampshire",
+    "abbr": "NH",
+    "fips": 33,
+    "weight": 1.4
+  },
+  {
+    "name": "New Jersey",
+    "abbr": "NJ",
+    "fips": 34,
+    "weight": 9.3
+  },
+  {
+    "name": "New Mexico",
+    "abbr": "NM",
+    "fips": 35,
+    "weight": 2.1
+  },
+  {
+    "name": "New York",
+    "abbr": "NY",
+    "fips": 36,
+    "weight": 19.6
+  },
+  {
+    "name": "North Carolina",
+    "abbr": "NC",
+    "fips": 37,
+    "weight": 10.8
+  },
+  {
+    "name": "North Dakota",
+    "abbr": "ND",
+    "fips": 38,
+    "weight": 0.78
+  },
+  {
+    "name": "Ohio",
+    "abbr": "OH",
+    "fips": 39,
+    "weight": 11.8
+  },
+  {
+    "name": "Oklahoma",
+    "abbr": "OK",
+    "fips": 40,
+    "weight": 4.1
+  },
+  {
+    "name": "Oregon",
+    "abbr": "OR",
+    "fips": 41,
+    "weight": 4.2
+  },
+  {
+    "name": "Pennsylvania",
+    "abbr": "PA",
+    "fips": 42,
+    "weight": 13.0
+  },
+  {
+    "name": "Rhode Island",
+    "abbr": "RI",
+    "fips": 44,
+    "weight": 1.1
+  },
+  {
+    "name": "South Carolina",
+    "abbr": "SC",
+    "fips": 45,
+    "weight": 5.4
+  },
+  {
+    "name": "South Dakota",
+    "abbr": "SD",
+    "fips": 46,
+    "weight": 0.92
+  },
+  {
+    "name": "Tennessee",
+    "abbr": "TN",
+    "fips": 47,
+    "weight": 7.1
+  },
+  {
+    "name": "Texas",
+    "abbr": "TX",
+    "fips": 48,
+    "weight": 30.5
+  },
+  {
+    "name": "Utah",
+    "abbr": "UT",
+    "fips": 49,
+    "weight": 3.4
+  },
+  {
+    "name": "Vermont",
+    "abbr": "VT",
+    "fips": 50,
+    "weight": 0.65
+  },
+  {
+    "name": "Virginia",
+    "abbr": "VA",
+    "fips": 51,
+    "weight": 8.7
+  },
+  {
+    "name": "Washington",
+    "abbr": "WA",
+    "fips": 53,
+    "weight": 7.8
+  },
+  {
+    "name": "West Virginia",
+    "abbr": "WV",
+    "fips": 54,
+    "weight": 1.8
+  },
+  {
+    "name": "Wisconsin",
+    "abbr": "WI",
+    "fips": 55,
+    "weight": 5.9
+  },
+  {
+    "name": "Wyoming",
+    "abbr": "WY",
+    "fips": 56,
+    "weight": 0.58
+  }
+]
