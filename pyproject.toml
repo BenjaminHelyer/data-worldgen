@@ -39,6 +39,9 @@ worldgen-batch-local = "world_builder.batch_local:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+namegen = ["first_name_markov_model_*.json"]
+
 [tool.pylint]
 max-line-length = 100
 disable = [

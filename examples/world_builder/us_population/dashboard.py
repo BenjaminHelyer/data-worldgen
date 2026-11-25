@@ -50,11 +50,23 @@ def main():
     st.set_page_config(page_title='Synthetic US population', layout='wide')
     st.title('A synthetic working population across the United States')
     st.caption('Illustrative synthetic data, not Census or employment estimates. State population weights are approximate; profession factors are invented.')
-    path = Path(os.environ.get('WORLDGEN_US_POPULATION', str(HERE / 'population.parquet'))).expanduser()
+    configured = os.environ.get('WORLDGEN_US_POPULATION')
+    if configured:
+        path = Path(configured).expanduser()
+    else:
+        candidates = [HERE / 'rich_population.parquet', HERE / 'population.parquet']
+        available = [candidate for candidate in candidates if candidate.is_file()]
+        if len(available) > 1:
+            path = st.selectbox('Population dataset', available, format_func=lambda p: p.name)
+        else:
+            path = available[0] if available else candidates[1]
+    st.caption(f'Loaded dataset: {path.name}')
     if not path.is_file():
         st.error(f'Population file not found: {path}. Run the generation command in the example README first.')
         st.stop()
     df = load_population(str(path), path.stat().st_mtime_ns)
+    if 'eye_color' not in df.columns:
+        st.info('This dataset does not include appearance. Generate the richer population to add it.')
     if df.empty or not {'state', 'profession'}.issubset(df.columns):
         st.error('The population file must contain at least one row and state and profession columns.')
         st.stop()
@@ -74,11 +86,28 @@ def main():
     st.bar_chart(counts.set_index('Profession')['Characters'])
     st.dataframe(counts, hide_index=True, use_container_width=True)
     st.subheader('Sample characters')
-    columns = [c for c in ['first_name', 'surname', 'age', 'gender', 'profession', 'character_id'] if c in state_df]
+    preferred = ['first_name', 'surname', 'age', 'gender', 'profession', 'character_id']
+    columns = [c for c in preferred if c in state_df]
+    columns += [c for c in state_df.columns if c not in columns and c != 'state']
     sample = state_df[columns].sample(n=min(20, len(state_df)), random_state=42).copy()
     if 'age' in sample:
-        sample['age'] = sample['age'].round().astype(int)
+        sample['age'] = sample['age'].round(1)
     st.dataframe(sample, hide_index=True, use_container_width=True)
+
+    if len(columns) > len([c for c in preferred if c in state_df]):
+        st.subheader('Character details')
+        options = list(range(len(sample)))
+
+        def label(i):
+            row = sample.iloc[i]
+            name = ' '.join(str(row.get(k, '')) for k in ('first_name', 'surname')).strip()
+            return f"{name or 'Character'} — {row.get('character_id', i)}"
+
+        selected = st.selectbox('Choose a sampled character', options, format_func=label)
+        details = sample.iloc[selected].rename_axis('Attribute').reset_index(name='Value')
+        # Mixed data types cannot always be serialized into one Arrow column.
+        details['Value'] = details['Value'].map(str)
+        st.dataframe(details, hide_index=True, use_container_width=True)
 
 
 if __name__ == '__main__':
